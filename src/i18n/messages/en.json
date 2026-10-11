@@ -860,5 +860,68 @@
       "replied": "Clarification sent to the team.",
       "emptyReply": "Write the clarification first."
     }
+  },
+  "pricing": {
+    "metaTitle": "Pricing",
+    "eyebrow": "Pricing",
+    "title": "Choose the plan that fits your company",
+    "subtitle": "Start free and upgrade to Premium as your team grows. No contracts, no hidden fees.",
+    "billing": {
+      "label": "Billing",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "save": "Save 20%"
+    },
+    "free": {
+      "name": "Free",
+      "tagline": "For small teams getting organized.",
+      "price": "SAR 0",
+      "forever": "forever",
+      "cta": "Start for free"
+    },
+    "premium": {
+      "name": "Premium",
+      "tagline": "Every Al Maqr tool for a company running at full speed.",
+      "popular": "Most popular",
+      "per": "SAR / month",
+      "billedMonthly": "Billed monthly — cancel anytime.",
+      "billedYearly": "SAR {total} billed once a year.",
+      "cta": "Get Premium",
+      "trial": "Try it free for 14 days first."
+    },
+    "features": {
+      "employees5": "Up to 5 employees",
+      "employeesUnlimited": "Unlimited employees",
+      "hq": "Virtual headquarters (main hall)",
+      "hr": "Essential HR tools",
+      "operationsLimited": "Operations room (up to 20 operations / month)",
+      "oneWorkflow": "One workflow",
+      "emailSupport": "Email support",
+      "allRooms": "Every room and department: operations, sales, marketing",
+      "automation": "Automation room and automated flows",
+      "workflowsUnlimited": "Unlimited workflows with owners and attachments",
+      "clientPortal": "Client portal for receiving briefs",
+      "attachments": "50 GB for documents and images",
+      "analytics": "Advanced analytics and reports",
+      "ai": "AI assistant",
+      "prioritySupport": "24/7 priority support"
+    },
+    "enterprise": "Large company that needs a custom plan?",
+    "contactUs": "Contact us",
+    "faq": {
+      "title": "Frequently asked questions",
+      "switch": {
+        "q": "Can I move from Free to Premium later?",
+        "a": "Of course. All your data stays as it is, and the new features unlock right after you subscribe."
+      },
+      "trial": {
+        "q": "Does the Premium trial need a card?",
+        "a": "The trial lasts 14 days, and nothing is charged unless you decide to continue afterwards."
+      },
+      "cancel": {
+        "q": "If I cancel, do I lose my data?",
+        "a": "No. Your account goes back to Free with your data kept, and you can return to Premium anytime."
+      }
+    }
   }
 }

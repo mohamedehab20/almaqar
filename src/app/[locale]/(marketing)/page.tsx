@@ -33,9 +33,9 @@ export default function LandingPage({ params }: PageProps<"/[locale]">) {
             <Link href="/signup" className={buttonVariants({ size: "lg" })}>
               {t("startJourney")}
             </Link>
-            <a href="#why" className={buttonVariants({ variant: "secondary", size: "lg" })}>
+            <Link href="/pricing" className={buttonVariants({ variant: "secondary", size: "lg" })}>
               {t("tryNow")}
-            </a>
+            </Link>
           </div>
           <RoleCards />
         </section>

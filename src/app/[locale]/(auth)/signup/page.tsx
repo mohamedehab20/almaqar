@@ -27,7 +27,7 @@ export default function SignupPage({ params }: PageProps<"/[locale]/signup">) {
         <nav className="hidden items-center gap-10 text-sm font-medium sm:flex">
           <Link href="/" className="hover:text-primary">{s("navHome")}</Link>
           <Link href="/#why" className="hover:text-primary">{s("navFeatures")}</Link>
-          <a href="#" className="hover:text-primary">{s("navPricing")}</a>
+          <Link href="/pricing" className="hover:text-primary">{s("navPricing")}</Link>
         </nav>
         <Link href="/login" className="text-sm font-semibold text-primary hover:underline">
           {s("navLogin")}
