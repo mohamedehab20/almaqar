@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 
 type Billing = "monthly" | "yearly";
 
-/** Monthly price in SAR; yearly billing gets ~20% off. TODO(business): confirm final prices. */
-const PREMIUM_MONTHLY = 149;
-const PREMIUM_YEARLY_PER_MONTH = 119;
+/** Monthly price in EGP; yearly billing gets 30% off. */
+const PREMIUM_MONTHLY = 300;
+const PREMIUM_YEARLY_PER_MONTH = 210;
 
 const freeFeatures = ["employees5", "hq", "hr", "operationsLimited", "oneWorkflow", "emailSupport"] as const;
 const freeMissing = ["automation", "clientPortal", "analytics", "ai"] as const;

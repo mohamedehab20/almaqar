@@ -870,12 +870,12 @@
       "label": "Billing",
       "monthly": "Monthly",
       "yearly": "Yearly",
-      "save": "Save 20%"
+      "save": "Save 30%"
     },
     "free": {
       "name": "Free",
       "tagline": "For small teams getting organized.",
-      "price": "SAR 0",
+      "price": "EGP 0",
       "forever": "forever",
       "cta": "Start for free"
     },
@@ -883,9 +883,9 @@
       "name": "Premium",
       "tagline": "Every Al Maqr tool for a company running at full speed.",
       "popular": "Most popular",
-      "per": "SAR / month",
+      "per": "EGP / month",
       "billedMonthly": "Billed monthly — cancel anytime.",
-      "billedYearly": "SAR {total} billed once a year.",
+      "billedYearly": "EGP {total} billed once a year.",
       "cta": "Get Premium",
       "trial": "Try it free for 14 days first."
     },
