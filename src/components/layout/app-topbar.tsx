@@ -19,7 +19,7 @@ export function AppTopbar({ userName, onMenu }: AppTopbarProps) {
   // "/c/<slug>" is the main hall; "/c/<slug>/<section>" are the other pages
   const section = usePathname().split("/")[3];
   const isHall = !section;
-  const sectionTitles: Record<string, string> = { operations: "ops.navTitle", hr: "hr.navTitle", marketing: "marketing.navTitle", automation: "automation.navTitle", sales: "sales.navTitle" };
+  const sectionTitles: Record<string, string> = { operations: "ops.navTitle", hr: "hr.navTitle", marketing: "marketing.navTitle", automation: "automation.navTitle", sales: "sales.navTitle", agents: "agents.navTitle" };
   const title = tPage(sectionTitles[section] ?? "hq.title");
 
   return (

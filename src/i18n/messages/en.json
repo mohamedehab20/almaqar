@@ -260,7 +260,8 @@
       "archive": "Archive",
       "meetings": "Meetings",
       "tasks": "Tasks",
-      "permissions": "Permissions"
+      "permissions": "Permissions",
+      "agents": "Al Jarab"
     },
     "tabs": {
       "dashboard": "Dashboard",
@@ -959,6 +960,62 @@
         "q": "If I cancel, do I lose my data?",
         "a": "No. Your account goes back to Free with your data kept, and you can return to Premium anytime."
       }
+    }
+  },
+  "agents": {
+    "navTitle": "Al Jarab",
+    "title": "Al Jarab",
+    "subtitle": "AI agents working with your team: agents for any task, and specialists for specific ones.",
+    "newAgent": "New agent",
+    "metrics": {
+      "active": "Running agents",
+      "queue": "Tasks in progress",
+      "done": "Tasks completed"
+    },
+    "filterLabel": "Agent type",
+    "filters": {
+      "all": "All",
+      "general": "Any task",
+      "specialist": "Specialists"
+    },
+    "sections": {
+      "general": {
+        "title": "Agents for any task",
+        "desc": "Describe what you need and the agent handles it or routes it to the right specialist."
+      },
+      "specialist": {
+        "title": "Specialist agents",
+        "desc": "Each agent is trained for one kind of work in a company department."
+      }
+    },
+    "status": {
+      "active": "Available",
+      "busy": "Working",
+      "paused": "Paused"
+    },
+    "skills": "Skills",
+    "stats": "{done} done · {queue} queued",
+    "assign": "Assign a task",
+    "pause": "Pause {name}",
+    "resume": "Resume {name}",
+    "dialog": {
+      "title": "New task for {name}",
+      "hintGeneral": "Write any task; the agent splits it up and does it or hands it to a specialist.",
+      "hintSpecialist": "This is a specialist, so keep the task within its field.",
+      "task": "Task",
+      "placeholderGeneral": "e.g. Summarize yesterday’s meeting and send everyone their action items",
+      "placeholderSpecialist": "Describe the task and any files it needs…",
+      "pausedWarning": "This agent is paused; the task will wait in its queue until you resume it.",
+      "empty": "Write the task first.",
+      "cancel": "Cancel",
+      "send": "Send task",
+      "close": "Close"
+    },
+    "notices": {
+      "assigned": "Task sent to {name}: {task}",
+      "paused": "{name} paused",
+      "resumed": "{name} is running again",
+      "newSoon": "Custom agents are coming soon"
     }
   }
 }

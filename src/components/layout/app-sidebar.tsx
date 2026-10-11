@@ -3,6 +3,7 @@
 import {
   Archive,
   Award,
+  BriefcaseBusiness,
   Banknote,
   CalendarDays,
   ChevronDown,
@@ -61,6 +62,7 @@ export function AppSidebar({ companySlug, onClose }: { companySlug: string; onCl
         { key: "accounts", icon: Banknote },
         { key: "sales", icon: TrendingUp, href: `${base}/sales` },
         { key: "marketing", icon: Megaphone, href: `${base}/marketing` },
+        { key: "agents", icon: BriefcaseBusiness, href: `${base}/agents` },
         { key: "archive", icon: Archive },
         { key: "meetings", icon: DoorOpen },
         { key: "tasks", icon: CircleCheck },
