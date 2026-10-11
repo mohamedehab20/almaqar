@@ -11,7 +11,44 @@
     "notifications": "Notifications",
     "profile": "Profile",
     "switchLocale": "العربية",
-    "accountNav": "User account"
+    "accountNav": "User account",
+    "explore": {
+      "label": "Explore",
+      "groups": {
+        "site": "Site",
+        "enter": "Sign in"
+      },
+      "items": {
+        "home": {
+          "title": "Home",
+          "desc": "Discover the digital HQ"
+        },
+        "why": {
+          "title": "Why Al Maqr?",
+          "desc": "Features that make a difference"
+        },
+        "pricing": {
+          "title": "Pricing",
+          "desc": "Free and Premium plans"
+        },
+        "company": {
+          "title": "Company login",
+          "desc": "For company owners and managers"
+        },
+        "employee": {
+          "title": "Employee login",
+          "desc": "Enter your office in the HQ"
+        },
+        "visitor": {
+          "title": "Visitor / client login",
+          "desc": "With an invite code and phone"
+        },
+        "signup": {
+          "title": "Create an account",
+          "desc": "Set up your company HQ in minutes"
+        }
+      }
+    }
   },
   "landing": {
     "badge": "Your digital headquarters awaits",

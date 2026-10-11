@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Logo } from "@/components/layout/logo";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { ExploreMenu } from "./explore-menu";
 
 export function MarketingHeader() {
   const t = useTranslations("common");
@@ -11,7 +12,10 @@ export function MarketingHeader() {
   return (
     <header className="sticky top-0 z-30 glass shadow-[0_1px_0_rgba(195,198,215,0.35)]">
       <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Logo />
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Logo />
+          <ExploreMenu />
+        </div>
         <nav aria-label={t("accountNav")} className="flex items-center gap-2 sm:gap-3">
           <Link href="/signup" className={buttonVariants({ size: "sm" })}>
             {t("signup")}
