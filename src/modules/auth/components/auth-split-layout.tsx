@@ -17,7 +17,7 @@ export function AuthSplitLayout({ image, panelTitle, panelText, children }: Auth
   return (
     <main className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,42%)]">
       <section className="flex flex-col items-center justify-center gap-8 px-4 py-10 sm:px-6">
-        <Logo className="text-xl [&>span:first-child]:size-10" />
+        <Logo className="text-xl" />
         <div className="w-full max-w-md">{children}</div>
         <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-on-surface-variant">
           <a href="#" className="hover:text-primary">{t("support")}</a>

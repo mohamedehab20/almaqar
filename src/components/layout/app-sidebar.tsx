@@ -4,7 +4,6 @@ import {
   Archive,
   Award,
   Banknote,
-  Building2,
   CalendarDays,
   ChevronDown,
   Circle,
@@ -24,6 +23,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -86,13 +86,22 @@ export function AppSidebar({ companySlug, onClose }: { companySlug: string; onCl
   return (
     <div className="flex h-full flex-col bg-[#1c1d1f] text-white/75">
       <div className="flex items-center gap-3 px-6 pb-6 pt-6">
-        <span className="grid size-12 shrink-0 place-items-center rounded-md bg-brand-gradient text-white">
-          <Building2 className="size-6" aria-hidden />
-        </span>
-        <div className="flex-1">
-          <p className="text-2xl font-extrabold leading-tight text-white">المقر</p>
-          <p className="text-[10px] tracking-[0.2em] text-white/50">{t("brandTagline")}</p>
-        </div>
+        {/* Brand → back to the home page */}
+        <Link
+          href="/"
+          onClick={onClose}
+          aria-label={t("backHome")}
+          title={t("backHome")}
+          className="-m-1 flex flex-1 items-center gap-3 rounded-md p-1 transition-colors hover:bg-white/5"
+        >
+          <span className="grid size-12 shrink-0 place-items-center rounded-md bg-white p-1">
+            <Image src="/brand/logo.png" alt="" width={40} height={40} className="size-10 object-contain" priority />
+          </span>
+          <span className="flex-1">
+            <span className="block text-2xl font-extrabold leading-tight text-white">المقر</span>
+            <span className="block text-[10px] tracking-[0.2em] text-white/50">{t("brandTagline")}</span>
+          </span>
+        </Link>
         {onClose && (
           <button
             type="button"

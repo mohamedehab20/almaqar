@@ -233,7 +233,8 @@
     },
     "expandGroup": "إظهار عناصر {name}",
     "collapseGroup": "إخفاء عناصر {name}",
-    "comingSoonItem": "{name} — هتتوفر قريبًا"
+    "comingSoonItem": "{name} — هتتوفر قريبًا",
+    "backHome": "الرجوع للصفحة الرئيسية"
   },
   "hq": {
     "title": "القاعة الرئيسية",

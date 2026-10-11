@@ -233,7 +233,8 @@
     },
     "expandGroup": "Show {name} items",
     "collapseGroup": "Hide {name} items",
-    "comingSoonItem": "{name} — coming soon"
+    "comingSoonItem": "{name} — coming soon",
+    "backHome": "Back to the home page"
   },
   "hq": {
     "title": "Main hall",

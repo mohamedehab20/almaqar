@@ -1,4 +1,4 @@
-import { Building2, CircleHelp, ShieldCheck } from "lucide-react";
+import { CircleHelp, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -29,7 +29,7 @@ export default function VisitorLoginPage({ params }: PageProps<"/[locale]/visito
         <div className="p-6 sm:p-10">
           <header className="mb-8 flex flex-col items-center text-center">
             <span className="grid size-20 place-items-center rounded-lg bg-surface-container-low text-primary-container">
-              <Building2 className="size-10" aria-hidden />
+              <Image src="/brand/logo.png" alt="" width={56} height={56} className="size-14 object-contain" priority />
             </span>
             <h1 className="mt-5 text-3xl font-extrabold">{t("title")}</h1>
             <p className="mt-1 text-on-surface-variant">{t("subtitle")}</p>
