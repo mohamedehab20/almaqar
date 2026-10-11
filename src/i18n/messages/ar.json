@@ -1,0 +1,817 @@
+{
+  "metadata": {
+    "brand": "المقر",
+    "title": "المقر — هنا يبدأ كل شيء",
+    "description": "المقر الرقمي لشركتك: فريقك ومشاريعك وعملياتك في مكان واحد."
+  },
+  "common": {
+    "brand": "المقر",
+    "signup": "إنشاء حساب",
+    "login": "تسجيل الدخول",
+    "notifications": "الإشعارات",
+    "profile": "الملف الشخصي",
+    "switchLocale": "English",
+    "accountNav": "حساب المستخدم"
+  },
+  "landing": {
+    "badge": "أهلاً بك في ديوان المقر الرقمي",
+    "title": "هنا يبدأ كل شيء",
+    "subtitle": "منصة رقمية متكاملة تهدف إلى تعزيز تجربة العمل والتعاون في بيئة مهنية راقية.",
+    "startJourney": "ابدأ رحلتك",
+    "tryNow": "جرّب الآن",
+    "roles": {
+      "owner": {
+        "title": "صاحب العمل",
+        "description": "قم بإدارة مؤسستك بكفاءة عالية، وابنِ مقرك وتفاعل مع فريقك في بيئة عمل ذكية.",
+        "imageAlt": "غرفة اجتماعات زجاجية"
+      },
+      "employee": {
+        "title": "موظف",
+        "description": "نظّم مهامك اليومية وتواصل مع فريقك بكل راحة، جزء من مجتمع العمل الرقمي المتطور.",
+        "imageAlt": "فريق يعمل حول طاولة مشتركة"
+      },
+      "visitor": {
+        "title": "زائر",
+        "description": "استكشف الخدمات المتاحة وتواصل مع الفريق مباشرة بطريقة سلسة وآمنة.",
+        "imageAlt": "ركن استقبال بخشب دافئ"
+      }
+    },
+    "why": {
+      "title": "لماذا المقر؟",
+      "intro": "نحن نعيد تعريف مفهوم بيئة العمل الرقمية",
+      "bilingual": {
+        "title": "دعم ثنائي اللغة",
+        "text": "واجهة متعددة اللغات بالعربية والإنجليزية."
+      },
+      "security": {
+        "title": "أمن البيانات",
+        "text": "تشفير كامل وحماية لخصوصية شركتك."
+      },
+      "integrations": {
+        "title": "تواصل التطبيقات",
+        "text": "اربط جميع أدواتك المفضلة في مكان واحد بسهولة."
+      },
+      "infrastructure": {
+        "title": "بنية تحتية متينة",
+        "text": "نظام مبني على أحدث التقنيات لضمان الاستقرار والسرعة."
+      }
+    },
+    "footer": {
+      "rights": "ديوان المقر الرقمي. جميع الحقوق محفوظة © {year}",
+      "support": "الدعم الفني",
+      "terms": "شروط الخدمة",
+      "privacy": "سياسة الخصوصية"
+    }
+  },
+  "auth": {
+    "common": {
+      "or": "أو",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
+      "support": "الدعم الفني",
+      "privacy": "سياسة الخصوصية",
+      "terms": "الشروط والأحكام",
+      "contact": "اتصل بنا",
+      "notConnected": "النموذج جاهز. سيتم ربطه بخدمة تسجيل الدخول في مرحلة الـBackend."
+    },
+    "employee": {
+      "metaTitle": "دخول الموظف",
+      "title": "تسجيل دخول الموظف",
+      "intro": "أهلاً بك مجدداً. يرجى إدخال بياناتك للدخول إلى البوابة.",
+      "companyCode": "كود المنشأة",
+      "companyCodePlaceholder": "أدخل كود المنشأة",
+      "identifier": "البريد الإلكتروني أو كود الموظف",
+      "identifierPlaceholder": "example@almaqr.com",
+      "password": "كلمة المرور",
+      "remember": "تذكرني",
+      "forgot": "نسيت كلمة المرور؟",
+      "submit": "دخول",
+      "visitorLogin": "دخول الزوار",
+      "noAccount": "ليس لديك حساب؟",
+      "joinCompany": "انضم مع المنشأة",
+      "panelTitle": "المقر الرقمي",
+      "panelText": "مكتبك، فريقك ومهامك في مكان واحد."
+    },
+    "visitor": {
+      "metaTitle": "دخول الزوار",
+      "title": "دخول الزوار",
+      "subtitle": "تسجيل سريع وآمن لزوار المنشأة",
+      "chooseImage": "اختيار صورة رمز QR",
+      "openCamera": "فتح الكاميرا",
+      "scan": "مسح كود الدخول",
+      "imageSelected": "تم اختيار الصورة، جارٍ تجهيزها للمسح.",
+      "qrPreviewAlt": "معاينة رمز QR",
+      "cameraUnavailable": "الكاميرا غير متاحة في هذا المتصفح. اختر صورة رمز QR بدلاً منها.",
+      "cameraFailed": "تعذر فتح الكاميرا. تحقق من صلاحية الوصول أو اختر صورة رمز QR.",
+      "invite": "رابط الدعوة أو كود الدخول",
+      "invitePlaceholder": "أدخل الكود هنا...",
+      "phone": "رقم الهاتف لاستلام رمز التأكيد",
+      "phonePlaceholder": "01XXXXXXXXX",
+      "otp": "رمز التأكيد (OTP)",
+      "otpDigit": "الرقم {index}",
+      "resend": "إعادة الإرسال",
+      "resendNotConnected": "إرسال رمز التأكيد سيتم ربطه بخدمة الرسائل في مرحلة الـBackend.",
+      "submit": "دخول كزائر",
+      "secure": "دخول آمن ومشفر",
+      "rights": "© {year} المقر",
+      "help": "هل تواجه مشكلة في الدخول؟ تواصل مع الدعم"
+    },
+    "signup": {
+      "metaTitle": "إنشاء حساب",
+      "navHome": "الرئيسية",
+      "navFeatures": "المميزات",
+      "navPricing": "الأسعار",
+      "navLogin": "دخول",
+      "title": "إنشاء حساب جديد",
+      "subtitle": "ابدأ رحلتك مع المقر اليوم واحصل على بيئة عمل متطورة.",
+      "firstName": "الاسم الأول",
+      "firstNamePlaceholder": "مثال: أحمد",
+      "lastName": "الاسم الأخير",
+      "lastNamePlaceholder": "مثال: محمد",
+      "phone": "رقم الجوال",
+      "phonePlaceholder": "+20 1X XXXX XXXX",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "name@company.com",
+      "company": "اسم المنشأة",
+      "companyPlaceholder": "أدخل اسم الشركة أو المنشأة",
+      "businessType": "نوع المنشأة",
+      "businessTypePlaceholder": "اختر النوع",
+      "businessTypes": {
+        "startup": "شركة ناشئة",
+        "agency": "وكالة",
+        "training": "مركز تدريب",
+        "consulting": "استشارات",
+        "services": "خدمات",
+        "other": "أخرى"
+      },
+      "size": "حجم المنشأة",
+      "sizePlaceholder": "حدد عدد الموظفين",
+      "sizes": {
+        "1-10": "1 - 10 موظفين",
+        "11-50": "11 - 50 موظفًا",
+        "51-200": "51 - 200 موظف",
+        "200+": "أكثر من 200 موظف"
+      },
+      "password": "كلمة المرور",
+      "passwordHint": "يجب أن تتكون من 8 خانات على الأقل",
+      "submit": "تسجيل حساب جديد",
+      "notConnected": "النموذج جاهز. سيتم ربطه بخدمة إنشاء الحساب في مرحلة الـBackend.",
+      "haveAccount": "لديك حساب بالفعل؟",
+      "login": "تسجيل الدخول",
+      "panelTitle": "انضم إلى المقر الرقمي",
+      "panelText": "منصة متكاملة تجمع بين الإنتاجية والراحة، شريكك في إدارة بيئة عملك بسلاسة.",
+      "benefitSecurity": "أمان عالٍ",
+      "benefitSecurityText": "بياناتك محمية بأحدث التقنيات",
+      "benefitGrowth": "سعة للنمو",
+      "benefitGrowthText": "إدارة متعددة في نظام موحد",
+      "rights": "© {year} المقر. جميع الحقوق محفوظة."
+    },
+    "login": {
+      "metaTitle": "تسجيل الدخول",
+      "wordmark": "Al Maqr",
+      "tagline": "الديوان الرقمي المتكامل لإدارة المكاتب والموارد البشرية باحترافية معمارية.",
+      "featureDashboard": "لوحة تحكم ذكية",
+      "featureDashboardText": "بياناتك منظمة في هيكل معماري سهل الوصول.",
+      "featureSecurity": "أمن السيادة",
+      "featureSecurityText": "حماية قصوى لبيانات شركتك وموظفيك وفق أعلى المعايير.",
+      "quote": "المقر ليس مجرد منصة، بل هو المساحة التي تنمو فيها مؤسستك بكل ثقة ونظام.",
+      "quoteAuthor": "أحمد المقر",
+      "quoteRole": "Founder",
+      "title": "أهلاً بك في المقر",
+      "subtitle": "اختر الطريقة المناسبة للبدء في إدارة أعمالك.",
+      "tabLogin": "تسجيل الدخول",
+      "tabSignup": "حساب جديد",
+      "companyCode": "كود الشركة",
+      "companyCodePlaceholder": "مثلاً: ALM-001",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "name@company.com",
+      "password": "كلمة المرور",
+      "forgot": "نسيت كلمة المرور؟",
+      "submit": "دخول إلى المنصة",
+      "orVia": "أو عبر",
+      "ssoNotConnected": "الدخول عبر {provider} سيتم ربطه في مرحلة الـBackend.",
+      "ownerPrompt": "هل تملك شركة؟",
+      "ownerLink": "سجّل كصاحب عمل",
+      "ownerSuffix": "للحصول على باقة المزايا الذهبية.",
+      "rights": "© {year} Al Maqr Digital Diwan. All rights reserved."
+    }
+  },
+  "app": {
+    "brandTagline": "AL MAQR DIGITAL",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة",
+    "mainNav": "القائمة الرئيسية",
+    "comingSoon": "قريبًا",
+    "upgrade": "الترقية إلى الذهبية",
+    "notifications": "الإشعارات",
+    "apps": "التطبيقات",
+    "profile": "الملف الشخصي",
+    "nav": {
+      "overview": "نظرة عامة",
+      "voice": "صوت",
+      "camera": "كاميرا",
+      "recording": "تسجيل",
+      "calendar": "تقويم",
+      "chat": "دردشة",
+      "departments": "إدارة الأقسام",
+      "hr": "إدارة الموارد البشرية",
+      "operations": "غرفة العمليات",
+      "automation": "غرفة الأتمتة",
+      "accounts": "الحسابات",
+      "sales": "المبيعات",
+      "marketing": "التسويق",
+      "archive": "أرشيف",
+      "meetings": "اجتماعات",
+      "tasks": "مهام",
+      "permissions": "صلاحيات"
+    },
+    "tabs": {
+      "dashboard": "لوحة التحكم",
+      "office": "المكتب",
+      "resources": "إدارة الموارد",
+      "settings": "الإعدادات"
+    },
+    "expandGroup": "إظهار عناصر {name}",
+    "collapseGroup": "إخفاء عناصر {name}",
+    "comingSoonItem": "{name} — هتتوفر قريبًا"
+  },
+  "hq": {
+    "title": "القاعة الرئيسية",
+    "floorPlan": "مخطط المقر",
+    "participants": "{count} مشارك",
+    "live": "اتصال مباشر",
+    "addLayer": "إضافة طبقة أخرى",
+    "addLayerSoon": "محرر المقر لإضافة الغرف والأثاث سيتوفر قريبًا.",
+    "zoomIn": "تكبير المخطط",
+    "zoomOut": "تصغير المخطط",
+    "recenter": "إعادة ضبط العرض",
+    "emptyDesk": "مكتب متاح",
+    "rooms": {
+      "meeting": "قاعة الاجتماعات الكبرى",
+      "ceo": "مكتب المدير التنفيذي",
+      "open": "مساحة العمل المفتوحة"
+    },
+    "presence": {
+      "title": "الحضور",
+      "online": "{count} أونلاين",
+      "viewAll": "مشاهدة جميع المشاركين",
+      "options": "خيارات {name}"
+    },
+    "history": {
+      "title": "سجل النشاط"
+    },
+    "status": {
+      "available": "متاح الآن",
+      "meeting": "في اجتماع",
+      "away": "بعيد",
+      "busy": "مشغول",
+      "offline": "غير متصل",
+      "change": "تغيير حالتك",
+      "restroom": "في الحمام",
+      "waiting": "انتظار",
+      "menu": "حالتك"
+    },
+    "controls": {
+      "minimize": "تصغير",
+      "expand": "إظهار",
+      "history": "سجل",
+      "mic": "ميكروفون",
+      "camera": "تصوير"
+    }
+  },
+  "ops": {
+    "title": "غرفة العمليات",
+    "navTitle": "غرفة العمليات",
+    "breadcrumb": "OPERATIONS_CONTROL_NODE // ROOT",
+    "auditLog": "سجل التدقيق والمراجعة",
+    "comingSoon": "هذه الميزة ستتوفر قريبًا.",
+    "kpi": {
+      "active": "إجمالي العمليات النشطة",
+      "activeUnit": "مسار جاري",
+      "pending": "طلبات بانتظار الموافقة",
+      "pendingSub": "موافقات مطلوبة منك",
+      "critical": "حرجة جداً",
+      "oldest": "أقدم طلب معلّق منذ {hours} ساعات و{minutes} دقيقة",
+      "cycle": "متوسط زمن تنفيذ الإجراء",
+      "hours": "ساعة",
+      "previously": "سابقاً",
+      "saved": "وفر زمني {percent}% بفضل مسارات الذكاء الاصطناعي"
+    },
+    "tabs": {
+      "all": "جميع العمليات",
+      "contracts": "العقود",
+      "purchasing": "المشتريات",
+      "finance": "المصادقات المالية",
+      "maintenance": "الصيانة",
+      "operations": "التشغيل",
+      "sales": "المبيعات"
+    },
+    "table": {
+      "title": "سجل مسارات العمل والعمليات الجارية",
+      "shown": "{count} سجل معروض",
+      "allStatuses": "جميع الحالات",
+      "export": "تصدير",
+      "cols": {
+        "process": "العملية والرمز",
+        "owner": "المنشئ / المشغّل",
+        "step": "الخطوة الحالية والمسؤول",
+        "nature": "طبيعة الإجراء",
+        "deciders": "أصحاب القرار",
+        "status": "الحالة التشغيلية",
+        "actions": "إجراءات"
+      },
+      "nature": {
+        "human": "تدخل بشري",
+        "automated": "مؤتمت بالكامل",
+        "autoCompleted": "مكتمل آلياً"
+      },
+      "status": {
+        "pending": "بانتظار موافقة",
+        "processing": "قيد المعالجة",
+        "done": "مكتمل وناجح",
+        "review": "قيد المراجعة"
+      },
+      "empty": "لا توجد عمليات في هذا التصنيف.",
+      "prev": "السابق",
+      "next": "التالي",
+      "more": "المزيد",
+      "run": "تشغيل",
+      "openFlow": "عرض المسار",
+      "logs": "السجل",
+      "report": "التقرير",
+      "archive": "أرشفة"
+    },
+    "add": {
+      "button": "إضافة عملية",
+      "title": "إضافة عملية جديدة",
+      "name": "اسم العملية",
+      "namePlaceholder": "مثال: تجديد عقد الصيانة السنوي",
+      "category": "التصنيف",
+      "nature": "طبيعة الإجراء",
+      "submit": "إضافة",
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "added": "تمت إضافة العملية «{name}» إلى السجل.",
+      "firstStep": "مراجعة الطلب",
+      "firstStepBy": "بانتظار التعيين",
+      "noHuman": "بدون تدخل بشري"
+    },
+    "analysis": "التحليل",
+    "subtitle": "تابع كل العمليات الجارية والموافقات المطلوبة في مكان واحد.",
+    "notes": {
+      "title": "الملاحظات",
+      "placeholder": "اكتب ملاحظة للفريق…",
+      "linkTo": "ربط بعملية",
+      "noLink": "من غير ربط بعملية",
+      "add": "إضافة ملاحظة",
+      "empty": "مفيش ملاحظات لسه.",
+      "pin": "تثبيت فوق",
+      "unpin": "إلغاء التثبيت",
+      "delete": "حذف الملاحظة",
+      "notices": {
+        "added": "اتضافت الملاحظة.",
+        "empty": "اكتب الملاحظة الأول."
+      }
+    }
+  },
+  "hr": {
+    "navTitle": "إدارة الموارد البشرية",
+    "title": "نظام المقر للموارد البشرية",
+    "subtitle": "أهلاً بك مجدداً، إليك نظرة سريعة على أدواتك",
+    "comingSoon": "صفحة «{name}» ستتوفر قريبًا.",
+    "tools": {
+      "attendance": "الحضور والانصراف",
+      "leave": "طلب إجازة",
+      "payroll": "رواتب",
+      "integration": "التكامل",
+      "contracts": "العقود التجارية",
+      "complaints": "الشكاوى",
+      "departments": "إدارة الأقسام",
+      "communication": "التواصل",
+      "schedules": "الجداول",
+      "permissions": "الصلاحيات",
+      "performance": "تقييم الأداء",
+      "workHours": "ساعات العمل",
+      "archive": "أرشيف",
+      "recruitment": "التوظيف",
+      "employeeFiles": "ملفات الموظفين",
+      "knowledgeBase": "قاعدة معرفة",
+      "offboarding": "إنهاء العمل"
+    }
+  },
+  "marketing": {
+    "navTitle": "قسم التسويق",
+    "eyebrow": "المقر",
+    "title": "قسم التسويق",
+    "subtitle": "من الفكرة لحد ما العميل يوافق — كل خطوة في مكان واحد.",
+    "export": "تصدير تقرير",
+    "newIdea": "فكرة جديدة",
+    "stagesLabel": "مراحل العمل",
+    "stages": {
+      "bank": "بنك الأفكار",
+      "lab": "معمل الاختبار",
+      "delivery": "تسليم العميل"
+    },
+    "meta": {
+      "client": "العميل",
+      "format": "النوع",
+      "owner": "المسؤول"
+    },
+    "lab": {
+      "pick": "الأفكار تحت الاختبار",
+      "empty": "مفيش أفكار تحت الاختبار دلوقتي. انقل فكرة من بنك الأفكار.",
+      "underTest": "تحت الاختبار",
+      "hook": "الهوك (أول ٣ ثواني)",
+      "message": "الرسالة",
+      "compare": "مقارنة النسخ",
+      "demoNumbers": "أرقام تجريبية للعرض",
+      "noVersions": "لسه مفيش نسخ مرفوعة للفكرة دي.",
+      "version": "نسخة",
+      "best": "الأعلى أداء",
+      "stats": {
+        "views": "مشاهدات",
+        "completion": "نسبة الإكمال",
+        "engagement": "تفاعل"
+      }
+    },
+    "rating": {
+      "title": "تقييم الفكرة",
+      "criteria": {
+        "hook": "قوة أول ٣ ثواني",
+        "clarity": "وضوح الرسالة",
+        "fit": "مناسبة للعميل",
+        "effort": "سهولة التنفيذ"
+      },
+      "total": "المجموع",
+      "notes": "ملاحظات الاختبار",
+      "notesPlaceholder": "إيه اللي اشتغل وإيه اللي محتاج يتغير…",
+      "decision": "القرار",
+      "decisions": {
+        "continue": "كمّل",
+        "revise": "عدّل",
+        "cancel": "الغي"
+      }
+    },
+    "bank": {
+      "toLab": "انقل لمعمل الاختبار"
+    },
+    "delivery": {
+      "sentOn": "اتبعت",
+      "status": {
+        "awaiting": "بانتظار موافقة العميل",
+        "approved": "العميل وافق",
+        "changes": "العميل طلب تعديلات"
+      }
+    },
+    "dialog": {
+      "title": "فكرة جديدة",
+      "name": "عنوان الفكرة",
+      "placeholder": "مثال: ريل «أول يوم في المكتب الجديد»",
+      "add": "إضافة لبنك الأفكار",
+      "cancel": "إلغاء",
+      "close": "إغلاق"
+    },
+    "notices": {
+      "continue": "اتنقلت لتسليم العميل: {title}",
+      "revise": "فضلت في معمل الاختبار عشان تتعدل: {title}",
+      "cancel": "رجعت لبنك الأفكار: {title}",
+      "added": "اتضافت لبنك الأفكار: {title}",
+      "export": "تصدير التقرير هيتوفر قريبًا."
+    },
+    "sectionsLabel": "أقسام التسويق",
+    "currency": "ر.س",
+    "sections": {
+      "pipeline": "خط الإنتاج",
+      "clients": "إدارة العملاء",
+      "accounts": "الحسابات",
+      "campaigns": "العمليات التسويقية",
+      "budgets": "الميزانيات",
+      "channels": "القنوات التسويقية"
+    },
+    "clients": {
+      "cols": {
+        "name": "العميل",
+        "industry": "المجال",
+        "manager": "مسؤول الحساب",
+        "campaigns": "حملات نشطة",
+        "budget": "الميزانية الشهرية",
+        "status": "الحالة"
+      },
+      "status": {
+        "active": "نشط",
+        "onboarding": "قيد التجهيز",
+        "paused": "متوقف مؤقتًا"
+      }
+    },
+    "accounts": {
+      "followers": "المتابعين",
+      "lastActivity": "آخر نشاط",
+      "status": {
+        "connected": "متصل",
+        "attention": "محتاج متابعة",
+        "disconnected": "غير متصل"
+      }
+    },
+    "campaigns": {
+      "spent": "المصروف",
+      "stage": {
+        "planning": "تخطيط",
+        "running": "شغالة",
+        "review": "مراجعة",
+        "done": "خلصت"
+      }
+    },
+    "budgets": {
+      "summary": {
+        "allocated": "إجمالي الميزانيات",
+        "spent": "المصروف",
+        "remaining": "المتبقي"
+      },
+      "perClient": "الميزانية لكل عميل — الشهر الحالي",
+      "nearLimit": "قربت تخلص الميزانية"
+    },
+    "channels": {
+      "campaigns": "{count} حملة",
+      "reach": "الوصول",
+      "costPerResult": "تكلفة النتيجة",
+      "conversion": "التحويل",
+      "spendShare": "نصيبها من الصرف"
+    },
+    "portal": {
+      "button": "بوابة العميل",
+      "title": "بوابة العميل",
+      "subtitle": "حلقة الوصل بين العميل والفريق: العميل بيسلّم البريف، والفريق بيستلمه ويحوّله لشغل.",
+      "close": "إغلاق",
+      "tabs": {
+        "inbox": "الطلبات الواردة",
+        "submit": "إرسال بريف"
+      },
+      "status": {
+        "new": "جديد",
+        "received": "اتستلم",
+        "clarification": "مستني توضيح"
+      },
+      "types": {
+        "shortVideo": "ريلز وفيديو قصير",
+        "paidAds": "حملة إعلانات ممولة",
+        "monthlySocial": "محتوى سوشيال شهري",
+        "productShoot": "تصوير منتجات",
+        "productLaunch": "إطلاق منتج",
+        "influencers": "حملة مؤثرين"
+      },
+      "fields": {
+        "client": "العميل",
+        "type": "نوع الحملة",
+        "objective": "الهدف من الحملة",
+        "audience": "الجمهور المستهدف",
+        "budget": "الميزانية",
+        "deadline": "موعد التسليم",
+        "details": "تفاصيل البريف"
+      },
+      "placeholders": {
+        "objective": "مثال: زيادة المبيعات ٢٠٪ في رمضان",
+        "audience": "مثال: سيدات ٢٥–٤٠ في الرياض",
+        "details": "اكتب كل اللي محتاجينه: الرسالة، الأسلوب، أمثلة عاجباك، ممنوعات…"
+      },
+      "receivedOn": "وصل",
+      "inPipeline": "اتحوّل لفكرة في خط الإنتاج",
+      "actions": {
+        "receive": "استلام",
+        "clarify": "طلب توضيح"
+      },
+      "inbox": {
+        "empty": "مفيش طلبات واردة دلوقتي."
+      },
+      "form": {
+        "intro": "الفورم ده للعميل: يملاه ويبعته، والبريف يوصل للفريق في الطلبات الواردة.",
+        "attach": "إرفاق ملف (بريف، صور، هوية بصرية…)",
+        "submit": "إرسال البريف للشركة"
+      },
+      "notices": {
+        "received": "تم استلام بريف {client} واتضاف لبنك الأفكار.",
+        "clarify": "اتبعت طلب توضيح لـ {client}.",
+        "submitted": "البريف اتبعت ووصل للطلبات الواردة."
+      }
+    }
+  },
+  "automation": {
+    "navTitle": "غرفة الأتمتة",
+    "title": "غرفة الأتمتة",
+    "engine": "محرك التشغيل الذاتي",
+    "newFlow": "إنشاء مسار عمل مؤتمت جديد",
+    "stats": {
+      "rate": "العمليات المؤتمتة بالكامل",
+      "perWeek": "كفاءة النظام · {count} إنجاز/أسبوع",
+      "active": "المسارات الشغالة",
+      "activeSub": "مسارات مفعّلة من إجمالي المسارات",
+      "saved": "ساعات اتوفرت الشهر ده",
+      "savedSub": "وقت كان هيروح في شغل يدوي متكرر"
+    },
+    "flows": {
+      "title": "المسارات المؤتمتة",
+      "runs": "اشتغل {count} مرة",
+      "lastRun": "آخر تشغيل",
+      "on": "شغال",
+      "off": "متوقف",
+      "toggle": "تشغيل أو إيقاف {name}"
+    },
+    "steps": {
+      "trigger": "لما يحصل",
+      "condition": "بشرط",
+      "action": "اعمل"
+    },
+    "templates": {
+      "title": "قوالب جاهزة",
+      "use": "استخدم القالب"
+    },
+    "dialog": {
+      "title": "مسار عمل مؤتمت جديد",
+      "name": "اسم المسار",
+      "optional": "اختياري",
+      "create": "إنشاء المسار",
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "hints": {
+        "trigger": "الحدث اللي يبدأ المسار"
+      },
+      "placeholders": {
+        "name": "مثال: تنبيه الفواتير المتأخرة",
+        "trigger": "مثال: فاتورة عدّى ميعادها",
+        "condition": "مثال: المبلغ أكبر من 10,000 ر.س",
+        "action": "مثال: إشعار المحاسب وإرسال تذكير للعميل"
+      }
+    },
+    "notices": {
+      "created": "اتعمل مسار جديد: {name}"
+    },
+    "analysis": "التحليل",
+    "views": {
+      "all": "الغرفة كلها",
+      "flows": "المسارات المؤتمتة",
+      "templates": "قوالب جاهزة",
+      "workflows": "مسارات العمل"
+    },
+    "workflows": {
+      "title": "مسارات العمل",
+      "create": "تصميم مسار عمل",
+      "stepsCount": "{count} خطوات",
+      "approveArrow": "موافقة",
+      "rejectArrow": "رفض",
+      "changesRule": "طلب تعديل في أي خطوة يرجّع الطلب لصاحبه ({name}) عشان يعدّله ويبعته تاني.",
+      "defaultSubject": "طلب جديد على {workflow}",
+      "stepStates": {
+        "done": "تمت",
+        "current": "عنده دلوقتي",
+        "changes": "مطلوب تعديل",
+        "closed": "اترفض"
+      },
+      "runs": {
+        "title": "العمليات على المسار ده",
+        "subject": "عنوان العملية",
+        "subjectPlaceholder": "مثال: شراء طابعة للمكتب",
+        "start": "بدء عملية",
+        "empty": "مفيش عمليات على المسار ده لسه.",
+        "waitingFor": "مستنية: {name}",
+        "nowAt": "دلوقتي في خطوة «{step}» عند {name}",
+        "status": {
+          "in_progress": "جارية",
+          "changes_requested": "مطلوب تعديل",
+          "completed": "اكتملت",
+          "closed": "اترفضت واتقفلت"
+        }
+      },
+      "actions": {
+        "note": "ملاحظة",
+        "notePlaceholder": "ملاحظة اختيارية (سبب الرفض أو التعديل المطلوب…)",
+        "approve": "موافقة",
+        "submit": "إرسال",
+        "resubmit": "إعادة الإرسال بعد التعديل",
+        "requestChanges": "طلب تعديل",
+        "reject": "رفض",
+        "cancel": "إلغاء الطلب",
+        "hint": "الرفض يرجّع الطلب لـ {previous} · طلب التعديل يرجّعه لـ {first}"
+      },
+      "history": {
+        "title": "السجل",
+        "started": "بدأ العملية",
+        "approved": "وافق",
+        "rejected": "رفض",
+        "changes_requested": "طلب تعديل",
+        "resubmitted": "أعاد الإرسال بعد التعديل"
+      },
+      "builder": {
+        "title": "تصميم مسار عمل",
+        "intro": "رتّب الخطوات واختار الموظف المسؤول عن كل خطوة.",
+        "name": "اسم المسار",
+        "namePlaceholder": "مثال: مسار اعتماد المصروفات",
+        "defaultName": "مسار عمل جديد",
+        "steps": "الخطوات",
+        "stepTitle": "اسم الخطوة",
+        "stepPlaceholder": "مثال: مراجعة المدير",
+        "defaultStep": "الخطوة {n}",
+        "assignee": "الموظف المسؤول",
+        "moveUp": "تحريك لفوق",
+        "moveDown": "تحريك لتحت",
+        "remove": "حذف الخطوة",
+        "addStep": "إضافة خطوة",
+        "rules": "الموافقة بتنقل الطلب للموظف اللي بعده، والرفض بيرجّعه للموظف اللي قبله، وطلب التعديل بيرجّعه لأول خطوة.",
+        "create": "إنشاء المسار",
+        "cancel": "إلغاء",
+        "close": "إغلاق"
+      },
+      "notices": {
+        "approve": "«{subject}» اتنقلت لـ {name}.",
+        "reject": "«{subject}» رجعت لـ {name}.",
+        "request_changes": "«{subject}» رجعت لـ {name} للتعديل.",
+        "completed": "«{subject}» خلّصت المسار كله.",
+        "closed": "«{subject}» اترفضت واتقفلت.",
+        "started": "بدأت «{subject}» عند {name}.",
+        "created": "اتعمل مسار جديد: {name}"
+      }
+    }
+  },
+  "sales": {
+    "navTitle": "المبيعات",
+    "title": "المبيعات",
+    "subtitle": "أوامر البيع للعملاء وأوامر الشراء من الموردين في مكان واحد.",
+    "currency": "ر.س",
+    "newSale": "أمر بيع جديد",
+    "newPurchase": "أمر شراء جديد",
+    "types": {
+      "sale": "أمر بيع",
+      "purchase": "أمر شراء"
+    },
+    "metrics": {
+      "sales": "إجمالي المبيعات",
+      "purchases": "إجمالي المشتريات",
+      "pending": "أوامر بانتظار الاعتماد"
+    },
+    "status": {
+      "draft": "مسودة",
+      "pending": "بانتظار الاعتماد",
+      "approved": "معتمد",
+      "fulfilled": "اتسلّم",
+      "cancelled": "ملغي"
+    },
+    "table": {
+      "title": "أوامر البيع والشراء",
+      "filter": "نوع الأمر",
+      "tabs": {
+        "all": "الكل",
+        "sale": "أوامر البيع",
+        "purchase": "أوامر الشراء"
+      },
+      "cols": {
+        "number": "رقم الأمر",
+        "type": "النوع",
+        "party": "الطرف",
+        "items": "البنود",
+        "total": "الإجمالي",
+        "date": "التاريخ",
+        "status": "الحالة",
+        "actions": "إجراءات"
+      },
+      "client": "عميل",
+      "supplier": "مورد"
+    },
+    "actions": {
+      "submit": "إرسال للاعتماد",
+      "approve": "اعتماد",
+      "deliver": "تم التسليم",
+      "receive": "تم الاستلام",
+      "cancel": "إلغاء"
+    },
+    "dialog": {
+      "title": {
+        "sale": "أمر بيع جديد",
+        "purchase": "أمر شراء جديد"
+      },
+      "type": "نوع الأمر",
+      "client": "العميل",
+      "supplier": "المورد",
+      "deliveryDate": "موعد التسليم",
+      "receiveDate": "موعد الاستلام",
+      "item": "الصنف / الخدمة",
+      "qty": "الكمية",
+      "unitPrice": "سعر الوحدة",
+      "itemPlaceholderSale": "مثال: باقة تسويق شهرية",
+      "itemPlaceholderPurchase": "مثال: كرسي مكتب",
+      "unnamedItem": "بند بدون اسم",
+      "addItem": "إضافة بند",
+      "removeItem": "حذف البند",
+      "total": "الإجمالي",
+      "saveDraft": "حفظ كمسودة",
+      "submit": "إرسال للاعتماد",
+      "close": "إغلاق"
+    },
+    "notices": {
+      "created": "اتعمل الأمر {number} واتبعت للاعتماد.",
+      "drafted": "اتحفظ الأمر {number} كمسودة.",
+      "pending": "الأمر {number} اتبعت للاعتماد.",
+      "approved": "الأمر {number} اتعتمد.",
+      "fulfilled": "الأمر {number} اتسلّم.",
+      "cancelled": "الأمر {number} اتلغى.",
+      "draft": "الأمر {number} رجع مسودة."
+    }
+  }
+}

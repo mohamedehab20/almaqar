@@ -1,0 +1,817 @@
+{
+  "metadata": {
+    "brand": "Al Maqr",
+    "title": "Al Maqr — Where Everything Begins",
+    "description": "Your company's digital headquarters: team, projects and operations in one place."
+  },
+  "common": {
+    "brand": "Al Maqr",
+    "signup": "Create account",
+    "login": "Log in",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "switchLocale": "العربية",
+    "accountNav": "User account"
+  },
+  "landing": {
+    "badge": "Welcome to the Al Maqr digital diwan",
+    "title": "Where Everything Begins",
+    "subtitle": "An integrated digital platform that elevates how your team works and collaborates, in a refined professional environment.",
+    "startJourney": "Start your journey",
+    "tryNow": "Try it now",
+    "roles": {
+      "owner": {
+        "title": "Business owner",
+        "description": "Run your organization efficiently, build your headquarters and engage your team in a smart workspace.",
+        "imageAlt": "Glass meeting room"
+      },
+      "employee": {
+        "title": "Employee",
+        "description": "Organize your daily tasks and stay connected with your team — part of a modern digital workplace.",
+        "imageAlt": "Team working around a shared table"
+      },
+      "visitor": {
+        "title": "Visitor",
+        "description": "Explore available services and reach the team directly, smoothly and securely.",
+        "imageAlt": "Reception corner with warm wood"
+      }
+    },
+    "why": {
+      "title": "Why Al Maqr?",
+      "intro": "We are redefining the digital workplace",
+      "bilingual": {
+        "title": "Bilingual",
+        "text": "A multilingual interface in Arabic and English."
+      },
+      "security": {
+        "title": "Data security",
+        "text": "Full encryption and privacy protection for your company."
+      },
+      "integrations": {
+        "title": "Connected apps",
+        "text": "Bring all your favorite tools together in one place."
+      },
+      "infrastructure": {
+        "title": "Solid infrastructure",
+        "text": "Built on modern technology for stability and speed."
+      }
+    },
+    "footer": {
+      "rights": "Al Maqr Digital Diwan. All rights reserved © {year}",
+      "support": "Support",
+      "terms": "Terms of service",
+      "privacy": "Privacy policy"
+    }
+  },
+  "auth": {
+    "common": {
+      "or": "or",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "support": "Support",
+      "privacy": "Privacy policy",
+      "terms": "Terms & conditions",
+      "contact": "Contact us",
+      "notConnected": "The form is ready. It will be connected to the sign-in service in the backend phase."
+    },
+    "employee": {
+      "metaTitle": "Employee login",
+      "title": "Employee login",
+      "intro": "Welcome back. Enter your details to access the portal.",
+      "companyCode": "Company code",
+      "companyCodePlaceholder": "Enter your company code",
+      "identifier": "Email or employee ID",
+      "identifierPlaceholder": "example@almaqr.com",
+      "password": "Password",
+      "remember": "Remember me",
+      "forgot": "Forgot password?",
+      "submit": "Log in",
+      "visitorLogin": "Visitor access",
+      "noAccount": "No account yet?",
+      "joinCompany": "Join through your company",
+      "panelTitle": "The digital headquarters",
+      "panelText": "Your desk, team and tasks in one place."
+    },
+    "visitor": {
+      "metaTitle": "Visitor access",
+      "title": "Visitor access",
+      "subtitle": "Fast, secure check-in for company visitors",
+      "chooseImage": "Choose a QR code image",
+      "openCamera": "Open camera",
+      "scan": "Scan access code",
+      "imageSelected": "Image selected, preparing it for scanning.",
+      "qrPreviewAlt": "QR code preview",
+      "cameraUnavailable": "The camera is not available in this browser. Choose a QR code image instead.",
+      "cameraFailed": "Could not open the camera. Check the permission or choose a QR code image.",
+      "invite": "Invitation link or access code",
+      "invitePlaceholder": "Enter the code here...",
+      "phone": "Phone number to receive the verification code",
+      "phonePlaceholder": "01XXXXXXXXX",
+      "otp": "Verification code (OTP)",
+      "otpDigit": "Digit {index}",
+      "resend": "Resend",
+      "resendNotConnected": "Sending the code will be connected to the messaging service in the backend phase.",
+      "submit": "Enter as visitor",
+      "secure": "Secure, encrypted access",
+      "rights": "© {year} Al Maqr",
+      "help": "Having trouble signing in? Contact support"
+    },
+    "signup": {
+      "metaTitle": "Create account",
+      "navHome": "Home",
+      "navFeatures": "Features",
+      "navPricing": "Pricing",
+      "navLogin": "Log in",
+      "title": "Create a new account",
+      "subtitle": "Start your journey with Al Maqr today and get a modern workspace.",
+      "firstName": "First name",
+      "firstNamePlaceholder": "e.g. Ahmed",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "e.g. Mohamed",
+      "phone": "Mobile number",
+      "phonePlaceholder": "+20 1X XXXX XXXX",
+      "email": "Email",
+      "emailPlaceholder": "name@company.com",
+      "company": "Company name",
+      "companyPlaceholder": "Enter your company or organization name",
+      "businessType": "Business type",
+      "businessTypePlaceholder": "Choose a type",
+      "businessTypes": {
+        "startup": "Startup",
+        "agency": "Agency",
+        "training": "Training center",
+        "consulting": "Consulting",
+        "services": "Services",
+        "other": "Other"
+      },
+      "size": "Company size",
+      "sizePlaceholder": "Number of employees",
+      "sizes": {
+        "1-10": "1 – 10 employees",
+        "11-50": "11 – 50 employees",
+        "51-200": "51 – 200 employees",
+        "200+": "More than 200 employees"
+      },
+      "password": "Password",
+      "passwordHint": "Must be at least 8 characters",
+      "submit": "Create account",
+      "notConnected": "The form is ready. It will be connected to the sign-up service in the backend phase.",
+      "haveAccount": "Already have an account?",
+      "login": "Log in",
+      "panelTitle": "Join the digital headquarters",
+      "panelText": "An integrated platform that combines productivity and comfort, your partner in running your workplace smoothly.",
+      "benefitSecurity": "Strong security",
+      "benefitSecurityText": "Your data is protected with modern technology",
+      "benefitGrowth": "Room to grow",
+      "benefitGrowthText": "Manage everything in one unified system",
+      "rights": "© {year} Al Maqr. All rights reserved."
+    },
+    "login": {
+      "metaTitle": "Log in",
+      "wordmark": "Al Maqr",
+      "tagline": "The integrated digital diwan for managing offices and people, with architectural precision.",
+      "featureDashboard": "Smart dashboard",
+      "featureDashboardText": "Your data organized in a clear, accessible structure.",
+      "featureSecurity": "Sovereign security",
+      "featureSecurityText": "Maximum protection for your company and employee data, to the highest standards.",
+      "quote": "Al Maqr is not just a platform — it is the space where your organization grows with confidence and order.",
+      "quoteAuthor": "Ahmed Al Maqr",
+      "quoteRole": "Founder",
+      "title": "Welcome to Al Maqr",
+      "subtitle": "Choose how you'd like to start managing your business.",
+      "tabLogin": "Log in",
+      "tabSignup": "New account",
+      "companyCode": "Company code",
+      "companyCodePlaceholder": "e.g. ALM-001",
+      "email": "Email",
+      "emailPlaceholder": "name@company.com",
+      "password": "Password",
+      "forgot": "Forgot password?",
+      "submit": "Enter the platform",
+      "orVia": "or continue with",
+      "ssoNotConnected": "Sign-in with {provider} will be connected in the backend phase.",
+      "ownerPrompt": "Own a company?",
+      "ownerLink": "Register as a business owner",
+      "ownerSuffix": "to get the gold benefits package.",
+      "rights": "© {year} Al Maqr Digital Diwan. All rights reserved."
+    }
+  },
+  "app": {
+    "brandTagline": "AL MAQR DIGITAL",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNav": "Main navigation",
+    "comingSoon": "Coming soon",
+    "upgrade": "Upgrade to Gold",
+    "notifications": "Notifications",
+    "apps": "Apps",
+    "profile": "Profile",
+    "nav": {
+      "overview": "Overview",
+      "voice": "Voice",
+      "camera": "Camera",
+      "recording": "Recording",
+      "calendar": "Calendar",
+      "chat": "Chat",
+      "departments": "Departments",
+      "hr": "Human resources",
+      "operations": "Operations room",
+      "automation": "Automation room",
+      "accounts": "Accounts",
+      "sales": "Sales",
+      "marketing": "Marketing",
+      "archive": "Archive",
+      "meetings": "Meetings",
+      "tasks": "Tasks",
+      "permissions": "Permissions"
+    },
+    "tabs": {
+      "dashboard": "Dashboard",
+      "office": "Office",
+      "resources": "Resources",
+      "settings": "Settings"
+    },
+    "expandGroup": "Show {name} items",
+    "collapseGroup": "Hide {name} items",
+    "comingSoonItem": "{name} — coming soon"
+  },
+  "hq": {
+    "title": "Main hall",
+    "floorPlan": "Headquarters floor plan",
+    "participants": "{count} participants",
+    "live": "Live",
+    "addLayer": "Add another layer",
+    "addLayerSoon": "The HQ editor for adding rooms and furniture is coming soon.",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "recenter": "Reset view",
+    "emptyDesk": "Free desk",
+    "rooms": {
+      "meeting": "Main meeting room",
+      "ceo": "CEO office",
+      "open": "Open workspace"
+    },
+    "presence": {
+      "title": "Presence",
+      "online": "{count} online",
+      "viewAll": "View all participants",
+      "options": "Options for {name}"
+    },
+    "history": {
+      "title": "Activity"
+    },
+    "status": {
+      "available": "Available",
+      "meeting": "In a meeting",
+      "away": "Away",
+      "busy": "Busy",
+      "offline": "Offline",
+      "change": "Change your status",
+      "restroom": "In the restroom",
+      "waiting": "Waiting",
+      "menu": "Your status"
+    },
+    "controls": {
+      "minimize": "Minimize",
+      "expand": "Show",
+      "history": "History",
+      "mic": "Microphone",
+      "camera": "Camera"
+    }
+  },
+  "ops": {
+    "title": "Operations room",
+    "navTitle": "Operations room",
+    "breadcrumb": "OPERATIONS_CONTROL_NODE // ROOT",
+    "auditLog": "Audit & review log",
+    "comingSoon": "This feature is coming soon.",
+    "kpi": {
+      "active": "Active workflows",
+      "activeUnit": "running",
+      "pending": "Awaiting approval",
+      "pendingSub": "approvals need you",
+      "critical": "Critical",
+      "oldest": "Oldest request waiting {hours}h {minutes}m",
+      "cycle": "Average action time",
+      "hours": "hrs",
+      "previously": "before",
+      "saved": "{percent}% time saved thanks to AI workflows"
+    },
+    "tabs": {
+      "all": "All operations",
+      "contracts": "Contracts",
+      "purchasing": "Purchasing",
+      "finance": "Financial approvals",
+      "maintenance": "Maintenance",
+      "operations": "Operations",
+      "sales": "Sales"
+    },
+    "table": {
+      "title": "Running workflows log",
+      "shown": "{count} records shown",
+      "allStatuses": "All statuses",
+      "export": "Export",
+      "cols": {
+        "process": "Operation & code",
+        "owner": "Creator / runner",
+        "step": "Current step & owner",
+        "nature": "Action type",
+        "deciders": "Decision makers",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "nature": {
+        "human": "Human input",
+        "automated": "Fully automated",
+        "autoCompleted": "Auto-completed"
+      },
+      "status": {
+        "pending": "Awaiting approval",
+        "processing": "Processing",
+        "done": "Completed",
+        "review": "Under review"
+      },
+      "empty": "No operations in this category.",
+      "prev": "Previous",
+      "next": "Next",
+      "more": "More",
+      "run": "Run",
+      "openFlow": "View flow",
+      "logs": "Log",
+      "report": "Report",
+      "archive": "Archive"
+    },
+    "add": {
+      "button": "Add operation",
+      "title": "Add a new operation",
+      "name": "Operation name",
+      "namePlaceholder": "e.g. Renew the annual maintenance contract",
+      "category": "Category",
+      "nature": "Action type",
+      "submit": "Add",
+      "cancel": "Cancel",
+      "close": "Close",
+      "added": "“{name}” was added to the log.",
+      "firstStep": "Request review",
+      "firstStepBy": "Awaiting assignment",
+      "noHuman": "No human input"
+    },
+    "analysis": "Analysis",
+    "subtitle": "Track every running operation and pending approval in one place.",
+    "notes": {
+      "title": "Notes",
+      "placeholder": "Write a note for the team…",
+      "linkTo": "Link to an operation",
+      "noLink": "Not linked to an operation",
+      "add": "Add note",
+      "empty": "No notes yet.",
+      "pin": "Pin to top",
+      "unpin": "Unpin",
+      "delete": "Delete note",
+      "notices": {
+        "added": "Note added.",
+        "empty": "Write the note first."
+      }
+    }
+  },
+  "hr": {
+    "navTitle": "Human resources",
+    "title": "Al Maqr HR system",
+    "subtitle": "Welcome back — here's a quick look at your tools",
+    "comingSoon": "The “{name}” page is coming soon.",
+    "tools": {
+      "attendance": "Attendance",
+      "leave": "Leave request",
+      "payroll": "Payroll",
+      "integration": "Integrations",
+      "contracts": "Commercial contracts",
+      "complaints": "Complaints",
+      "departments": "Departments",
+      "communication": "Communication",
+      "schedules": "Schedules",
+      "permissions": "Permissions",
+      "performance": "Performance review",
+      "workHours": "Work hours",
+      "archive": "Archive",
+      "recruitment": "Recruitment",
+      "employeeFiles": "Employee files",
+      "knowledgeBase": "Knowledge base",
+      "offboarding": "Offboarding"
+    }
+  },
+  "marketing": {
+    "navTitle": "Marketing",
+    "eyebrow": "Al Maqr",
+    "title": "Marketing department",
+    "subtitle": "From the idea until the client approves — every step in one place.",
+    "export": "Export report",
+    "newIdea": "New idea",
+    "stagesLabel": "Pipeline stages",
+    "stages": {
+      "bank": "Idea bank",
+      "lab": "Test lab",
+      "delivery": "Client delivery"
+    },
+    "meta": {
+      "client": "Client",
+      "format": "Format",
+      "owner": "Owner"
+    },
+    "lab": {
+      "pick": "Ideas under test",
+      "empty": "No ideas under test right now. Move one from the idea bank.",
+      "underTest": "Under test",
+      "hook": "Hook (first 3 seconds)",
+      "message": "Message",
+      "compare": "Version comparison",
+      "demoNumbers": "Demo numbers",
+      "noVersions": "No versions uploaded for this idea yet.",
+      "version": "Version",
+      "best": "Top performer",
+      "stats": {
+        "views": "Views",
+        "completion": "Completion",
+        "engagement": "Engagement"
+      }
+    },
+    "rating": {
+      "title": "Idea score",
+      "criteria": {
+        "hook": "First 3 seconds",
+        "clarity": "Message clarity",
+        "fit": "Client fit",
+        "effort": "Ease of production"
+      },
+      "total": "Total",
+      "notes": "Test notes",
+      "notesPlaceholder": "What worked and what needs to change…",
+      "decision": "Decision",
+      "decisions": {
+        "continue": "Continue",
+        "revise": "Revise",
+        "cancel": "Drop"
+      }
+    },
+    "bank": {
+      "toLab": "Move to test lab"
+    },
+    "delivery": {
+      "sentOn": "sent",
+      "status": {
+        "awaiting": "Awaiting client approval",
+        "approved": "Client approved",
+        "changes": "Client asked for changes"
+      }
+    },
+    "dialog": {
+      "title": "New idea",
+      "name": "Idea title",
+      "placeholder": "e.g. Reel “First day at the new office”",
+      "add": "Add to idea bank",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "notices": {
+      "continue": "Moved to client delivery: {title}",
+      "revise": "Kept in the test lab for changes: {title}",
+      "cancel": "Back to the idea bank: {title}",
+      "added": "Added to the idea bank: {title}",
+      "export": "Report export is coming soon."
+    },
+    "sectionsLabel": "Marketing sections",
+    "currency": "SAR",
+    "sections": {
+      "pipeline": "Production pipeline",
+      "clients": "Clients",
+      "accounts": "Accounts",
+      "campaigns": "Marketing operations",
+      "budgets": "Budgets",
+      "channels": "Marketing channels"
+    },
+    "clients": {
+      "cols": {
+        "name": "Client",
+        "industry": "Industry",
+        "manager": "Account manager",
+        "campaigns": "Active campaigns",
+        "budget": "Monthly budget",
+        "status": "Status"
+      },
+      "status": {
+        "active": "Active",
+        "onboarding": "Onboarding",
+        "paused": "Paused"
+      }
+    },
+    "accounts": {
+      "followers": "Followers",
+      "lastActivity": "Last activity",
+      "status": {
+        "connected": "Connected",
+        "attention": "Needs attention",
+        "disconnected": "Disconnected"
+      }
+    },
+    "campaigns": {
+      "spent": "Spent",
+      "stage": {
+        "planning": "Planning",
+        "running": "Running",
+        "review": "Review",
+        "done": "Done"
+      }
+    },
+    "budgets": {
+      "summary": {
+        "allocated": "Total budgets",
+        "spent": "Spent",
+        "remaining": "Remaining"
+      },
+      "perClient": "Budget per client — this month",
+      "nearLimit": "Almost out of budget"
+    },
+    "channels": {
+      "campaigns": "{count} campaigns",
+      "reach": "Reach",
+      "costPerResult": "Cost per result",
+      "conversion": "Conversion",
+      "spendShare": "Share of spend"
+    },
+    "portal": {
+      "button": "Client portal",
+      "title": "Client portal",
+      "subtitle": "The bridge between client and team: the client hands in a brief, the team picks it up and turns it into work.",
+      "close": "Close",
+      "tabs": {
+        "inbox": "Incoming requests",
+        "submit": "Send a brief"
+      },
+      "status": {
+        "new": "New",
+        "received": "Received",
+        "clarification": "Awaiting clarification"
+      },
+      "types": {
+        "shortVideo": "Reels & short video",
+        "paidAds": "Paid ads campaign",
+        "monthlySocial": "Monthly social content",
+        "productShoot": "Product photography",
+        "productLaunch": "Product launch",
+        "influencers": "Influencer campaign"
+      },
+      "fields": {
+        "client": "Client",
+        "type": "Campaign type",
+        "objective": "Campaign objective",
+        "audience": "Target audience",
+        "budget": "Budget",
+        "deadline": "Deadline",
+        "details": "Brief details"
+      },
+      "placeholders": {
+        "objective": "e.g. Grow sales 20% during Ramadan",
+        "audience": "e.g. Women 25–40 in Riyadh",
+        "details": "Everything we need: message, tone, references you like, don'ts…"
+      },
+      "receivedOn": "Received",
+      "inPipeline": "Turned into an idea in the pipeline",
+      "actions": {
+        "receive": "Receive",
+        "clarify": "Ask for clarification"
+      },
+      "inbox": {
+        "empty": "No incoming requests right now."
+      },
+      "form": {
+        "intro": "This form is for the client: fill it in and send it — the brief lands in the team's incoming requests.",
+        "attach": "Attach a file (brief, photos, brand guide…)",
+        "submit": "Send the brief to the company"
+      },
+      "notices": {
+        "received": "Brief from {client} received and added to the idea bank.",
+        "clarify": "Clarification request sent to {client}.",
+        "submitted": "Brief sent — it's now in incoming requests."
+      }
+    }
+  },
+  "automation": {
+    "navTitle": "Automation room",
+    "title": "Automation room",
+    "engine": "Autonomous engine",
+    "newFlow": "Create a new automated workflow",
+    "stats": {
+      "rate": "Fully automated operations",
+      "perWeek": "System efficiency · {count} done/week",
+      "active": "Running flows",
+      "activeSub": "Enabled flows out of all flows",
+      "saved": "Hours saved this month",
+      "savedSub": "Time that would have gone to repetitive manual work"
+    },
+    "flows": {
+      "title": "Automated flows",
+      "runs": "Ran {count} times",
+      "lastRun": "Last run",
+      "on": "On",
+      "off": "Off",
+      "toggle": "Turn {name} on or off"
+    },
+    "steps": {
+      "trigger": "When",
+      "condition": "If",
+      "action": "Do"
+    },
+    "templates": {
+      "title": "Ready-made templates",
+      "use": "Use template"
+    },
+    "dialog": {
+      "title": "New automated workflow",
+      "name": "Flow name",
+      "optional": "optional",
+      "create": "Create flow",
+      "cancel": "Cancel",
+      "close": "Close",
+      "hints": {
+        "trigger": "The event that starts the flow"
+      },
+      "placeholders": {
+        "name": "e.g. Overdue invoice alert",
+        "trigger": "e.g. An invoice passes its due date",
+        "condition": "e.g. Amount above SAR 10,000",
+        "action": "e.g. Notify the accountant and remind the client"
+      }
+    },
+    "notices": {
+      "created": "New flow created: {name}"
+    },
+    "analysis": "Analysis",
+    "views": {
+      "all": "Whole room",
+      "flows": "Automated flows",
+      "templates": "Templates",
+      "workflows": "Workflows"
+    },
+    "workflows": {
+      "title": "Workflows",
+      "create": "Design workflow",
+      "stepsCount": "{count} steps",
+      "approveArrow": "Approve",
+      "rejectArrow": "Reject",
+      "changesRule": "Requesting changes at any step sends the request back to its owner ({name}) to edit and resubmit.",
+      "defaultSubject": "New request on {workflow}",
+      "stepStates": {
+        "done": "Done",
+        "current": "With them now",
+        "changes": "Needs changes",
+        "closed": "Rejected"
+      },
+      "runs": {
+        "title": "Runs on this workflow",
+        "subject": "Run title",
+        "subjectPlaceholder": "e.g. Buy an office printer",
+        "start": "Start run",
+        "empty": "No runs on this workflow yet.",
+        "waitingFor": "Waiting for: {name}",
+        "nowAt": "Now at “{step}” with {name}",
+        "status": {
+          "in_progress": "In progress",
+          "changes_requested": "Changes requested",
+          "completed": "Completed",
+          "closed": "Rejected & closed"
+        }
+      },
+      "actions": {
+        "note": "Note",
+        "notePlaceholder": "Optional note (reason for rejection or requested change…)",
+        "approve": "Approve",
+        "submit": "Submit",
+        "resubmit": "Resubmit after changes",
+        "requestChanges": "Request changes",
+        "reject": "Reject",
+        "cancel": "Cancel request",
+        "hint": "Reject sends it back to {previous} · Request changes sends it back to {first}"
+      },
+      "history": {
+        "title": "History",
+        "started": "started the run",
+        "approved": "approved",
+        "rejected": "rejected",
+        "changes_requested": "requested changes",
+        "resubmitted": "resubmitted after changes"
+      },
+      "builder": {
+        "title": "Design a workflow",
+        "intro": "Order the steps and pick the employee who owns each one.",
+        "name": "Workflow name",
+        "namePlaceholder": "e.g. Expense approval",
+        "defaultName": "New workflow",
+        "steps": "Steps",
+        "stepTitle": "Step name",
+        "stepPlaceholder": "e.g. Manager review",
+        "defaultStep": "Step {n}",
+        "assignee": "Owner",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "remove": "Remove step",
+        "addStep": "Add step",
+        "rules": "Approving moves the request to the next employee, rejecting sends it back to the previous one, and requesting changes sends it back to the first step.",
+        "create": "Create workflow",
+        "cancel": "Cancel",
+        "close": "Close"
+      },
+      "notices": {
+        "approve": "“{subject}” moved to {name}.",
+        "reject": "“{subject}” went back to {name}.",
+        "request_changes": "“{subject}” went back to {name} for changes.",
+        "completed": "“{subject}” completed the whole workflow.",
+        "closed": "“{subject}” was rejected and closed.",
+        "started": "“{subject}” started with {name}.",
+        "created": "New workflow created: {name}"
+      }
+    }
+  },
+  "sales": {
+    "navTitle": "Sales",
+    "title": "Sales",
+    "subtitle": "Sales orders to clients and purchase orders from suppliers, in one place.",
+    "currency": "SAR",
+    "newSale": "New sales order",
+    "newPurchase": "New purchase order",
+    "types": {
+      "sale": "Sales order",
+      "purchase": "Purchase order"
+    },
+    "metrics": {
+      "sales": "Total sales",
+      "purchases": "Total purchases",
+      "pending": "Orders awaiting approval"
+    },
+    "status": {
+      "draft": "Draft",
+      "pending": "Awaiting approval",
+      "approved": "Approved",
+      "fulfilled": "Fulfilled",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "title": "Sales & purchase orders",
+      "filter": "Order type",
+      "tabs": {
+        "all": "All",
+        "sale": "Sales orders",
+        "purchase": "Purchase orders"
+      },
+      "cols": {
+        "number": "Order #",
+        "type": "Type",
+        "party": "Party",
+        "items": "Items",
+        "total": "Total",
+        "date": "Date",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "client": "Client",
+      "supplier": "Supplier"
+    },
+    "actions": {
+      "submit": "Submit for approval",
+      "approve": "Approve",
+      "deliver": "Delivered",
+      "receive": "Received",
+      "cancel": "Cancel"
+    },
+    "dialog": {
+      "title": {
+        "sale": "New sales order",
+        "purchase": "New purchase order"
+      },
+      "type": "Order type",
+      "client": "Client",
+      "supplier": "Supplier",
+      "deliveryDate": "Delivery date",
+      "receiveDate": "Expected receipt",
+      "item": "Item / service",
+      "qty": "Qty",
+      "unitPrice": "Unit price",
+      "itemPlaceholderSale": "e.g. Monthly marketing package",
+      "itemPlaceholderPurchase": "e.g. Office chair",
+      "unnamedItem": "Unnamed item",
+      "addItem": "Add item",
+      "removeItem": "Remove item",
+      "total": "Total",
+      "saveDraft": "Save as draft",
+      "submit": "Submit for approval",
+      "close": "Close"
+    },
+    "notices": {
+      "created": "Order {number} created and sent for approval.",
+      "drafted": "Order {number} saved as a draft.",
+      "pending": "Order {number} sent for approval.",
+      "approved": "Order {number} approved.",
+      "fulfilled": "Order {number} fulfilled.",
+      "cancelled": "Order {number} cancelled.",
+      "draft": "Order {number} moved back to draft."
+    }
+  }
+}
