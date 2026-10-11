@@ -135,6 +135,12 @@ function BriefInbox({ briefs, onReceive, onClarify }: Pick<ClientPortalProps, "b
             </div>
             <p className="mt-3 text-sm font-semibold">{brief.objective[locale]}</p>
             <p className="mt-1 text-sm text-on-surface-variant">{brief.details[locale]}</p>
+            {brief.clientReply && (
+              <p className="mt-2 rounded-md bg-primary-fixed/50 px-3 py-2 text-sm">
+                <span className="font-semibold text-primary">{t("clientReply")}: </span>
+                {brief.clientReply}
+              </p>
+            )}
             <dl className="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
               <div>
                 <dt className="text-muted">{t("fields.audience")}</dt>
@@ -193,7 +199,16 @@ function BriefInbox({ briefs, onReceive, onClarify }: Pick<ClientPortalProps, "b
   );
 }
 
-function BriefForm({ onSubmit }: { onSubmit: (brief: NewBrief) => void }) {
+/** Brief form. On the client's own portal the client is fixed (`fixedClientId`) and the picker is hidden. */
+export function BriefForm({
+  onSubmit,
+  fixedClientId,
+  intro,
+}: {
+  onSubmit: (brief: NewBrief) => void;
+  fixedClientId?: string;
+  intro?: string;
+}) {
   const t = useTranslations("marketing.portal");
   const tm = useTranslations("marketing");
   const locale = useLocale() as "ar" | "en";
@@ -211,7 +226,7 @@ function BriefForm({ onSubmit }: { onSubmit: (brief: NewBrief) => void }) {
         };
         // TODO(backend): store the brief and notify the account manager
         onSubmit({
-          clientId: String(data.get("client")),
+          clientId: fixedClientId ?? String(data.get("client")),
           type: data.get("type") as CampaignType,
           objective: text("objective", t("placeholders.objective")),
           audience: text("audience", "—"),
@@ -220,17 +235,21 @@ function BriefForm({ onSubmit }: { onSubmit: (brief: NewBrief) => void }) {
           deadline: String(data.get("deadline") || "—"),
           attachment,
         });
+        event.currentTarget.reset();
+        setAttachment(undefined);
       }}
     >
-      <p className="rounded-md bg-tertiary-fixed px-4 py-3 text-sm text-tertiary">{t("form.intro")}</p>
+      <p className="rounded-md bg-tertiary-fixed px-4 py-3 text-sm text-tertiary">{intro ?? t("form.intro")}</p>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label={t("fields.client")} htmlFor="briefClient">
-          <Select id="briefClient" name="client" defaultValue={clients[0].id}>
-            {clients.map((client) => (
-              <option key={client.id} value={client.id}>{client.name[locale]}</option>
-            ))}
-          </Select>
-        </Field>
+        {!fixedClientId && (
+          <Field label={t("fields.client")} htmlFor="briefClient">
+            <Select id="briefClient" name="client" defaultValue={clients[0].id}>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>{client.name[locale]}</option>
+              ))}
+            </Select>
+          </Field>
+        )}
         <Field label={t("fields.type")} htmlFor="briefType">
           <Select id="briefType" name="type" defaultValue={campaignTypes[0]}>
             {campaignTypes.map((type) => (

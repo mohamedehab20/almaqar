@@ -592,7 +592,8 @@
         "received": "Brief from {client} received and added to the idea bank.",
         "clarify": "Clarification request sent to {client}.",
         "submitted": "Brief sent — it's now in incoming requests."
-      }
+      },
+      "clientReply": "Client reply"
     }
   },
   "automation": {
@@ -821,6 +822,31 @@
       "fulfilled": "Order {number} fulfilled.",
       "cancelled": "Order {number} cancelled.",
       "draft": "Order {number} moved back to draft."
+    }
+  },
+  "clientPortal": {
+    "badge": "Client portal",
+    "logout": "Log out",
+    "welcome": "Welcome, {name}",
+    "subtitle": "Send briefs to the team and follow your requests here.",
+    "myRequests": "My requests",
+    "empty": "You haven't sent any request yet. Start with your first brief.",
+    "newBrief": "Send a new brief",
+    "formIntro": "Describe everything the campaign needs — the brief goes straight to the marketing team.",
+    "sentOn": "Sent",
+    "yourReply": "Your reply",
+    "clarifyAsk": "The team needs clarification on this request. Write your reply and send it.",
+    "replyPlaceholder": "Write your clarification…",
+    "sendReply": "Send clarification",
+    "status": {
+      "new": "Delivered to the team",
+      "received": "Received — work has started",
+      "clarification": "Clarification needed"
+    },
+    "notices": {
+      "sent": "Brief sent to the marketing team.",
+      "replied": "Clarification sent to the team.",
+      "emptyReply": "Write the clarification first."
     }
   }
 }

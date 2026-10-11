@@ -21,7 +21,8 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ideas as demoIdeas, type Criterion, type DeliveryStatus, type Idea, type Stage } from "../mock";
-import { briefs as demoBriefs, type Brief } from "../briefs-mock";
+import type { Brief } from "../briefs-mock";
+import { updateBriefs, useBriefs } from "../briefs-store";
 import { clients } from "../sections-mock";
 import { ClientPortal, type NewBrief } from "./client-portal";
 import { LabView, type Decision } from "./lab-view";
@@ -59,7 +60,8 @@ export function MarketingView() {
   const [selectedLabId, setSelectedLabId] = useState<string>();
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState(false);
-  const [briefs, setBriefs] = useState<Brief[]>(demoBriefs);
+  // Shared with the client's own portal (visitor login)
+  const briefs = useBriefs();
   const [portalOpen, setPortalOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -119,7 +121,7 @@ export function MarketingView() {
   const tp = useTranslations("marketing.portal");
   const newBriefs = briefs.filter((brief) => brief.status === "new").length;
   const setBriefStatus = (id: string, status: Brief["status"]) =>
-    setBriefs((prev) => prev.map((brief) => (brief.id === id ? { ...brief, status } : brief)));
+    updateBriefs((prev) => prev.map((brief) => (brief.id === id ? { ...brief, status } : brief)));
 
   // A received brief becomes an idea in the idea bank, linked to the client
   const receiveBrief = (brief: Brief) => {
@@ -148,7 +150,7 @@ export function MarketingView() {
   };
 
   const submitBrief = (brief: NewBrief) => {
-    setBriefs((prev) => [{ ...brief, id: `br-${Date.now()}`, receivedOn: new Date().toISOString().slice(0, 10), status: "new" }, ...prev]);
+    updateBriefs((prev) => [{ ...brief, id: `br-${Date.now()}`, receivedOn: new Date().toISOString().slice(0, 10), status: "new" }, ...prev]);
     setNotice(tp("notices.submitted"));
   };
 

@@ -22,6 +22,8 @@ export type Brief = {
   receivedOn: string;
   attachment?: string;
   status: BriefStatus;
+  /** The client's answer after the team asked for clarification */
+  clientReply?: string;
 };
 
 export const briefs: Brief[] = [

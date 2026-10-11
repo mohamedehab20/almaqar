@@ -10,7 +10,6 @@ import { FormStatus } from "@/components/ui/form-status";
 import { Input } from "@/components/ui/input";
 import { OtpInput } from "@/components/ui/otp-input";
 import { useRouter } from "@/i18n/navigation";
-import { DEMO_COMPANY_SLUG } from "@/modules/hq/mock";
 import { QrScanBox } from "./qr-scan-box";
 
 export function VisitorLoginForm() {
@@ -31,8 +30,8 @@ export function VisitorLoginForm() {
         className="flex flex-col gap-5"
         onSubmit={(event) => {
           event.preventDefault();
-          // TODO(backend): verify invite code + OTP, then open the company as a guest
-          router.push(`/c/${DEMO_COMPANY_SLUG}`);
+          // TODO(backend): verify invite code + OTP, then open this client's portal
+          router.push("/client-portal");
         }}
       >
         <Field label={v("invite")} htmlFor="invite">
