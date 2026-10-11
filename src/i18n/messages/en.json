@@ -718,7 +718,12 @@
         "rules": "Approving moves the request to the next employee, rejecting sends it back to the previous one, and requesting changes sends it back to the first step.",
         "create": "Create workflow",
         "cancel": "Cancel",
-        "close": "Close"
+        "close": "Close",
+        "attachments": "Attachments (documents or images)",
+        "attachHint": "Drop files here or click to choose",
+        "attachTypes": "Images, PDF, Word, Excel — up to 10 MB each",
+        "removeFile": "Remove file",
+        "tooLarge": "These files are over 10 MB and were skipped: {names}"
       },
       "notices": {
         "approve": "“{subject}” moved to {name}.",
@@ -728,7 +733,8 @@
         "closed": "“{subject}” was rejected and closed.",
         "started": "“{subject}” started with {name}.",
         "created": "New workflow created: {name}"
-      }
+      },
+      "attachments": "Attachments ({count})"
     }
   },
   "sales": {

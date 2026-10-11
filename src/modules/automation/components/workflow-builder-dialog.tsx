@@ -1,13 +1,18 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Plus, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Trash2, Upload, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type DragEvent } from "react";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { memberLabel, members } from "@/modules/hq/mock";
-import type { Workflow } from "../workflows";
+import type { Workflow, WorkflowAttachment } from "../workflows";
+import { AttachmentChip } from "./attachment-chip";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ACCEPT = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt";
 
 type DraftStep = { title: string; assigneeId: string };
 
@@ -16,6 +21,36 @@ export function WorkflowBuilderDialog({ onClose, onCreate }: { onClose: () => vo
   const t = useTranslations("automation.workflows.builder");
   const locale = useLocale() as "ar" | "en";
   const [name, setName] = useState("");
+  const [attachments, setAttachments] = useState<WorkflowAttachment[]>([]);
+  const [dragging, setDragging] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  // TODO(backend): upload files to storage; for now they are local previews (object URLs)
+  const addFiles = (files: FileList | null) => {
+    if (!files) return;
+    const accepted: WorkflowAttachment[] = [];
+    const tooLarge: string[] = [];
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_FILE_SIZE) {
+        tooLarge.push(file.name);
+        continue;
+      }
+      accepted.push({ id: `att-${Date.now()}-${accepted.length}`, name: file.name, size: file.size, type: file.type, url: URL.createObjectURL(file) });
+    }
+    setFileError(tooLarge.length ? t("tooLarge", { names: tooLarge.join("، ") }) : null);
+    setAttachments((prev) => [...prev, ...accepted]);
+  };
+  const removeAttachment = (id: string) =>
+    setAttachments((prev) => {
+      const removed = prev.find((a) => a.id === id);
+      if (removed) URL.revokeObjectURL(removed.url);
+      return prev.filter((a) => a.id !== id);
+    });
+  const onDrop = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setDragging(false);
+    addFiles(event.dataTransfer.files);
+  };
   const [steps, setSteps] = useState<DraftStep[]>([
     { title: "", assigneeId: members[1].id },
     { title: "", assigneeId: members[0].id },
@@ -48,6 +83,7 @@ export function WorkflowBuilderDialog({ onClose, onCreate }: { onClose: () => vo
       id: `wf-${stamp}`,
       name: text(name.trim() || t("defaultName")),
       steps: steps.map((s, i) => ({ id: `st-${stamp}-${i}`, title: text(s.title.trim() || t("defaultStep", { n: i + 1 })), assigneeId: s.assigneeId })),
+      attachments,
     });
   };
 
@@ -119,6 +155,43 @@ export function WorkflowBuilderDialog({ onClose, onCreate }: { onClose: () => vo
             <Plus className="size-4" aria-hidden />
             {t("addStep")}
           </button>
+          {/* Attachments: documents or images */}
+          <p className="mt-6 text-sm font-semibold">{t("attachments")}</p>
+          <label
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            className={cn(
+              "mt-2 flex cursor-pointer flex-col items-center gap-2 rounded-md border-2 border-dashed p-5 text-center transition-colors",
+              dragging ? "border-tertiary bg-tertiary-fixed" : "border-outline-variant/70 bg-surface-container-low hover:bg-surface-container",
+            )}
+          >
+            <Upload className="size-6 text-tertiary" aria-hidden />
+            <span className="text-sm font-semibold">{t("attachHint")}</span>
+            <span className="text-xs text-muted">{t("attachTypes")}</span>
+            <input
+              type="file"
+              multiple
+              accept={ACCEPT}
+              className="sr-only"
+              onChange={(event) => {
+                addFiles(event.target.files);
+                event.target.value = "";
+              }}
+            />
+          </label>
+          {fileError && <p className="mt-2 text-xs font-semibold text-danger">{fileError}</p>}
+          {attachments.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-3">
+              {attachments.map((attachment) => (
+                <AttachmentChip key={attachment.id} attachment={attachment} onRemove={() => removeAttachment(attachment.id)} removeLabel={t("removeFile")} />
+              ))}
+            </div>
+          )}
+
           <p className="mt-4 rounded-md bg-tertiary-fixed px-4 py-3 text-xs leading-6 text-tertiary">{t("rules")}</p>
         </div>
 

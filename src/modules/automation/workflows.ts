@@ -12,7 +12,17 @@ type Localized = { ar: string; en: string };
 
 export type WorkflowStep = { id: string; title: Localized; assigneeId: string };
 
-export type Workflow = { id: string; name: Localized; steps: WorkflowStep[] };
+/** A file attached to a workflow (policy, form template, reference photo…). */
+export type WorkflowAttachment = {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  /** Local preview URL until files are uploaded to storage */
+  url: string;
+};
+
+export type Workflow = { id: string; name: Localized; steps: WorkflowStep[]; attachments?: WorkflowAttachment[] };
 
 export type RunStatus = "in_progress" | "changes_requested" | "completed" | "closed";
 

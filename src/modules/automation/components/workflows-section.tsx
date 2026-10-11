@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, CirclePlus, CornerUpLeft, GitBranch, Pencil, Play, Undo2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Paperclip, CirclePlus, CornerUpLeft, GitBranch, Pencil, Play, Undo2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Fragment, useState, type Dispatch, type SetStateAction } from "react";
 import { Avatar } from "@/components/shared/avatar";
 import { cn } from "@/lib/utils";
 import { currentUserId, memberRole, members } from "@/modules/hq/mock";
 import { applyRunAction, type RunStatus, type Workflow, type WorkflowRun } from "../workflows";
+import { AttachmentChip } from "./attachment-chip";
 import { WorkflowBuilderDialog } from "./workflow-builder-dialog";
 
 const statusStyle: Record<RunStatus, string> = {
@@ -189,6 +190,19 @@ export function WorkflowsSection({ workflows, setWorkflows, runs, setRuns, initi
           <CornerUpLeft className="size-3.5 text-tertiary" aria-hidden />
           {t("changesRule", { name: name(workflow.steps[0].assigneeId) })}
         </p>
+        {workflow.attachments && workflow.attachments.length > 0 && (
+          <div className="mt-4 border-t border-outline-variant/30 pt-4">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant">
+              <Paperclip className="size-3.5" aria-hidden />
+              {t("attachments", { count: workflow.attachments.length })}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-3">
+              {workflow.attachments.map((attachment) => (
+                <AttachmentChip key={attachment.id} attachment={attachment} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
