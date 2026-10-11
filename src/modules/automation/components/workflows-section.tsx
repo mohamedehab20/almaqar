@@ -25,18 +25,22 @@ type WorkflowsSectionProps = {
   setRuns: Dispatch<SetStateAction<WorkflowRun[]>>;
   /** Run to show first (e.g. when opened from a task) */
   initialRunId?: string;
+  /** Workflow to show first (e.g. one just created from a template) */
+  initialWorkflowId?: string;
   onNotice: (message: string) => void;
 };
 
-export function WorkflowsSection({ workflows, setWorkflows, runs, setRuns, initialRunId, onNotice }: WorkflowsSectionProps) {
+export function WorkflowsSection({ workflows, setWorkflows, runs, setRuns, initialRunId, initialWorkflowId, onNotice }: WorkflowsSectionProps) {
   const t = useTranslations("automation.workflows");
   const locale = useLocale() as "ar" | "en";
   const Forward = locale === "ar" ? ArrowLeft : ArrowRight;
   const Back = locale === "ar" ? ArrowRight : ArrowLeft;
 
   const initialRun = runs.find((r) => r.id === initialRunId) ?? runs[0];
-  const [workflowId, setWorkflowId] = useState(initialRun?.workflowId ?? workflows[0].id);
-  const [runId, setRunId] = useState<string | undefined>(initialRun?.id);
+  const [workflowId, setWorkflowId] = useState(initialWorkflowId ?? initialRun?.workflowId ?? workflows[0].id);
+  const [runId, setRunId] = useState<string | undefined>(
+    initialWorkflowId ? runs.find((r) => r.workflowId === initialWorkflowId)?.id : initialRun?.id,
+  );
   const [building, setBuilding] = useState(false);
   const [subject, setSubject] = useState("");
   const [note, setNote] = useState("");

@@ -623,7 +623,9 @@
     },
     "templates": {
       "title": "Ready-made templates",
-      "use": "Use template"
+      "use": "Use template",
+      "workflowBadge": "Workflow template · {count} steps",
+      "workflowAdded": "“{name}” was added to workflows."
     },
     "dialog": {
       "title": "New automated workflow",

@@ -22,9 +22,13 @@ import { useEffect, useRef, useState } from "react";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { members } from "@/modules/hq/mock";
 import { automationStats, flows as demoFlows, templates, type AutomationFlow } from "../mock";
-import { runs as demoRuns, workflows as demoWorkflows, type Workflow, type WorkflowRun } from "../workflows";
+import { runs as demoRuns, workflowTemplates, workflows as demoWorkflows, type Workflow, type WorkflowRun, type WorkflowTemplate } from "../workflows";
 import { WorkflowsSection } from "./workflows-section";
+
+/** Unique id for items created in the browser (until the backend assigns ids). */
+const uniqueId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 export function AutomationView() {
   const t = useTranslations("automation");
@@ -36,6 +40,20 @@ export function AutomationView() {
   const [view, setView] = useState<"all" | "workflows" | "flows" | "templates">("all");
   const [workflows, setWorkflows] = useState<Workflow[]>(demoWorkflows);
   const [runs, setRuns] = useState<WorkflowRun[]>(demoRuns);
+  const [focusWorkflowId, setFocusWorkflowId] = useState<string>();
+
+  const applyWorkflowTemplate = (template: WorkflowTemplate) => {
+    const workflowKey = uniqueId("wf");
+    const workflow: Workflow = {
+      id: workflowKey,
+      name: template.name,
+      steps: template.steps.map((step, i) => ({ ...step, id: `${workflowKey}-st-${i}` })),
+    };
+    setWorkflows((prev) => [...prev, workflow]);
+    setFocusWorkflowId(workflow.id);
+    setView("workflows");
+    setNotice(t("templates.workflowAdded", { name: template.name[locale] }));
+  };
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -72,7 +90,7 @@ export function AutomationView() {
                 ["all", LayoutGrid, null],
                 ["workflows", GitBranch, null],
                 ["flows", Zap, flows.length],
-                ["templates", Sparkles, templates.length],
+                ["templates", Sparkles, templates.length + workflowTemplates.length],
               ] as const
             ).map(([key, Icon, count]) => (
               <button
@@ -127,7 +145,15 @@ export function AutomationView() {
 
         {/* Approval workflows */}
         {(view === "all" || view === "workflows") && (
-          <WorkflowsSection workflows={workflows} setWorkflows={setWorkflows} runs={runs} setRuns={setRuns} onNotice={setNotice} />
+          <WorkflowsSection
+            key={focusWorkflowId ?? "default"}
+            workflows={workflows}
+            setWorkflows={setWorkflows}
+            runs={runs}
+            setRuns={setRuns}
+            initialWorkflowId={focusWorkflowId}
+            onNotice={setNotice}
+          />
         )}
 
 
@@ -192,6 +218,47 @@ export function AutomationView() {
               <Sparkles className="size-5 text-tertiary" aria-hidden />
               {t("templates.title")}
             </h3>
+            {/* Workflow templates (steps + owners) */}
+            <ul className="flex flex-col gap-4">
+              {workflowTemplates.map((template) => (
+                <li key={template.id} className="rounded-lg bg-surface-container-lowest p-5 shadow-ambient ring-1 ring-tertiary/30">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <span className="inline-flex items-center gap-1 rounded-sm bg-tertiary-fixed px-2 py-0.5 text-[11px] font-bold text-tertiary">
+                        <GitBranch className="size-3" aria-hidden />
+                        {t("templates.workflowBadge", { count: template.steps.length })}
+                      </span>
+                      <h4 className="mt-2 text-lg font-bold">{template.name[locale]}</h4>
+                      <p className="mt-1 text-sm text-on-surface-variant">{template.description[locale]}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => applyWorkflowTemplate(template)}
+                      className="h-10 shrink-0 rounded-sm bg-tertiary px-5 text-sm font-bold text-on-tertiary transition hover:brightness-110"
+                    >
+                      {t("templates.use")}
+                    </button>
+                  </div>
+                  <ol className="mt-4 flex flex-wrap items-center gap-2">
+                    {template.steps.map((step, index) => {
+                      const owner = members.find((m) => m.id === step.assigneeId);
+                      return (
+                        <li key={index} className="flex items-center gap-2">
+                          {index > 0 && <Arrow className="size-3.5 shrink-0 text-muted" aria-hidden />}
+                          <span className="flex items-center gap-2 rounded-md bg-surface-container-low px-3 py-2">
+                            <span className="grid size-5 place-items-center rounded-full bg-tertiary text-[10px] font-bold text-on-tertiary">{index + 1}</span>
+                            <span className="text-sm font-semibold">{step.title[locale]}</span>
+                            {owner && <span className="text-xs text-muted">· {owner.name[locale]}</span>}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </li>
+              ))}
+            </ul>
+
+            {/* Automation templates (trigger → action) */}
             <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {templates.map((template) => (
                 <li key={template.id} className="flex flex-col rounded-lg bg-surface-container-lowest p-5 shadow-ambient ghost-border">

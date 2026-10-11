@@ -148,3 +148,26 @@ export function applyRunAction(
   // request_changes: back to the requester (first step) to edit and resubmit
   return { ...run, currentStep: 0, status: "changes_requested", history: [...run.history, entry("changes_requested")] };
 }
+
+/** Ready-made approval workflows. Using one adds a copy to the company's workflows. */
+export type WorkflowTemplate = { id: string; name: Localized; description: Localized; steps: Omit<WorkflowStep, "id">[] };
+
+export const workflowTemplates: WorkflowTemplate[] = [
+  {
+    id: "tpl-sales-ops",
+    name: { ar: "مسار عمليات المبيعات", en: "Sales operations flow" },
+    description: {
+      ar: "من استلام طلب العميل لحد تحصيل المبلغ، كل خطوة عند المسؤول عنها.",
+      en: "From the client's request to collecting payment, each step with its owner.",
+    },
+    steps: [
+      { title: { ar: "استلام طلب العميل", en: "Receive client request" }, assigneeId: "m5" },
+      { title: { ar: "إعداد عرض السعر", en: "Prepare the quotation" }, assigneeId: "m5" },
+      { title: { ar: "مراجعة الخصم والشروط", en: "Review discount & terms" }, assigneeId: "m2" },
+      { title: { ar: "اعتماد المدير التنفيذي", en: "CEO approval" }, assigneeId: "m1" },
+      { title: { ar: "إصدار أمر البيع والفاتورة", en: "Issue sales order & invoice" }, assigneeId: "m7" },
+      { title: { ar: "التنفيذ والتسليم", en: "Delivery" }, assigneeId: "m2" },
+      { title: { ar: "التحصيل وإغلاق الأمر", en: "Collect payment & close" }, assigneeId: "m7" },
+    ],
+  },
+];
