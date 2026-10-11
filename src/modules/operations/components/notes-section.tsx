@@ -83,15 +83,6 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
           addNote();
         }}
       >
-        <textarea
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          rows={3}
-          placeholder={t("placeholder")}
-          aria-label={t("title")}
-          className="w-full resize-y rounded-sm bg-surface-container-low p-3 text-sm outline-none placeholder:text-muted focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20"
-        />
-
         {/* Audience */}
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -177,6 +168,15 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
             </div>
           )}
         </div>
+
+        <textarea
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          rows={3}
+          placeholder={t("placeholder")}
+          aria-label={t("title")}
+          className="w-full resize-y rounded-sm bg-surface-container-low p-3 text-sm outline-none placeholder:text-muted focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20"
+        />
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="min-w-56 flex-1">
