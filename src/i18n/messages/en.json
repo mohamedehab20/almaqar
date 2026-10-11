@@ -371,7 +371,19 @@
       "delete": "Delete note",
       "notices": {
         "added": "Note added.",
-        "empty": "Write the note first."
+        "empty": "Write the note first.",
+        "noAudience": "Pick at least one department or employee."
+      },
+      "filter": "Filter by department",
+      "all": "All",
+      "audience": {
+        "to": "To:",
+        "company": "Whole company",
+        "custom": "Departments or employees",
+        "departments": "Departments",
+        "departmentsHint": "filters employees",
+        "employees": "Employees",
+        "filtered": "{count} in the selected departments"
       }
     }
   },
