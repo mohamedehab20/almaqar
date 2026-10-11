@@ -16,6 +16,7 @@
       "label": "Explore",
       "groups": {
         "site": "Site",
+        "learn": "Learn",
         "enter": "Sign in"
       },
       "items": {
@@ -46,8 +47,13 @@
         "signup": {
           "title": "Create an account",
           "desc": "Set up your company HQ in minutes"
+        },
+        "compass": {
+          "title": "Al Maqr Compass",
+          "desc": "Al Maqr Academy: courses and hands-on guides"
         }
-      }
+      },
+      "close": "Close"
     }
   },
   "landing": {
@@ -1016,6 +1022,60 @@
       "paused": "{name} paused",
       "resumed": "{name} is running again",
       "newSoon": "Custom agents are coming soon"
+    }
+  },
+  "compass": {
+    "metaTitle": "Al Maqr Compass",
+    "eyebrow": "Al Maqr Compass",
+    "title": "Al Maqr Academy, your compass",
+    "subtitle": "Short courses and hands-on guides that show you how to use Al Maqr well, whatever your role.",
+    "stats": {
+      "courses": "courses",
+      "lessons": "lessons",
+      "hours": "hours of learning"
+    },
+    "tracks": {
+      "title": "Choose your path",
+      "subtitle": "Each track is built for a role. Pick yours to see the right courses.",
+      "count": "{count} courses",
+      "owner": {
+        "title": "Owners and managers",
+        "desc": "Set up your HQ, organize departments, and run automation and agents."
+      },
+      "employee": {
+        "title": "Employees",
+        "desc": "Learn your day at Al Maqr and the rooms you will work in."
+      },
+      "client": {
+        "title": "Clients",
+        "desc": "Enter your portal, hand in briefs, and follow your work with the company."
+      }
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "courses": {
+      "all": "All courses",
+      "forTrack": "Courses for {track}",
+      "showAll": "Show all",
+      "lessons": "{count} lessons",
+      "minutes": "{count} min",
+      "progress": "Progress",
+      "start": "Start course",
+      "continue": "Continue course",
+      "hide": "Hide lessons"
+    },
+    "guides": {
+      "title": "Try it yourself",
+      "subtitle": "Quick guides that open the actual room in a demo company."
+    },
+    "cta": {
+      "title": "Ready to move your company into Al Maqr?",
+      "subtitle": "Start free — the academy is with you every step.",
+      "signup": "Create your account",
+      "pricing": "See pricing"
     }
   }
 }
