@@ -1,9 +1,10 @@
 "use client";
 
 import { Bell, Grip, Menu } from "lucide-react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/shared/avatar";
-import { usePathname } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 type AppTopbarProps = {
@@ -23,7 +24,7 @@ export function AppTopbar({ userName, onMenu }: AppTopbarProps) {
   const title = tPage(sectionTitles[section] ?? "hq.title");
 
   return (
-    <header className="flex h-20 shrink-0 items-center gap-4 bg-surface-container-lowest px-4 shadow-[0_1px_0_rgba(195,198,215,0.35)] sm:px-8">
+    <header className="flex h-20 shrink-0 items-center gap-2 sm:gap-4 bg-surface-container-lowest px-4 shadow-[0_1px_0_rgba(195,198,215,0.35)] sm:px-8">
       <button
         type="button"
         onClick={onMenu}
@@ -32,6 +33,11 @@ export function AppTopbar({ userName, onMenu }: AppTopbarProps) {
       >
         <Menu className="size-5" aria-hidden />
       </button>
+
+      {/* Logo → home page (the sidebar logo is hidden on small screens) */}
+      <Link href="/" aria-label={t("backHome")} title={t("backHome")} className="shrink-0 lg:hidden">
+        <Image src="/brand/logo.png" alt="" width={36} height={36} className="size-9 object-contain" />
+      </Link>
 
       <h1 className="truncate text-2xl font-extrabold text-primary sm:text-3xl">{title}</h1>
 

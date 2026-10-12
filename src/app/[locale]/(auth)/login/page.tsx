@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { use } from "react";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { Logo } from "@/components/layout/logo";
 import { Link } from "@/i18n/navigation";
 import { AuthTabs } from "@/modules/auth/components/auth-tabs";
 import { CompanyLoginForm } from "@/modules/auth/components/company-login-form";
@@ -25,6 +26,7 @@ export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
       <section className="flex flex-col items-center justify-center px-4 py-12 sm:px-8">
         <div className="flex w-full max-w-xl flex-col gap-10">
           <header>
+            <Logo className="mb-8 w-fit text-xl" />
             <h1 className="text-4xl font-extrabold sm:text-5xl">{t("title")}</h1>
             <p className="mt-3 text-lg text-on-surface-variant">{t("subtitle")}</p>
           </header>
