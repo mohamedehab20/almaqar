@@ -55,7 +55,7 @@ export function HqView({ currentUserId, members, rooms, furniture, zones, depart
           {/* Plan (scrollable when zoomed in) */}
           <div
             className={cn(
-              "absolute inset-0 grid place-items-center overflow-auto pb-20 pe-10 ps-20 pt-24",
+              "absolute inset-x-0 bottom-0 top-16 grid place-items-center overflow-auto pb-6 pe-10 ps-20 pt-6",
               panel && "md:pe-[22rem]",
             )}
           >
@@ -82,8 +82,8 @@ export function HqView({ currentUserId, members, rooms, furniture, zones, depart
             </FloorPlan>
           </div>
 
-          {/* Status chips */}
-          <div className="absolute start-4 top-4 z-10 flex flex-wrap gap-3 sm:start-6 sm:top-6">
+          {/* Status chips: a fixed strip above the plan, so zooming/scrolling the plan never moves under them */}
+          <div className="absolute inset-x-0 top-0 z-10 flex h-16 items-center gap-3 border-b border-outline-variant/30 bg-surface-container-lowest px-4 sm:px-6">
             <span className="flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 text-sm shadow-ambient ghost-border">
               <MapPin className="size-4 fill-primary-container text-surface-container-lowest" aria-hidden />
               {t("participants", { count: members.length })}
