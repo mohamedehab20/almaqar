@@ -1,12 +1,13 @@
 "use client";
 
-import { Layers, LocateFixed, MapPin, Minus, Plus, Radio } from "lucide-react";
+import { Crown, Layers, LocateFixed, MapPin, Minus, Plus, Radio } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { ActivityItem, Department, FurnitureItem, Member, PresenceStatus, Room, Zone } from "../mock";
 import { ControlBar } from "./control-bar";
 import { FloorPlan } from "./floor-plan";
+import { PremiumLayerDialog } from "./premium-layer-dialog";
 import { ActivityPanel, PresencePanel } from "./side-panel";
 
 type HqViewProps = {
@@ -34,6 +35,7 @@ export function HqView({ currentUserId, members, rooms, furniture, zones, depart
   const [micOn, setMicOn] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [premiumOpen, setPremiumOpen] = useState(false);
 
   useEffect(() => {
     if (!notice) return;
@@ -66,14 +68,16 @@ export function HqView({ currentUserId, members, rooms, furniture, zones, depart
               floor={floor}
               zoom={zoom}
             >
-              {/* Add layer (HQ editor — not built yet), pinned under the open workspace */}
+              {/* Add layer: the HQ editor is a Premium feature, pinned under the open workspace */}
               <button
                 type="button"
-                onClick={() => setNotice(t("addLayerSoon"))}
+                onClick={() => setPremiumOpen(true)}
+                aria-haspopup="dialog"
                 className="mx-auto mt-6 flex items-center gap-3 rounded-xl bg-surface-container-lowest px-6 py-3 text-base font-extrabold text-primary shadow-ambient-lg ghost-border transition hover:-translate-y-0.5 sm:px-8 sm:py-4 sm:text-xl"
               >
                 <Layers className="size-6 fill-current" aria-hidden />
                 {t("addLayer")}
+                <Crown className="size-5 text-secondary-container" aria-label={t("premium.badge")} />
               </button>
             </FloorPlan>
           </div>
@@ -121,6 +125,8 @@ export function HqView({ currentUserId, members, rooms, furniture, zones, depart
           {panel === "history" && <ActivityPanel items={activity} />}
         </section>
       </div>
+
+      {premiumOpen && <PremiumLayerDialog onClose={() => setPremiumOpen(false)} />}
 
       <ControlBar
         status={myStatus}

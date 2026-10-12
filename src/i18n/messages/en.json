@@ -286,7 +286,6 @@
     "participants": "{count} participants",
     "live": "Live",
     "addLayer": "Add another layer",
-    "addLayerSoon": "The HQ editor for adding rooms and furniture is coming soon.",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "recenter": "Reset view",
@@ -322,6 +321,29 @@
       "history": "History",
       "mic": "Microphone",
       "camera": "Camera"
+    },
+    "premium": {
+      "badge": "Premium feature",
+      "title": "Add more layers to your HQ",
+      "subtitle": "The HQ editor lets you build new floors and rooms and furnish them your way. It is available on the Premium plan.",
+      "perks": {
+        "floors": {
+          "title": "Unlimited floors and layers",
+          "desc": "A floor for every branch or department"
+        },
+        "rooms": {
+          "title": "New rooms and halls",
+          "desc": "Meeting halls, private offices and open spaces"
+        },
+        "furniture": {
+          "title": "Design and furnish the space",
+          "desc": "Move desks and furniture and divide areas"
+        }
+      },
+      "upgrade": "Upgrade to Premium",
+      "trial": "Free for 14 days · EGP 300/month after the trial",
+      "later": "Not now",
+      "close": "Close"
     }
   },
   "ops": {
