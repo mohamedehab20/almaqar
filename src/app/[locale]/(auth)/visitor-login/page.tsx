@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { use } from "react";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { Link } from "@/i18n/navigation";
 import { VisitorLoginForm } from "@/modules/auth/components/visitor-login-form";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/visitor-login">): Promise<Metadata> {
@@ -17,6 +18,7 @@ export default function VisitorLoginPage({ params }: PageProps<"/[locale]/visito
   const { locale } = use(params);
   setRequestLocale(locale);
   const t = useTranslations("auth.visitor");
+  const c = useTranslations("common");
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center gap-6 bg-[radial-gradient(ellipse_at_30%_0%,#cbdaf6_0,transparent_40%),linear-gradient(140deg,#f2f6ff,#f8f8f9_60%,#f9f2e7)] px-4 py-10">
@@ -28,9 +30,15 @@ export default function VisitorLoginPage({ params }: PageProps<"/[locale]/visito
       <section className="relative w-full max-w-lg overflow-hidden rounded-xl bg-surface-container-lowest shadow-ambient-lg">
         <div className="p-6 sm:p-10">
           <header className="mb-8 flex flex-col items-center text-center">
-            <span className="grid size-20 place-items-center rounded-lg bg-surface-container-low text-primary-container">
+            {/* Logo → back to the home page */}
+            <Link
+              href="/"
+              aria-label={c("backHome")}
+              title={c("backHome")}
+              className="grid size-20 place-items-center rounded-lg bg-surface-container-low text-primary-container transition hover:-translate-y-0.5 hover:shadow-ambient"
+            >
               <Image src="/brand/logo.png" alt="" width={56} height={56} className="size-14 object-contain" priority />
-            </span>
+            </Link>
             <h1 className="mt-5 text-3xl font-extrabold">{t("title")}</h1>
             <p className="mt-1 text-on-surface-variant">{t("subtitle")}</p>
           </header>

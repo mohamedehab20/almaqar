@@ -55,7 +55,8 @@
       },
       "close": "Close",
       "brand": "Al Maqr"
-    }
+    },
+    "backHome": "Back to the home page"
   },
   "landing": {
     "badge": "Your digital headquarters awaits",
