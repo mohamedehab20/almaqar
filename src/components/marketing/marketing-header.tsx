@@ -13,8 +13,8 @@ export function MarketingHeader() {
     <header className="sticky top-0 z-30 glass shadow-[0_1px_0_rgba(195,198,215,0.35)]">
       <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-4">
-          <Logo />
           <ExploreMenu />
+          <Logo />
         </div>
         <nav aria-label={t("accountNav")} className="flex items-center gap-2 sm:gap-3">
           <Link href="/signup" className={buttonVariants({ size: "sm" })}>

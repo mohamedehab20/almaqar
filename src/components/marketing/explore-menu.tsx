@@ -78,16 +78,17 @@ export function ExploreMenu() {
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls="explore-drawer"
+        aria-label={t("label")}
+        title={t("label")}
         onClick={() => setOpen(true)}
         className={cn(
-          "flex h-9 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-colors",
+          "grid size-10 place-items-center rounded-full transition-colors",
           open
             ? "bg-primary-fixed text-primary"
             : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
         )}
       >
-        <Menu className="size-4" aria-hidden />
-        {t("label")}
+        <Menu className="size-6" aria-hidden />
       </button>
 
       {mounted &&
@@ -127,7 +128,7 @@ export function ExploreMenu() {
                     className="size-8 object-contain"
                   />
                   <span className="text-lg font-extrabold text-primary">
-                    {t("label")}
+                    {t("brand")}
                   </span>
                 </span>
                 <button

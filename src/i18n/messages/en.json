@@ -13,7 +13,7 @@
     "switchLocale": "العربية",
     "accountNav": "User account",
     "explore": {
-      "label": "Explore",
+      "label": "Menu",
       "groups": {
         "site": "Site",
         "learn": "Learn",
@@ -53,7 +53,8 @@
           "desc": "Al Maqr Academy: courses and hands-on guides"
         }
       },
-      "close": "Close"
+      "close": "Close",
+      "brand": "Al Maqr"
     }
   },
   "landing": {
