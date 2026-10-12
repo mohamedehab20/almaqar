@@ -14,6 +14,19 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-12 — RLS verified on the live Supabase database (task A3)
+A rolled-back SQL smoke test proves the access rules on the real project:
+- tenant isolation
+- the member guard
+- numbering
+- the client portal and its brief event
+- append-only events
+- storage folders
+- anon lockout
+
+No data is left behind.
+Files: `tests/db/smoke-supabase.sql`.
+
 ### 2026-10-12 — Supabase advisors clean (task A2)
 The security advisor is down from 3 warnings to 0. Changes:
 - Pinned `search_path` on two helpers.

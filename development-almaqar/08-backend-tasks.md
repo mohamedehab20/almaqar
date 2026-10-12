@@ -14,7 +14,7 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 |---|---|---|---|---|---|
 | A1 | Apply migrations 0000–0003 to the Supabase project (`rosifnxvdpwkvpqzguzj`) through the Supabase MCP, and record them in Drizzle's `drizzle.__drizzle_migrations` so `npm run db:migrate` skips them later | A | — | ✅ | 18 tables, policies, functions, bucket and publication exist on the project |
 | A2 | Run the Supabase security and performance advisors; fix the findings in a new migration | A | A1 | ✅ | Advisors show no errors; any remaining warnings are explained here |
-| A3 | Smoke test on the real database: RLS scenarios run inside a transaction that is rolled back (nothing is left behind), plus checks on storage policies and the realtime publication | A | A1 | ⬜ | Every scenario passes on Supabase, same as on PGlite |
+| A3 | Smoke test on the real database: RLS scenarios run inside a transaction that is rolled back (nothing is left behind), plus checks on storage policies and the realtime publication | A | A1 | ✅ | Every scenario passes on Supabase, same as on PGlite |
 | B1 | Orders → approval workflow: an order can point at an approval workflow. Making it `pending` starts the run, and finishing the run approves the order (or cancels it if the run is closed). | B | — | ⬜ | Covered in `tests/db/services.test.ts`; new migration applied |
 | B2 | Unit tests for the action layer: Zod input schemas and the mapping of Postgres and auth errors to error codes | B | — | ⬜ | `npm run test:db` includes them and passes |
 
@@ -75,3 +75,25 @@ Checked:
 - Through the API: anon can call `invite_exists`, and `create_company` / `claim_invites` are still refused (42501).
 
 Remaining **INFO, unused_index (27):** expected on an empty database with no traffic. Re-check after real usage, and drop an index only if it is still unused then.
+
+### A3 — Smoke test on the real database (2026-10-12) ✅
+`tests/db/smoke-supabase.sql` runs on the Supabase project itself. Run it with the MCP `execute_sql` tool or the SQL editor.
+
+It acts as fake users the same way PostgREST and `withUser()` do (role plus JWT claims), and always ends with an exception, so everything it created is rolled back.
+
+Result: `SMOKE OK` on all 9 checks:
+1. Two companies created through the public RPC.
+2. A company owner sees only their own company.
+3. Writing into another company is blocked.
+4. An employee can change their own presence but cannot promote themself.
+5. Numbering starts at SO-1001 and OP-1001.
+6. A client portal user sees only their client, can send a brief, and the brief logs a `brief.received` event.
+7. Events cannot be edited.
+8. Storage: a file can go in your own company's folder but not in another company's.
+9. Anon sees nothing and cannot create a company.
+
+Afterwards the database still had 0 companies, 0 members and 0 files.
+
+Realtime publication: checked in A1 (7 tables).
+
+Note: invite codes are compared in uppercase. The app always generates them in uppercase (`newInviteCode`, seed `DEMO…`), so any code typed in by hand must be stored in uppercase too.
