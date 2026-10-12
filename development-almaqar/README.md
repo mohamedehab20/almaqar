@@ -1,0 +1,33 @@
+# Al Maqr — Development Reference
+
+This folder is the running engineering record of **Al Maqr (المقر)**, a "digital HQ" SaaS web app. Read it before you touch the code; update it whenever a milestone lands.
+
+> Status (2026-10-12): **frontend-only phase.** Every page runs on mock data in the browser. There is no backend, database or real authentication yet. See [06-backend-handoff.md](06-backend-handoff.md).
+
+## Contents
+
+| File | What it answers |
+|---|---|
+| [01-getting-started.md](01-getting-started.md) | How do I run, build and deploy it? |
+| [02-architecture.md](02-architecture.md) | How is the code organized, and why? |
+| [03-routes-and-modules.md](03-routes-and-modules.md) | What does every page do, and which files own it? |
+| [04-milestones.md](04-milestones.md) | What was built, in what order? (the changelog) |
+| [05-decisions.md](05-decisions.md) | Which choices were made on purpose, and what were the alternatives? |
+| [06-backend-handoff.md](06-backend-handoff.md) | What is mocked today, and what must the backend replace? |
+| [07-conventions.md](07-conventions.md) | Coding rules, verification steps and known gotchas |
+
+## Keeping this folder current
+
+Every change that ships (one commit pushed to `main`) is a milestone. In the **same commit** as the code:
+
+1. Add an entry at the top of the current phase in [04-milestones.md](04-milestones.md): date, short title, what changed for the user, and the main files.
+2. If you added or changed a route or module, update [03-routes-and-modules.md](03-routes-and-modules.md).
+3. If you made a choice someone might later question (library, data shape, UX rule, price), add it to [05-decisions.md](05-decisions.md).
+4. If you added a `TODO(backend)` or mocked something new, list it in [06-backend-handoff.md](06-backend-handoff.md).
+5. Bump the status line above if the phase changed.
+
+Keep entries short and factual. Link to files with paths relative to the repo root (for example `src/modules/hq/components/hq-view.tsx`).
+
+## Product in one paragraph
+
+Al Maqr gives a company a virtual headquarters: a live floor plan of the office showing who is present, rooms for each department (HR, operations, automation, sales, marketing), approval workflows that route work between employees, a "bag" of AI agents (الجراب), a client portal where clients hand in briefs, and a learning academy (بوصلة المقر). It is Arabic-first (RTL) with full English support. The original product definition and MVP plan live outside this repo, in `programming/IMPLEMENTATION_PLAN.md`.
