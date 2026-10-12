@@ -82,24 +82,35 @@
       }
     },
     "why": {
+      "eyebrow": "The question before every beginning",
       "title": "Why Al Maqr?",
-      "intro": "We are redefining the digital workplace",
+      "intro": "Because work is no longer a place you go to — it is a place you build. So we built it for you, with doors that open onto everything your team needs.",
+      "presence": {
+        "title": "A living office, not just a screen",
+        "text": "See who is in, who is in a meeting and who needs you right now — like walking your company halls from home."
+      },
+      "automation": {
+        "title": "Work that moves on its own",
+        "text": "Approval flows hand every task to its next owner automatically. No lost messages, no files waiting on someone’s desk."
+      },
+      "agents": {
+        "title": "A bag full of minds",
+        "text": "AI agents that write, analyse and follow up for you, so you can focus on what truly deserves your thinking."
+      },
+      "clients": {
+        "title": "Your clients, one door away",
+        "text": "A private portal where clients hand in briefs and follow their campaigns step by step — no scattered emails, no endless calls."
+      },
       "bilingual": {
-        "title": "Bilingual",
-        "text": "A multilingual interface in Arabic and English."
+        "title": "Arabic at its roots",
+        "text": "Designed Arabic-first and fluent in English, so everyone on your team feels at home."
       },
       "security": {
-        "title": "Data security",
-        "text": "Full encryption and privacy protection for your company."
+        "title": "A vault, not just a wall",
+        "text": "Full encryption and precise permissions: every door in your HQ opens only for the people you choose."
       },
-      "integrations": {
-        "title": "Connected apps",
-        "text": "Bring all your favorite tools together in one place."
-      },
-      "infrastructure": {
-        "title": "Solid infrastructure",
-        "text": "Built on modern technology for stability and speed."
-      }
+      "closing": "And this is only the ground floor… the rest is waiting inside.",
+      "cta": "Enter your HQ"
     },
     "footer": {
       "rights": "Al Maqr Digital Diwan. All rights reserved © {year}",
