@@ -212,14 +212,14 @@ export function AppSidebar({ companySlug, onClose }: { companySlug: string; onCl
       </nav>
 
       <div className="p-5">
-        <button
-          type="button"
-          onClick={() => setNotice(t("comingSoonItem", { name: t("upgrade") }))}
+        <Link
+          href="/pricing"
+          onClick={onClose}
           className="flex h-14 w-full items-center justify-center gap-3 rounded-md bg-secondary-container font-bold text-on-secondary-container transition hover:brightness-105"
         >
           <Award className="size-5" aria-hidden />
           {t("upgrade")}
-        </button>
+        </Link>
       </div>
 
       {notice && (
