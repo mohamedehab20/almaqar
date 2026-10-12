@@ -38,6 +38,8 @@ All forms use `noValidate` and skip real checks, so you can click through every 
 | `npm run db:migrate` | Apply pending migrations to the database in `DATABASE_URL` |
 | `npm run db:seed -- --owner you@example.com` | Load the demo data into a `demo` company (add `--reset` to replace it) |
 | `npm run db:studio` | Browse the database (Drizzle Studio) |
+| `npm run db:seed-sql -- <email> <out.sql>` | Same demo data as `db:seed`, written as one SQL script, for when there is no `DATABASE_URL` (run it with MCP `execute_sql` or the SQL editor) |
+| `npm run db:simulate -- <out.sql>` | Runs a simulated working day through the real services as real users, and writes the resulting `simulation` company as SQL |
 | `tests/db/smoke-supabase.sql` | Paste into the Supabase SQL editor (or run with MCP `execute_sql`) to check RLS on the live database. Success = error message `SMOKE OK …`; everything is rolled back. |
 
 ## Repository and deployment

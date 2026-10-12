@@ -142,12 +142,22 @@ export async function sendBrief(
   return toBrief(row);
 }
 
+/**
+ * Event per status the team sets. Not "brief.received": that one is logged by the database when the
+ * client sends the brief, and the two must stay distinguishable in the activity log.
+ */
+const BRIEF_STATUS_EVENT: Record<BriefStatus, `brief.${string}`> = {
+  received: "brief.acknowledged",
+  clarification: "brief.clarification_requested",
+  new: "brief.reopened",
+};
+
 /** Company side: mark a brief received, or ask the client for clarification. */
 export async function setBriefStatus(ctx: Ctx, input: { briefId: string; status: BriefStatus }) {
   const [current] = await ctx.tx.select().from(briefs).where(eq(briefs.id, input.briefId));
   await requireMember(ctx, found(current).companyId);
   const [row] = await ctx.tx.update(briefs).set({ status: input.status }).where(eq(briefs.id, input.briefId)).returning();
-  await emitEvent(ctx, row.companyId, { type: `brief.${input.status}`, payload: { briefId: row.id, clientId: row.clientId } });
+  await emitEvent(ctx, row.companyId, { type: BRIEF_STATUS_EVENT[input.status], payload: { briefId: row.id, clientId: row.clientId } });
   return toBrief(row);
 }
 

@@ -138,6 +138,12 @@ test("client portal: invite code, brief, clarification, idea", async () => {
   const replied = await t.as(visitor, (ctx) => marketing.replyToBrief(ctx, { briefId: brief.id, reply: "Budget is firm" }));
   assert.equal(replied.status, "new");
   await failsWith("forbidden", t.as(visitor, (ctx) => marketing.setBriefStatus(ctx, { briefId: brief.id, status: "received" })));
+  const briefLog = await t.as(owner, (ctx) => events.listEvents(ctx, companyId, { type: ["brief.received", "brief.clarification_requested", "brief.acknowledged"] }));
+  assert.deepEqual(
+    briefLog.map((e) => e.type).sort(),
+    ["brief.clarification_requested", "brief.received"],
+    "sending (DB trigger) and the team's status changes are different events",
+  );
 
   const idea = await t.as(employee, (ctx) => marketing.createIdea(ctx, { companyId, title: L("Iftar countdown reel"), briefId: brief.id }));
   assert.equal(idea.clientId, client.id);

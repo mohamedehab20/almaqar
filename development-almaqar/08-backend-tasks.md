@@ -22,7 +22,8 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 
 | # | Task | Owner | Depends on | Status | Done when |
 |---|---|---|---|---|---|
-| A4 | `npm run db:seed -- --owner <owner email>` on Supabase | A | `DATABASE_URL` | ⏳ | `demo` company is visible in the dashboard |
+| A4 | Demo data on Supabase (`demo` company, owner = product owner's email) | A | — | ✅ | `demo` company is visible in the dashboard |
+| A6 | Simulated working day through the real services, saved to Supabase as company `simulation` | A | A4 | ✅ | Every step's data is on Supabase and checked |
 | A5 | Check `withUser` over the transaction pooler (port 6543): role switch and RLS inside a pooled transaction | A | `DATABASE_URL` | ⏳ | A real query as a test user returns only that user's rows |
 | B3 | Manual end-to-end auth check against Supabase: sign-up with email confirmation, company-code login, visitor email OTP | B | A4 | ⏳ | Each flow reaches its page; results recorded here |
 | B4 | Vercel: add env vars (`NEXT_PUBLIC_*` now; `DATABASE_URL` and `SUPABASE_SECRET_KEY` as Sensitive after A5). Set Supabase Auth Site URL and redirect URLs to the Vercel domain. | B | A5, Vercel login | ⏳ | Production can sign in |
@@ -127,3 +128,44 @@ Note: invite codes are compared in uppercase. The app always generates them in u
 `npm run test:db` now runs every file matching `tests/**/*.test.ts`: 22/22 pass.
 
 Not covered: the Zod schemas written inline in each `actions.ts`. Those files import `server-only`, which cannot load outside Next.js. The services behind them are covered by `tests/db/services.test.ts`.
+
+### A4 — Demo data on Supabase (2026-10-12) ✅
+There is no `DATABASE_URL` yet, so `npm run db:seed` could not run. Instead:
+1. `npm run db:seed-sql -- <owner email> <out.sql>` (`scripts/seed-to-sql.mts`) runs the real `seedDemo()` on PGlite with all migrations.
+2. It exports the company as one SQL script, using `json_populate_recordset` so the ids stay the same.
+3. The script was run through the MCP `execute_sql` tool.
+
+On Supabase: company `demo`, code `DEMO01`, plan `pro`.
+- Owner: **mohamed.ehab8999@gmail.com**, an invite that is linked on first sign-in.
+- 7 members, 5 departments, 3 rooms, 5 clients, 3 briefs.
+- 6 orders, numbered PO-1001…1003 and SO-1001…1003 by the database trigger.
+- 3 runs, 3 notes, 8 agents, 11 ideas.
+- 3 `brief.received` events, logged by the trigger.
+
+### A6 — Simulated working day (2026-10-12) ✅
+`npm run db:simulate -- <out.sql>` (`scripts/simulate-day.mts`) runs a day through the real services, each call as a real user with RLS, on PGlite. It then exports the company `simulation` (code `SIM001`) for Supabase.
+
+The day:
+1. The owner creates the company and invites Sara (purchasing) and Karim (operations, admin), who then claim their invites.
+2. A purchase approval workflow is set up (Sara → Karim).
+3. Sara creates **PO-1001**, which starts approval run **OP-1001**. Karim approves, so the order becomes `approved`.
+4. The Morning Bakery client joins with its invite code and sends a brief. The team asks for clarification, the client replies, and the team marks it received.
+5. An idea is created from the brief.
+6. A pinned note is posted, a task is queued for an agent, and a lesson is completed.
+7. A standalone maintenance operation starts as **OP-1002**.
+
+Checked on Supabase:
+- members and roles
+- the order and its run (with Karim's note)
+- both operations
+- the brief and the client's reply
+- the portal link
+- the idea, note and agent
+- 14 events
+- the counters at PO=1001 and OP=1002, so the next numbers continue correctly
+
+**Bug found and fixed:** `setBriefStatus(received)` logged `brief.received`, the same type the database logs when a client *sends* a brief. Team status changes now log `brief.acknowledged`, `brief.clarification_requested` and `brief.reopened`, and a service test checks it.
+
+Note on the imported events: `brief.received` is recreated by the trigger at import time, so in `simulation` it appears last in the activity order.
+
+**Cleanup** (the `simulation` company only): `DELETE FROM public.companies WHERE slug = 'simulation';` cascades to all of its rows. Its fake users have no auth accounts. Then run `DELETE FROM public.lesson_progress WHERE lesson_id = 'owner-1-1' AND user_id::text LIKE '5a5a5a5a-%';`.

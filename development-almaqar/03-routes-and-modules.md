@@ -65,7 +65,7 @@ Each module has `service.ts` (logic), `queries.ts` (reads) and `actions.ts` (Ser
 | `operations` | `listOperations`, `listNotes(companyId, departmentId?)` | `startOperation` (OP-####), `createNote`, `setNotePinned`, `deleteNote` |
 | `automation` | `listWorkflows`, `listRuns` | `createWorkflow`, `createWorkflowFromTemplate`, `updateWorkflow`, `deleteWorkflow`, `startRun`, `actOnRun` (only the current step's assignee; reuses `applyRunAction`) |
 | `sales` | `listOrders`, `listSuppliers` | `createOrder` (SO-/PO-####; optional `workflowId` → approval run), `updateOrder`, `setOrderStatus` (pending starts the run; approved only after the run completes), `createSupplier` |
-| `events` | `fetchEvents(companyId?, filter?)` in `api.ts` | `emitEvent()` is called by the other services (not an action) |
+| `events` | `fetchEvents(companyId?, filter?)` in `api.ts` | `emitEvent()` is called by the other services (not an action). Brief events: `brief.received` (client sent it; logged by a DB trigger), `brief.acknowledged`, `brief.clarification_requested`, `brief.reopened` (team status changes). |
 | `agents` | `listAgents` | `createAgent`, `setAgentStatus`, `queueTask`, `completeTask` |
 | `academy` | `getMyProgress` | `setLessonDone` |
 | `files` | — | `uploadAttachment` (FormData), `getAttachmentUrl`, `deleteAttachment` |

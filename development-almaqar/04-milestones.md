@@ -14,6 +14,13 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-12 — Demo data and a simulated day live on Supabase (tasks A4, A6)
+- **`demo` company:** loaded from the real seed and owned by the product owner's email.
+- **`simulation` company:** produced by a full working day run through the real services as real users. Covers invites, an approval workflow that approves PO-1001, the client portal brief with a clarification, an idea, a note, an agent task and an operation.
+
+Both are now on Supabase. The simulation caught a duplicated event name (`brief.received` meant two things), now fixed.
+Files: `scripts/seed-to-sql.mts`, `scripts/simulate-day.mts`, `src/modules/marketing/service.ts`, `tests/db/services.test.ts`, `package.json`.
+
 ### 2026-10-12 — Tests for the action layer (task B2)
 Unit tests cover input validation, error-code mapping (including errors wrapped by Drizzle) and the shared Zod helpers. `npm run test:db` now runs every test under `tests/` (22 tests).
 Files: `tests/server/actions.test.ts`, `package.json`.
