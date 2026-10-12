@@ -39,6 +39,9 @@
   1. Edit `src/db/schema.ts`, then run `npm run db:generate`.
   2. For a new tenant table, add it to the policy loop in a new custom migration (`npx drizzle-kit generate --custom --name <name>`), separating statements with `--> statement-breakpoint`.
   3. Never edit a migration that has already been applied to a real database.
+- **New RPC function:** put the body in `private` (with `SECURITY DEFINER` only if it must bypass RLS, always `SET search_path = ''` and an `auth.uid()` check). Then add a `SECURITY INVOKER` wrapper in `public` and grant EXECUTE explicitly. A test fails otherwise.
+- **New foreign key:** add an `index()` for it in `schema.ts`, since RLS and joins filter on these columns.
+- **After applying a migration to Supabase:** run the advisors (MCP `get_advisors`, security and performance) and fix any warnings.
 - **Test it:** add a case to `tests/db/` and run `npm run test:db` before committing backend changes.
 - **Secrets:** `DATABASE_URL` and `SUPABASE_SECRET_KEY` are server-only. Only `NEXT_PUBLIC_*` reaches the browser.
 

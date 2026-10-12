@@ -14,6 +14,17 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-12 — Supabase advisors clean (task A2)
+The security advisor is down from 3 warnings to 0. Changes:
+- Pinned `search_path` on two helpers.
+- Moved the `SECURITY DEFINER` RPCs to `private`, behind invoker wrappers.
+- Added 25 foreign-key indexes.
+- Merged duplicate policies.
+- Briefs must stay inside their client's company.
+
+Applied to Supabase, and covered by a new RLS test.
+Files: `drizzle/0004_fk_indexes.sql`, `drizzle/0005_advisor_fixes.sql`, `src/db/schema.ts`, `tests/db/rls.test.ts`.
+
 ### 2026-10-12 — Database live on Supabase (task A1)
 The schema, RLS, functions, storage bucket and realtime publication now exist on the Supabase project `rosifnxvdpwkvpqzguzj`. They were applied through the Supabase MCP and recorded for Drizzle, so `npm run db:migrate` will not re-apply them. The task board is in `08-backend-tasks.md`.
 Files: `development-almaqar/08-backend-tasks.md` (no code change).

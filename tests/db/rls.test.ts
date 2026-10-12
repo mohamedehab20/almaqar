@@ -88,3 +88,20 @@ test("auth functions: company code, invites, client invite codes", async () => {
   await t.sqlAs(V.sub, "SELECT public.redeem_client_invite(' bakery7 ')");
   assert.deepEqual(await t.sqlAs(V.sub, "SELECT id FROM clients"), [{ id: cl2 }]);
 });
+
+test("advisor rules: no SECURITY DEFINER in public, fixed search_path, briefs stay inside the client's company", async () => {
+  const definers = await t.pg.query<{ proname: string }>(
+    "SELECT proname FROM pg_proc WHERE pronamespace = 'public'::regnamespace AND prosecdef",
+  );
+  assert.deepEqual(definers.rows, [], "public functions are SECURITY INVOKER wrappers");
+  const mutable = await t.pg.query<{ proname: string }>(
+    "SELECT proname FROM pg_proc WHERE pronamespace IN ('public'::regnamespace, 'private'::regnamespace) AND prokind = 'f' AND NOT coalesce(proconfig::text LIKE '%search_path%', false)",
+  );
+  assert.deepEqual(mutable.rows, [], "every function pins search_path");
+
+  // B's company has its own client; A (member of acme) cannot file a brief for it under acme
+  const betaClient = (await t.sqlAs(B.sub, "INSERT INTO clients (company_id,name) VALUES ($1,$2) RETURNING id", [c2, j(L("Beta client"))]))[0].id;
+  const brief = "INSERT INTO briefs (company_id,client_id,type,objective,audience,details) VALUES ($1,$2,'paidAds',$3,$3,$3) RETURNING id";
+  await assert.rejects(t.sqlAs(A.sub, brief, [c1, betaClient, j(L("x"))]));
+  assert.equal((await t.sqlAs(B.sub, brief, [c2, betaClient, j(L("x"))])).length, 1);
+});

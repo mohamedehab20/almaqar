@@ -4,6 +4,11 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-12 — Privileged RPCs live in `private`; `public` only has SECURITY INVOKER wrappers
+Why: anything in `public` is an API endpoint, and Supabase's advisor flags `SECURITY DEFINER` there. The wrapper can only run the private body if the caller was granted EXECUTE on it. Grants are explicit, function by function.
+
+Alternative: keep the definer functions in `public` and accept the warnings.
+
 ### 2026-10-12 — Backend in TypeScript inside Next.js; Python only for a future AI-agents service
 Why:
 - Supabase already provides auth, realtime, storage and tenant isolation (RLS).

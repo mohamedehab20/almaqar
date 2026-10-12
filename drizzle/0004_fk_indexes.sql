@@ -1,0 +1,25 @@
+CREATE INDEX "agents_company_id_idx" ON "agents" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "briefs_company_id_idx" ON "briefs" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "briefs_client_id_idx" ON "briefs" USING btree ("client_id");--> statement-breakpoint
+CREATE INDEX "clients_company_id_idx" ON "clients" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "clients_manager_id_idx" ON "clients" USING btree ("manager_id");--> statement-breakpoint
+CREATE INDEX "departments_company_id_idx" ON "departments" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "furniture_company_id_idx" ON "furniture" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "furniture_room_id_idx" ON "furniture" USING btree ("room_id");--> statement-breakpoint
+CREATE INDEX "furniture_member_id_idx" ON "furniture" USING btree ("member_id");--> statement-breakpoint
+CREATE INDEX "marketing_ideas_company_id_idx" ON "marketing_ideas" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "marketing_ideas_client_id_idx" ON "marketing_ideas" USING btree ("client_id");--> statement-breakpoint
+CREATE INDEX "marketing_ideas_brief_id_idx" ON "marketing_ideas" USING btree ("brief_id");--> statement-breakpoint
+CREATE INDEX "marketing_ideas_owner_id_idx" ON "marketing_ideas" USING btree ("owner_id");--> statement-breakpoint
+CREATE INDEX "members_department_id_idx" ON "members" USING btree ("department_id");--> statement-breakpoint
+CREATE INDEX "notes_company_id_idx" ON "notes" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "notes_author_id_idx" ON "notes" USING btree ("author_id");--> statement-breakpoint
+CREATE INDEX "rooms_company_id_idx" ON "rooms" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "suppliers_company_id_idx" ON "suppliers" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "workflow_runs_company_id_idx" ON "workflow_runs" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "workflow_runs_workflow_id_idx" ON "workflow_runs" USING btree ("workflow_id");--> statement-breakpoint
+CREATE INDEX "workflow_runs_owner_id_idx" ON "workflow_runs" USING btree ("owner_id");--> statement-breakpoint
+CREATE INDEX "workflows_company_id_idx" ON "workflows" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "zones_company_id_idx" ON "zones" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX "zones_room_id_idx" ON "zones" USING btree ("room_id");--> statement-breakpoint
+CREATE INDEX "zones_department_id_idx" ON "zones" USING btree ("department_id");

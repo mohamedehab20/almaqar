@@ -69,7 +69,7 @@ export const departments = pgTable("departments", {
   name: jsonb("name").$type<Localized>().notNull(),
   color: departmentColor("color").notNull().default("blue"),
   createdAt: createdAt(),
-});
+}, (t) => [index("departments_company_id_idx").on(t.companyId)]);
 
 export const members = pgTable(
   "members",
@@ -88,7 +88,7 @@ export const members = pgTable(
     currentTask: jsonb("current_task").$type<Localized>(),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex("members_company_user_idx").on(t.companyId, t.userId), index("members_user_idx").on(t.userId)],
+  (t) => [uniqueIndex("members_company_user_idx").on(t.companyId, t.userId), index("members_user_idx").on(t.userId), index("members_department_id_idx").on(t.departmentId)],
 );
 
 // ---------- Floor plan ----------
@@ -102,7 +102,7 @@ export const rooms = pgTable("rooms", {
   y: numeric("y", { mode: "number" }).notNull(),
   w: numeric("w", { mode: "number" }).notNull(),
   h: numeric("h", { mode: "number" }).notNull(),
-});
+}, (t) => [index("rooms_company_id_idx").on(t.companyId)]);
 
 export const furniture = pgTable("furniture", {
   id: id(),
@@ -116,7 +116,7 @@ export const furniture = pgTable("furniture", {
   y: numeric("y", { mode: "number" }).notNull(),
   w: numeric("w", { mode: "number" }).notNull(),
   h: numeric("h", { mode: "number" }).notNull(),
-});
+}, (t) => [index("furniture_company_id_idx").on(t.companyId), index("furniture_room_id_idx").on(t.roomId), index("furniture_member_id_idx").on(t.memberId)]);
 
 export const zones = pgTable("zones", {
   id: id(),
@@ -131,7 +131,7 @@ export const zones = pgTable("zones", {
   y: numeric("y", { mode: "number" }).notNull(),
   w: numeric("w", { mode: "number" }).notNull(),
   h: numeric("h", { mode: "number" }).notNull(),
-});
+}, (t) => [index("zones_company_id_idx").on(t.companyId), index("zones_room_id_idx").on(t.roomId), index("zones_department_id_idx").on(t.departmentId)]);
 
 // ---------- Clients and briefs ----------
 
@@ -146,7 +146,7 @@ export const clients = pgTable("clients", {
   /** Code a client's contact uses on the visitor login page */
   inviteCode: text("invite_code").unique(),
   createdAt: createdAt(),
-});
+}, (t) => [index("clients_company_id_idx").on(t.companyId), index("clients_manager_id_idx").on(t.managerId)]);
 
 /** Auth users who sign in to a client's portal */
 export const clientUsers = pgTable(
@@ -179,7 +179,7 @@ export const briefs = pgTable("briefs", {
   status: briefStatus("status").notNull().default("new"),
   clientReply: text("client_reply"),
   createdAt: createdAt(),
-});
+}, (t) => [index("briefs_company_id_idx").on(t.companyId), index("briefs_client_id_idx").on(t.clientId)]);
 
 /** A test version in the lab (Version in src/modules/marketing/mock.ts) */
 export type IdeaVersion = {
@@ -211,7 +211,7 @@ export const marketingIdeas = pgTable("marketing_ideas", {
   ratings: jsonb("ratings").$type<IdeaRatings>(),
   delivery: jsonb("delivery").$type<IdeaDelivery>(),
   createdAt: createdAt(),
-});
+}, (t) => [index("marketing_ideas_company_id_idx").on(t.companyId), index("marketing_ideas_client_id_idx").on(t.clientId), index("marketing_ideas_brief_id_idx").on(t.briefId), index("marketing_ideas_owner_id_idx").on(t.ownerId)]);
 
 // ---------- Operations, automation, sales ----------
 
@@ -226,7 +226,7 @@ export const notes = pgTable("notes", {
   audience: jsonb("audience").$type<NoteAudience>().notNull(),
   pinned: boolean("pinned").notNull().default(false),
   createdAt: createdAt(),
-});
+}, (t) => [index("notes_company_id_idx").on(t.companyId), index("notes_author_id_idx").on(t.authorId)]);
 
 export type WorkflowStep = { id: string; title: Localized; assigneeId: string };
 export type WorkflowAttachment = { id: string; name: string; size: number; type: string; path: string };
@@ -245,7 +245,7 @@ export const workflows = pgTable("workflows", {
   steps: jsonb("steps").$type<WorkflowStep[]>().notNull().default([]),
   attachments: jsonb("attachments").$type<WorkflowAttachment[]>().notNull().default([]),
   createdAt: createdAt(),
-});
+}, (t) => [index("workflows_company_id_idx").on(t.companyId)]);
 
 /** An operation in the Operations room: one run of an approval workflow (or a standalone task). */
 export const workflowRuns = pgTable("workflow_runs", {
@@ -263,7 +263,7 @@ export const workflowRuns = pgTable("workflow_runs", {
   status: runStatus("status").notNull().default("in_progress"),
   history: jsonb("history").$type<RunHistoryEntry[]>().notNull().default([]),
   createdAt: createdAt(),
-});
+}, (t) => [index("workflow_runs_company_id_idx").on(t.companyId), index("workflow_runs_workflow_id_idx").on(t.workflowId), index("workflow_runs_owner_id_idx").on(t.ownerId)]);
 
 export const suppliers = pgTable("suppliers", {
   id: id(),
@@ -271,7 +271,7 @@ export const suppliers = pgTable("suppliers", {
   name: jsonb("name").$type<Localized>().notNull(),
   category: jsonb("category").$type<Localized>(),
   createdAt: createdAt(),
-});
+}, (t) => [index("suppliers_company_id_idx").on(t.companyId)]);
 
 export type OrderItem = { name: string; qty: number; unitPrice: number };
 
@@ -324,7 +324,7 @@ export const agents = pgTable("agents", {
   tasksDone: integer("tasks_done").notNull().default(0),
   queue: integer("queue").notNull().default(0),
   createdAt: createdAt(),
-});
+}, (t) => [index("agents_company_id_idx").on(t.companyId)]);
 
 /** Course content stays in code (src/modules/academy/mock.ts); only progress is stored. */
 export const lessonProgress = pgTable(
