@@ -15,6 +15,7 @@ This folder is the running engineering record of **Al Maqr (المقر)**, a "di
 | [05-decisions.md](05-decisions.md) | Which choices were made on purpose, and what were the alternatives? |
 | [06-backend-handoff.md](06-backend-handoff.md) | What is mocked today, and what must the backend replace? |
 | [07-conventions.md](07-conventions.md) | Coding rules, verification steps and known gotchas |
+| [08-backend-tasks.md](08-backend-tasks.md) | What is left of the backend plan, as tasks for two engineers |
 
 ## Keeping this folder current
 
