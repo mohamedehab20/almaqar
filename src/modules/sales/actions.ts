@@ -19,6 +19,7 @@ export const createOrder = action(
     items,
     deliveryDate: isoDate.nullable().optional(),
     status: z.enum(["draft", "pending"]).optional(),
+    workflowId: id.nullable().optional(),
   }),
   (input) => withUser((ctx) => svc.createOrder(ctx, input)),
 );

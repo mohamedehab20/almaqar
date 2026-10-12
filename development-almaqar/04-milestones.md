@@ -14,6 +14,15 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-12 — Orders go through an approval workflow (task B1)
+An order can name an approval workflow:
+- Becoming pending starts the run.
+- Finishing the run approves the order; a run closed by rejection cancels it.
+- An order with a workflow cannot be approved by hand.
+
+Applied to Supabase (migration 0006) and covered by a new service test.
+Files: `src/db/schema.ts`, `drizzle/0006_order_approval.sql`, `src/modules/sales/{service,actions}.ts`, `src/modules/automation/service.ts`, `tests/db/services.test.ts`.
+
 ### 2026-10-12 — RLS verified on the live Supabase database (task A3)
 A rolled-back SQL smoke test proves the access rules on the real project:
 - tenant isolation

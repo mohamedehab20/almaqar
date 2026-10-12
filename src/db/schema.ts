@@ -289,9 +289,17 @@ export const orders = pgTable(
     date: date("date").notNull().defaultNow(),
     deliveryDate: date("delivery_date"),
     status: orderStatus("status").notNull().default("draft"),
+    /** Approval workflow this order goes through when it becomes pending (optional) */
+    workflowId: uuid("workflow_id").references(() => workflows.id, { onDelete: "set null" }),
+    /** The approval run started for this order; its outcome sets the order status */
+    runId: uuid("run_id").references(() => workflowRuns.id, { onDelete: "set null" }),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex("orders_company_number_idx").on(t.companyId, t.number)],
+  (t) => [
+    uniqueIndex("orders_company_number_idx").on(t.companyId, t.number),
+    index("orders_workflow_id_idx").on(t.workflowId),
+    index("orders_run_id_idx").on(t.runId),
+  ],
 );
 
 // ---------- Events, agents, academy ----------

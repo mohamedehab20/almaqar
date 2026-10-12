@@ -64,7 +64,7 @@ Each module has `service.ts` (logic), `queries.ts` (reads) and `actions.ts` (Ser
 | `marketing` | `listClients`, `listBriefs`, `listIdeas`, `getMyClients` and `listClientBriefs` (portal) | `createClient`, `updateClient`, `regenerateInviteCode`, `sendBrief`, `setBriefStatus`, `replyToBrief`, `createIdea`, `updateIdea`, `deleteIdea` |
 | `operations` | `listOperations`, `listNotes(companyId, departmentId?)` | `startOperation` (OP-####), `createNote`, `setNotePinned`, `deleteNote` |
 | `automation` | `listWorkflows`, `listRuns` | `createWorkflow`, `createWorkflowFromTemplate`, `updateWorkflow`, `deleteWorkflow`, `startRun`, `actOnRun` (only the current step's assignee; reuses `applyRunAction`) |
-| `sales` | `listOrders`, `listSuppliers` | `createOrder` (SO-/PO-####), `updateOrder`, `setOrderStatus`, `createSupplier` |
+| `sales` | `listOrders`, `listSuppliers` | `createOrder` (SO-/PO-####; optional `workflowId` → approval run), `updateOrder`, `setOrderStatus` (pending starts the run; approved only after the run completes), `createSupplier` |
 | `events` | `fetchEvents(companyId?, filter?)` in `api.ts` | `emitEvent()` is called by the other services (not an action) |
 | `agents` | `listAgents` | `createAgent`, `setAgentStatus`, `queueTask`, `completeTask` |
 | `academy` | `getMyProgress` | `setLessonDone` |

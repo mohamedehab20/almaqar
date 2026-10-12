@@ -24,7 +24,7 @@ grep -rn "TODO(backend)" src
 | Operations notes | `notes-section.tsx` | `listNotes(companyId, departmentId?)`, `createNote`, `setNotePinned`, `deleteNote`. Notify the audience from `note.created` events (realtime). |
 | Automation flows | `automation-view.tsx` | `automation/actions.ts`: `createWorkflow`, `createWorkflowFromTemplate`, `startRun`, `actOnRun` |
 | Workflow attachments | `workflow-builder-dialog.tsx` | `files/actions.ts` `uploadAttachment` (folder `workflows`) → pass the result in `attachments`; open with `getAttachmentUrl` |
-| Sales orders | `sales-view.tsx` | `listOrders`, `listSuppliers`, `createOrder` (number from DB), `setOrderStatus`, `createSupplier` |
+| Sales orders | `sales-view.tsx` | `listOrders`, `listSuppliers`, `createOrder` (number from DB; pass `workflowId` to require approval), `setOrderStatus`, `createSupplier`. An order with a workflow shows its run (`runId`) and is approved by the run, not by a button. |
 | Events | `modules/events/api.ts` | Done: `fetchEvents(companyId)` reads the table when signed in. Callers still need to pass `companyId`. |
 | AI agents | `modules/agents/components/agents-view.tsx` | `listAgents`, `queueTask`, `setAgentStatus`, `createAgent`. Running tasks needs the agent runtime (future Python service), which consumes `agent.task_queued` events and calls `completeTask`. |
 | Academy progress | `modules/academy/components/academy-view.tsx` | `getMyProgress`, `setLessonDone` (lesson content stays in `mock.ts`) |

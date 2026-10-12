@@ -15,7 +15,7 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 | A1 | Apply migrations 0000–0003 to the Supabase project (`rosifnxvdpwkvpqzguzj`) through the Supabase MCP, and record them in Drizzle's `drizzle.__drizzle_migrations` so `npm run db:migrate` skips them later | A | — | ✅ | 18 tables, policies, functions, bucket and publication exist on the project |
 | A2 | Run the Supabase security and performance advisors; fix the findings in a new migration | A | A1 | ✅ | Advisors show no errors; any remaining warnings are explained here |
 | A3 | Smoke test on the real database: RLS scenarios run inside a transaction that is rolled back (nothing is left behind), plus checks on storage policies and the realtime publication | A | A1 | ✅ | Every scenario passes on Supabase, same as on PGlite |
-| B1 | Orders → approval workflow: an order can point at an approval workflow. Making it `pending` starts the run, and finishing the run approves the order (or cancels it if the run is closed). | B | — | ⬜ | Covered in `tests/db/services.test.ts`; new migration applied |
+| B1 | Orders → approval workflow: an order can point at an approval workflow. Making it `pending` starts the run, and finishing the run approves the order (or cancels it if the run is closed). | B | — | ✅ | Covered in `tests/db/services.test.ts`; new migration applied |
 | B2 | Unit tests for the action layer: Zod input schemas and the mapping of Postgres and auth errors to error codes | B | — | ⬜ | `npm run test:db` includes them and passes |
 
 ## Phase 2 — Running on Supabase (needs `DATABASE_URL` in `.env.local`)
@@ -97,3 +97,14 @@ Afterwards the database still had 0 companies, 0 members and 0 files.
 Realtime publication: checked in A1 (7 tables).
 
 Note: invite codes are compared in uppercase. The app always generates them in uppercase (`newInviteCode`, seed `DEMO…`), so any code typed in by hand must be stored in uppercase too.
+
+### B1 — Orders follow an approval workflow (2026-10-12) ✅
+- **Schema** (`0006_order_approval`, applied to Supabase): `orders.workflow_id` (the approval workflow, optional) and `orders.run_id` (the run started for the order), both indexed.
+- **Rules** (`src/modules/sales/service.ts`):
+  - **Starting the run:** `createOrder({ ..., workflowId })` with status `pending` starts the approval run straight away. A `draft` waits until `setOrderStatus(pending)`.
+  - **Plan count:** the run does not count toward the plan a second time (the order already counted).
+  - **Which workflow:** the workflow must belong to the same company, otherwise the result is `not_found`.
+  - **Manual approval:** `setOrderStatus(approved)` is refused (`invalid`) while the run is not completed. The workflow decides.
+  - **Following the run:** `actOnRun` calls `syncOrderWithRun`. A completed run sets the order to `approved`, and a closed run (rejected at the first step) sets it to `cancelled`. Each change logs `order.approved` or `order.cancelled` with source `automation`.
+- **Tests:** a new test in `tests/db/services.test.ts` covers start-on-create, the manual-approve block, approval by the manager, draft → pending → rejected twice → cancelled, the events, and the cross-company workflow check. `npm run test:db`: 15/15.
+- **On Supabase:** advisors are still clean on security, and the smoke test still passes.

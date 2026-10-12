@@ -4,6 +4,13 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-12 — An order's approval is decided by its workflow run, not by hand
+When an order has a workflow, only the run can approve it: completed → approved, closed → cancelled. Cancelling by hand is still allowed.
+
+Why: the approval trail lives in the run's history, and a manual approve would skip it.
+
+Alternative: allow admins to override. Not needed yet.
+
 ### 2026-10-12 — Privileged RPCs live in `private`; `public` only has SECURITY INVOKER wrappers
 Why: anything in `public` is an API endpoint, and Supabase's advisor flags `SECURITY DEFINER` there. The wrapper can only run the private body if the caller was granted EXECUTE on it. Grants are explicit, function by function.
 

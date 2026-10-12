@@ -187,3 +187,59 @@ test("demo seed loads every mock module and links the owner", async () => {
   await assert.rejects(seedDemo(t.db), /already exists/);
   await seedDemo(t.db, { reset: true });
 });
+
+test("orders with an approval workflow follow their run", async () => {
+  const boss = user("boss@beta.test");
+  const manager = user("manager@beta.test");
+  const betaId = await t.as(boss, async ({ tx }) => {
+    const res = await tx.execute<{ id: string }>(
+      sql`select public.create_company('beta-orders', 'BETAO1', ${JSON.stringify(L("Beta"))}::jsonb, ${JSON.stringify(L("Boss"))}::jsonb) as id`,
+    );
+    return (res as unknown as { rows: { id: string }[] }).rows[0].id;
+  });
+  await t.pg.query("UPDATE companies SET plan = 'pro' WHERE id = $1", [betaId]);
+  const bossMember = (await t.as(boss, (ctx) => hq.getCompanyBySlug(ctx, "beta-orders")))!.me;
+  await t.as(boss, (ctx) => hq.inviteMember(ctx, { companyId: betaId, email: "manager@beta.test", name: L("Manager") }));
+  await t.as(manager, ({ tx }) => tx.execute(sql`select public.claim_invites()`));
+  const managerMember = (await t.as(manager, (ctx) => hq.getCompanyBySlug(ctx, "beta-orders")))!.me;
+
+  const wf = await t.as(boss, (ctx) =>
+    automation.createWorkflow(ctx, {
+      companyId: betaId,
+      name: L("Purchase approval"),
+      steps: [
+        { title: L("Request"), assigneeId: bossMember.id },
+        { title: L("Manager approval"), assigneeId: managerMember.id },
+      ],
+    }),
+  );
+  const supplier = await t.as(boss, (ctx) => sales.createSupplier(ctx, { companyId: betaId, name: L("Supplier") }));
+  const items = [{ name: "Desk", qty: 1, unitPrice: 5000 }];
+
+  // Pending order with a workflow: the run starts right away and waits for the manager
+  const order = await t.as(boss, (ctx) => sales.createOrder(ctx, { companyId: betaId, type: "purchase", partyId: supplier.id, items, workflowId: wf.id }));
+  assert.equal(order.status, "pending");
+  assert.ok(order.runId, "approval run started");
+  await failsWith("invalid", t.as(boss, (ctx) => sales.setOrderStatus(ctx, { orderId: order.id, status: "approved" })));
+  await t.as(manager, (ctx) => automation.actOnRun(ctx, { runId: order.runId!, action: "approve" }));
+  const approved = (await t.as(boss, (ctx) => sales.listOrders(ctx, betaId))).find((o) => o.id === order.id);
+  assert.equal(approved?.status, "approved", "completing the run approves the order");
+
+  // Draft first; making it pending starts the run; rejected back to the requester and then closed → cancelled
+  const draft = await t.as(boss, (ctx) =>
+    sales.createOrder(ctx, { companyId: betaId, type: "purchase", partyId: supplier.id, items, workflowId: wf.id, status: "draft" }),
+  );
+  assert.equal(draft.runId, null, "drafts do not start a run");
+  const pending = await t.as(boss, (ctx) => sales.setOrderStatus(ctx, { orderId: draft.id, status: "pending" }));
+  assert.ok(pending.runId);
+  await t.as(manager, (ctx) => automation.actOnRun(ctx, { runId: pending.runId!, action: "reject" }));
+  assert.equal((await t.as(boss, (ctx) => sales.listOrders(ctx, betaId))).find((o) => o.id === draft.id)?.status, "pending");
+  await t.as(boss, (ctx) => automation.actOnRun(ctx, { runId: pending.runId!, action: "reject" }));
+  assert.equal((await t.as(boss, (ctx) => sales.listOrders(ctx, betaId))).find((o) => o.id === draft.id)?.status, "cancelled");
+
+  const log = await t.as(boss, (ctx) => events.listEvents(ctx, betaId, { type: ["order.approved", "order.cancelled"] }));
+  assert.deepEqual(log.map((e) => [e.type, e.source]).sort(), [["order.approved", "automation"], ["order.cancelled", "automation"]]);
+
+  // Another company's workflow cannot be attached
+  await failsWith("not_found", t.as(owner, (ctx) => sales.createOrder(ctx, { companyId, type: "sale", partyId: supplier.id, items, workflowId: wf.id })));
+});

@@ -127,9 +127,10 @@ export async function listRuns(ctx: Ctx, companyId: string) {
 export async function startOperation(
   ctx: Ctx,
   input: { companyId: string; subject: Localized; category?: string; nature?: RunRow["nature"]; workflowId?: string | null },
+  options: { countsTowardPlan?: boolean } = {},
 ) {
   const me = await requireMember(ctx, input.companyId);
-  await assertWithinPlan(ctx, input.companyId, "operationsPerMonth");
+  if (options.countsTowardPlan !== false) await assertWithinPlan(ctx, input.companyId, "operationsPerMonth");
   const now = new Date().toISOString();
   const history: RunRow["history"] = [{ action: "started", stepIndex: 0, byId: me.id, at: now }];
 
@@ -184,6 +185,9 @@ export async function actOnRun(ctx: Ctx, input: { runId: string; action: "approv
     .set({ currentStep: next.currentStep, status: next.status, history: next.history })
     .where(eq(workflowRuns.id, run.id))
     .returning();
+  // An order waiting on this run follows its outcome (imported lazily: sales imports this module)
+  const { syncOrderWithRun } = await import("@/modules/sales/service");
+  await syncOrderWithRun(ctx, { id: run.id, status: next.status });
   await emitEvent(ctx, run.companyId, {
     type: `operation.${next.status === "completed" ? "completed" : input.action}`,
     payload: { runId: run.id, code: run.code, step: run.currentStep },

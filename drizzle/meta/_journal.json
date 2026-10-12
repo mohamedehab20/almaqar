@@ -43,6 +43,13 @@
       "when": 1791830124911,
       "tag": "0005_advisor_fixes",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791830507345,
+      "tag": "0006_order_approval",
+      "breakpoints": true
     }
   ]
 }
