@@ -67,6 +67,7 @@ Everything below is needed only to run against a real database. Without it every
 
 - `.mcp.json` registers the **Supabase MCP server** (project ref `rosifnxvdpwkvpqzguzj`) for Claude Code at project scope.
   - It needs a one-time sign-in from a regular terminal (not the IDE extension): run `claude`, then `/mcp`, pick `supabase`, then **Authenticate**.
+  - Easier alternative (no OAuth or approval prompt): create a personal access token at supabase.com/dashboard/account/tokens. Then run `claude mcp add --scope local --transport http supabase "<url from .mcp.json>" --header "Authorization: Bearer sbp_…"`. The token stays in `~/.claude.json` on that machine only and is never committed.
 - `.agents/skills/` holds the Supabase agent skills (`supabase`, `supabase-postgres-best-practices`), pinned in `skills-lock.json`.
   - `.claude/skills/` symlinks to them with absolute paths, so it is git-ignored. On a new machine, run `npx skills add supabase/agent-skills` to recreate it.
 
