@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# skill symlinks (absolute paths; recreate with npx skills add)
+/.claude/skills/

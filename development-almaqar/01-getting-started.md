@@ -40,6 +40,13 @@ All forms use `noValidate` and skip real checks, so you can click through every 
 - **Vercel** deploys automatically on every push to `main`. Deployment Protection is on, so preview URLs ask for a Vercel login. Note that `almaqar.vercel.app` is **not** this project.
 - There are no environment variables yet.
 
+## AI tooling (Supabase MCP + skills)
+
+- `.mcp.json` registers the **Supabase MCP server** (project ref `rosifnxvdpwkvpqzguzj`) for Claude Code at project scope.
+  - It needs a one-time sign-in from a regular terminal (not the IDE extension): run `claude`, then `/mcp`, pick `supabase`, then **Authenticate**.
+- `.agents/skills/` holds the Supabase agent skills (`supabase`, `supabase-postgres-best-practices`), pinned in `skills-lock.json`.
+  - `.claude/skills/` symlinks to them with absolute paths, so it is git-ignored. On a new machine, run `npx skills add supabase/agent-skills` to recreate it.
+
 ## Troubleshooting
 
 | Symptom | Fix |
