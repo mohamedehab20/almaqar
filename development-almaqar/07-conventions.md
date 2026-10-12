@@ -24,7 +24,7 @@
 1. `npm run lint` — no errors or warnings.
 2. `npx tsc --noEmit` — clean (open new routes in the dev server first).
 3. Open the changed pages in the browser (Arabic and, for layout changes, mobile width), click through the new behaviour.
-4. Update this folder (see the checklist in [README.md](README.md)).
+4. Update this folder (see the checklist in [README.md](README.md)). For Claude Code agents this is enforced by `.claude/hooks/require-dev-docs.mjs` (registered in `.claude/settings.json`): a `git commit`, or the end of an agent turn, is blocked while code has changed (uncommitted or unpushed) without any change under `development-almaqar/`. Agent instruction files (`AGENTS.md`, `CLAUDE.md`, `.claude/`) don't count as code.
 
 ## Git
 
