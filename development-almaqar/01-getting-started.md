@@ -33,12 +33,35 @@ All forms use `noValidate` and skip real checks, so you can click through every 
 | `npm run start` | Serve the production build |
 | `npm run lint` | ESLint (Next + react-hooks rules) |
 | `npx tsc --noEmit` | Type check |
+| `npm run test:db` | Database + backend tests on an in-memory Postgres (PGlite): RLS policies and every service. No Supabase needed. |
+| `npm run db:generate` | Create a migration in `drizzle/` after editing `src/db/schema.ts` |
+| `npm run db:migrate` | Apply pending migrations to the database in `DATABASE_URL` |
+| `npm run db:seed -- --owner you@example.com` | Load the demo data into a `demo` company (add `--reset` to replace it) |
+| `npm run db:studio` | Browse the database (Drizzle Studio) |
 
 ## Repository and deployment
 
 - **GitHub:** https://github.com/mohamedehab20/almaqar (branch `main`, public).
 - **Vercel** deploys automatically on every push to `main`. Deployment Protection is on, so preview URLs ask for a Vercel login. Note that `almaqar.vercel.app` is **not** this project.
-- There are no environment variables yet.
+- Environment variables: see "Backend setup" below. Without them the site runs on mock data, as before.
+
+## Backend setup (Supabase)
+
+Everything below is needed only to run against a real database. Without it every screen keeps working on mock data.
+
+1. **Create a Supabase project**, or use the one in `.mcp.json`.
+2. **Copy `.env.example` to `.env.local`** and fill in the values from the dashboard:
+   - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Project Settings → API).
+   - `DATABASE_URL`: the *Transaction pooler* string, port 6543 (Connect → ORMs).
+   - Optional: `SUPABASE_SECRET_KEY`, so invited members get an email.
+3. **Run `npm run db:migrate`.** This creates the tables, RLS policies, functions, the `attachments` storage bucket and the realtime publication.
+4. **Run `npm run db:seed -- --owner you@example.com`** to get the demo company. Sign up with that email and you are its owner (company code `DEMO01`).
+5. **Set up Auth in the dashboard:**
+   - Email provider: on. Email OTP length: 6.
+   - Change the email templates (Confirm signup, Invite, Magic link) to link to `{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=<signup|invite|magiclink>`.
+   - Site URL: the Vercel URL. Add `http://localhost:3000` to the redirect URLs.
+   - **SMS (visitor OTP by phone):** enable the Phone provider with an SMS provider such as Twilio. Until then visitors use the email channel.
+6. **On Vercel**, add the same environment variables (Production + Preview), then redeploy.
 
 ## AI tooling (Supabase MCP + skills)
 

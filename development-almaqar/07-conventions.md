@@ -23,8 +23,24 @@
 
 1. `npm run lint` — no errors or warnings.
 2. `npx tsc --noEmit` — clean (open new routes in the dev server first).
+   - Backend changes: `npm run test:db` passes.
 3. Open the changed pages in the browser (Arabic and, for layout changes, mobile width), click through the new behaviour.
 4. Update this folder (see the checklist in [README.md](README.md)). For Claude Code agents this is enforced by `.claude/hooks/require-dev-docs.mjs` (registered in `.claude/settings.json`): a `git commit`, or the end of an agent turn, is blocked while code has changed (uncommitted or unpushed) without any change under `development-almaqar/`. Agent instruction files (`AGENTS.md`, `CLAUDE.md`, `.claude/`) don't count as code.
+
+## Backend
+
+- **Where code goes:**
+  - Logic goes in `modules/<f>/service.ts` as `fn(ctx, input)`. Never import Next.js there.
+  - Reads for pages go in `queries.ts` (`import "server-only"`, wrapped in `cache()`).
+  - Mutations go in `actions.ts` (`"use server"`, every export is `action(zodSchema, input => withUser(ctx => svc.fn(ctx, input)))`).
+- **Use `withUser` for all user data, never `db()`.** Only migrations, the seed and background jobs use `db()`.
+- **Throw `AppError(code)` for expected failures.** Postgres errors are mapped for you: RLS → `forbidden`, unique → `conflict`, foreign key → `not_found`.
+- **Changing the schema:**
+  1. Edit `src/db/schema.ts`, then run `npm run db:generate`.
+  2. For a new tenant table, add it to the policy loop in a new custom migration (`npx drizzle-kit generate --custom --name <name>`), separating statements with `--> statement-breakpoint`.
+  3. Never edit a migration that has already been applied to a real database.
+- **Test it:** add a case to `tests/db/` and run `npm run test:db` before committing backend changes.
+- **Secrets:** `DATABASE_URL` and `SUPABASE_SECRET_KEY` are server-only. Only `NEXT_PUBLIC_*` reaches the browser.
 
 ## Git
 

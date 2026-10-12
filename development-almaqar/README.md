@@ -2,7 +2,7 @@
 
 This folder is the running engineering record of **Al Maqr (المقر)**, a "digital HQ" SaaS web app. Read it before you touch the code; update it whenever a milestone lands.
 
-> Status (2026-10-12): **frontend-only phase.** Every page runs on mock data in the browser. There is no backend, database or real authentication yet. See [06-backend-handoff.md](06-backend-handoff.md).
+> Status (2026-10-12): **the backend and database are built** (Supabase + Drizzle + RLS, tested with `npm run test:db`). The screens still run on mock data until they are wired to it. See [06-backend-handoff.md](06-backend-handoff.md). Without Supabase keys the app behaves exactly as before.
 
 ## Contents
 

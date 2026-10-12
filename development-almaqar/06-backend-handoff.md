@@ -1,56 +1,45 @@
 # 06 — Backend handoff
 
-Everything the frontend currently fakes. When the backend phase starts, work through this list; remove an item once it is real.
+Everything the frontend still fakes. **The backend for every row now exists.** What is left is wiring each screen to it: replace the mock with the query/action listed, then delete the row and its `TODO(backend)` comment.
 
-Find them all with:
+Find the remaining places with:
 
 ```bash
 grep -rn "TODO(backend)" src
 ```
 
-## Mocked behaviour
+## Wiring checklist
 
-| Area | Where | Replace with |
+| Area | Where (UI) | Backend ready |
 |---|---|---|
-| Company + membership | `src/app/[locale]/(app)/c/[companySlug]/layout.tsx` | Load the company by slug and the signed-in member; 404 / redirect when not a member. |
-| Company login | `src/modules/auth/components/company-login-form.tsx` | Resolve company by code, sign in (Supabase Auth), open that company. |
-| Employee login | `src/modules/auth/components/login-form.tsx` | Sign in, open the employee's company. |
-| Signup | `src/modules/auth/components/signup-form.tsx` | Create user + company, then the "establish your company" steps. |
-| Visitor login | `src/modules/auth/components/visitor-login-form.tsx` | Verify invite code + OTP, open that client's portal. |
-| Signed-in client | `src/modules/marketing/components/client-home.tsx` (`DEMO_CLIENT_ID = "c1"`) | Resolve from invite code / session. |
-| Briefs | `src/modules/marketing/briefs-store.ts`, `client-portal.tsx` | API + realtime subscription; keep the `useBriefs` / `updateBriefs` API. Notify the account manager. |
-| Marketing ideas | `marketing-view.tsx` | Save ideas. |
-| Operations | `operations-view.tsx` | Create workflow instances on the server. |
-| Operations notes | `notes-section.tsx` | Save notes and notify their audience (company / departments / members). |
-| Automation flows | `automation-view.tsx` | Save flows in the automation engine. |
-| Workflow attachments | `workflow-builder-dialog.tsx` | Upload to storage (today: local object URLs, 10 MB limit per file). |
-| Sales orders | `sales-view.tsx` | Save orders and start their approval workflow; server-side numbering (SO-/PO-). |
-| Events | `src/modules/events/api.ts` | Real events source (append-only table + realtime). |
-| AI agents | `src/modules/agents/components/agents-view.tsx` | Send tasks to an agent runtime, track queue and progress; creating custom agents. |
-| Academy progress | `src/modules/academy/components/academy-view.tsx` | Persist lesson progress per user; real lesson content. |
-| Presence | `src/modules/hq/mock.ts`, `hq-view.tsx` | Realtime presence and status per member. |
-| Pricing / plans | `pricing-plans.tsx`, Premium dialog | Billing provider, plan limits enforced on the server (Free: 5 employees, 20 operations/month, 1 workflow). |
+| Company + membership | `src/app/[locale]/(app)/c/[companySlug]/layout.tsx` | `hq/queries.ts` `getCompanyBySlug(slug)` → `{ company, me }`, or `null` → `notFound()`. Redirect to `/login` when not signed in (catch `unauthorized`). |
+| Company login | `modules/auth/components/company-login-form.tsx` | `auth/actions.ts` `signInWithCompanyCode({ companyCode, email, password })` → `{ slug }` |
+| Employee login | `modules/auth/components/login-form.tsx` | Same action. The form's `identifier` field is the email. |
+| Signup | `modules/auth/components/signup-form.tsx` | `signUp(...)` → `{ needsEmailConfirmation, slug }`. Show "check your email" when confirmation is on. |
+| Visitor login | `modules/auth/components/visitor-login-form.tsx` | `sendVisitorOtp` then `verifyVisitorOtp`, with `channel: "email"` or `"sms"` (SMS needs a provider; see 01). The form currently asks for a phone number only. |
+| Signed-in client | `modules/marketing/components/client-home.tsx` (`DEMO_CLIENT_ID`) | `marketing/queries.ts` `getMyClients()` |
+| Briefs | `modules/marketing/briefs-store.ts`, `client-portal.tsx` | `listBriefs` / `listClientBriefs`, plus `sendBrief`, `setBriefStatus`, `replyToBrief`. Realtime: subscribe to `briefs` with the browser client. A `brief.received` event is logged automatically. |
+| Marketing ideas | `marketing-view.tsx` | `listIdeas`, `createIdea` (from a brief: pass `briefId`), `updateIdea` (stage, ratings, versions, delivery) |
+| Operations | `operations-view.tsx` | `operations/queries.ts` `listOperations`, and the `startOperation` action (returns OP-####). The UI row shape (`WorkflowRow`) is built from the run plus its members. |
+| Operations notes | `notes-section.tsx` | `listNotes(companyId, departmentId?)`, `createNote`, `setNotePinned`, `deleteNote`. Notify the audience from `note.created` events (realtime). |
+| Automation flows | `automation-view.tsx` | `automation/actions.ts`: `createWorkflow`, `createWorkflowFromTemplate`, `startRun`, `actOnRun` |
+| Workflow attachments | `workflow-builder-dialog.tsx` | `files/actions.ts` `uploadAttachment` (folder `workflows`) → pass the result in `attachments`; open with `getAttachmentUrl` |
+| Sales orders | `sales-view.tsx` | `listOrders`, `listSuppliers`, `createOrder` (number from DB), `setOrderStatus`, `createSupplier` |
+| Events | `modules/events/api.ts` | Done: `fetchEvents(companyId)` reads the table when signed in. Callers still need to pass `companyId`. |
+| AI agents | `modules/agents/components/agents-view.tsx` | `listAgents`, `queueTask`, `setAgentStatus`, `createAgent`. Running tasks needs the agent runtime (future Python service), which consumes `agent.task_queued` events and calls `completeTask`. |
+| Academy progress | `modules/academy/components/academy-view.tsx` | `getMyProgress`, `setLessonDone` (lesson content stays in `mock.ts`) |
+| Presence | `src/modules/hq/mock.ts`, `hq-view.tsx` | `listMembers`, `setMyStatus`; realtime on `members`. The floor plan comes from `getFloorPlan` and is saved with `saveFloorPlan`. |
+| Pricing / plans | `pricing-plans.tsx`, Premium dialog | Limits are enforced in `src/server/plans.ts` (Free: 5 members, 20 operations/month, 1 workflow), and actions return `plan_limit`. Billing is not built yet: `companies.plan` is set by hand (`free` / `pro`). |
 
-## Planned stack
+## Still to build (not in the backend yet)
 
-From `programming/IMPLEMENTATION_PLAN.md` (outside this repo):
+- **Billing provider** and switching plans.
+- **Agent runtime** (Python).
+- **Account self-service:** profile, password reset, and choosing a company when a user belongs to several (`listMyCompanies` exists).
+- **Marketing sections:** accounts, campaigns, budgets and channels have no tables yet.
+- **HR room:** no tables yet.
+- **Automated flows** (`automation/mock.ts` `flows`): still static. Approval workflows are real.
 
-- Supabase: Postgres, Auth (email/password + OTP), Realtime, Storage.
-- Drizzle ORM with migrations.
-- Row Level Security on `company_id` for multi-tenancy.
-- Server Actions / Server Components for server logic.
-- Zod + react-hook-form for validation.
-- Hosting: Vercel + Supabase.
+## Contracts
 
-## Contracts already shaped in the frontend
-
-These types are a good starting point for tables and APIs:
-
-- `src/modules/hq/mock.ts`: `Member`, `Department`, `Room`, `FurnitureItem`, `Zone`, `PresenceStatus`, `ActivityItem`.
-- `src/modules/operations/notes.ts`: `Note`, `NoteAudience`.
-- `src/modules/automation/workflows.ts`: `Workflow`, `WorkflowRun`, `applyRunAction`.
-- `src/modules/sales/mock.ts`: `Order`, `OrderStatus`, `OrderType`.
-- `src/modules/marketing/briefs-mock.ts`: `Brief`.
-- `src/modules/events/types.ts`: `Event`, `EventType`, `EventSource`, `EventSeverity`.
-- `src/modules/agents/mock.ts`: `Agent`, `AgentKind`, `AgentStatus`.
-- `src/modules/academy/mock.ts`: `Course`, `Lesson`, `Track`, `Level`.
+The frontend types in each module's `mock.ts` are the API contract. Services map database rows to them (`toMember`, `toBrief`, `toOrder`, …) and add a few extra fields where the backend knows more (for example `role` and `linked` on members, `code` and `category` on runs, and `inviteCode` on clients).

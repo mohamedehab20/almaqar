@@ -1,6 +1,6 @@
 # 03 — Routes and modules
 
-All routes also exist under `/en`. Every page below runs on mock data.
+All routes also exist under `/en`. Every page below still runs on mock data. The backend for each one is ready, but the screens are not wired to it yet. See "Backend per module" at the end and [06-backend-handoff.md](06-backend-handoff.md).
 
 ## Public site — `src/app/[locale]/(marketing)`
 
@@ -46,3 +46,26 @@ Wrapped by `layout.tsx` → `AppShell` (sidebar + topbar). Only slug `demo` is v
 | Route | View | Highlights |
 |---|---|---|
 | `/client-portal` | `modules/marketing/components/client-home.tsx` | Signed-in client `c1`. Brief form (`BriefForm` from `client-portal.tsx`), campaign follow-up and replies. Briefs are stored in localStorage and appear live in the marketing room. |
+
+## API routes
+
+| Route | File | What it does |
+|---|---|---|
+| `/api/auth/confirm` | `src/app/api/auth/confirm/route.ts` | Target of Supabase email links (`token_hash` + `type`). Verifies the link, runs `finishSignIn()` (creates the pending company, claims invites) and redirects to `/c/<slug>`, or to `/login?error=link` on failure. |
+
+## Backend per module
+
+Each module has `service.ts` (logic), `queries.ts` (reads) and `actions.ts` (Server Actions). All actions return `ActionResult`: `{ ok: true, data }` or `{ ok: false, error }`.
+
+| Module | Queries | Actions |
+|---|---|---|
+| `auth` | — | `signUp`, `signInWithCompanyCode` (company + employee login), `sendVisitorOtp` / `verifyVisitorOtp` (`channel: "email" | "sms"`), `signOut` |
+| `hq` | `getCompanyBySlug`, `listMyCompanies`, `listMembers`, `listDepartments`, `getFloorPlan` | `updateCompany`, `setMyStatus`, `inviteMember`, `updateMember`, `removeMember`, department CRUD, `saveFloorPlan` |
+| `marketing` | `listClients`, `listBriefs`, `listIdeas`, `getMyClients` and `listClientBriefs` (portal) | `createClient`, `updateClient`, `regenerateInviteCode`, `sendBrief`, `setBriefStatus`, `replyToBrief`, `createIdea`, `updateIdea`, `deleteIdea` |
+| `operations` | `listOperations`, `listNotes(companyId, departmentId?)` | `startOperation` (OP-####), `createNote`, `setNotePinned`, `deleteNote` |
+| `automation` | `listWorkflows`, `listRuns` | `createWorkflow`, `createWorkflowFromTemplate`, `updateWorkflow`, `deleteWorkflow`, `startRun`, `actOnRun` (only the current step's assignee; reuses `applyRunAction`) |
+| `sales` | `listOrders`, `listSuppliers` | `createOrder` (SO-/PO-####), `updateOrder`, `setOrderStatus`, `createSupplier` |
+| `events` | `fetchEvents(companyId?, filter?)` in `api.ts` | `emitEvent()` is called by the other services (not an action) |
+| `agents` | `listAgents` | `createAgent`, `setAgentStatus`, `queueTask`, `completeTask` |
+| `academy` | `getMyProgress` | `setLessonDone` |
+| `files` | — | `uploadAttachment` (FormData), `getAttachmentUrl`, `deleteAttachment` |

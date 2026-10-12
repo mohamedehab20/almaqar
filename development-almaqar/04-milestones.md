@@ -14,6 +14,17 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-12 — Backend foundation: Supabase + Drizzle + RLS
+The complete backend and database, with no UI changes. Screens still use mock data until they are wired up.
+- **Database:** 18 tables, Row Level Security on every table, document numbering, storage, realtime, and auth functions.
+- **Backend:** a service, queries and Server Actions for every module, sign-up and company-code login, and visitor OTP by email or SMS.
+- **Rules:** Free-plan limits are enforced on the server.
+- **Seed:** demo data can be loaded with a seed script.
+- **Tests:** `npm run test:db` (PGlite) covers RLS and every service.
+- **Safe to deploy:** the site behaves exactly as before while no Supabase keys are set.
+
+Files: `src/db/*`, `src/server/*`, `src/lib/supabase/*`, `src/modules/*/{service,queries,actions}.ts`, `src/modules/auth/session.ts`, `src/modules/files/actions.ts`, `src/app/api/auth/confirm/route.ts`, `src/proxy.ts`, `drizzle/*`, `scripts/seed.ts`, `tests/db/*`.
+
 ### 2026-10-12 — Docs enforced for every agent change (`4ff8bd3`)
 Claude Code hook that refuses a commit, and stops an agent from finishing, while code changed without an update to this folder. `CLAUDE.md` states the rule so every agent and subagent sees it.
 Files: `.claude/settings.json`, `.claude/hooks/require-dev-docs.mjs`, `CLAUDE.md`, `development-almaqar/07-conventions.md`.
