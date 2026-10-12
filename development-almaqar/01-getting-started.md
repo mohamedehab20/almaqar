@@ -54,7 +54,7 @@ Everything below is needed only to run against a real database. Without it every
    - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Project Settings → API).
    - `DATABASE_URL`: the *Transaction pooler* string, port 6543 (Connect → ORMs).
    - Optional: `SUPABASE_SECRET_KEY`, so invited members get an email.
-3. **Run `npm run db:migrate`.** This creates the tables, RLS policies, functions, the `attachments` storage bucket and the realtime publication.
+3. **Run `npm run db:migrate`.** This creates the tables, RLS policies, functions, the `attachments` storage bucket and the realtime publication. On the project in `.mcp.json` this is already done (task A1 in [08-backend-tasks.md](08-backend-tasks.md)), so the command only applies newer migrations.
 4. **Run `npm run db:seed -- --owner you@example.com`** to get the demo company. Sign up with that email and you are its owner (company code `DEMO01`).
 5. **Set up Auth in the dashboard:**
    - Email provider: on. Email OTP length: 6.

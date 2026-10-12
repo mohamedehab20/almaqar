@@ -12,7 +12,7 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 
 | # | Task | Owner | Depends on | Status | Done when |
 |---|---|---|---|---|---|
-| A1 | Apply migrations 0000–0003 to the Supabase project (`rosifnxvdpwkvpqzguzj`) through the Supabase MCP, and record them in Drizzle's `drizzle.__drizzle_migrations` so `npm run db:migrate` skips them later | A | — | ⬜ | 18 tables, policies, functions, bucket and publication exist on the project |
+| A1 | Apply migrations 0000–0003 to the Supabase project (`rosifnxvdpwkvpqzguzj`) through the Supabase MCP, and record them in Drizzle's `drizzle.__drizzle_migrations` so `npm run db:migrate` skips them later | A | — | ✅ | 18 tables, policies, functions, bucket and publication exist on the project |
 | A2 | Run the Supabase security and performance advisors; fix the findings in a new migration | A | A1 | ⬜ | Advisors show no errors; any remaining warnings are explained here |
 | A3 | Smoke test on the real database: RLS scenarios run inside a transaction that is rolled back (nothing is left behind), plus checks on storage policies and the realtime publication | A | A1 | ⬜ | Every scenario passes on Supabase, same as on PGlite |
 | B1 | Orders → approval workflow: an order can point at an approval workflow. Making it `pending` starts the run, and finishing the run approves the order (or cancels it if the run is closed). | B | — | ⬜ | Covered in `tests/db/services.test.ts`; new migration applied |
@@ -30,3 +30,18 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 ## Notes per task
 
 (Filled in as tasks land: what was done, anything surprising, follow-ups.)
+
+### A1 — Migrations applied to Supabase (2026-10-12) ✅
+- Applied `0000_init` through `0003_auth_functions` with the MCP `apply_migration` tool, so they also show in Supabase's migration history (`supabase_migrations.schema_migrations`).
+- Recorded them in `drizzle.__drizzle_migrations` with the same hash and `created_at` (the journal's `when`) that `drizzle-kit migrate` would write. Drizzle only compares `created_at`, so `npm run db:migrate` will apply only newer migrations.
+- Verified on the project:
+  - 18 tables, RLS on all of them, 29 policies.
+  - 5 RPC functions and 11 `private` helpers.
+  - 6 triggers.
+  - The `attachments` bucket (private, 10 MB) with its 2 storage policies.
+  - 7 tables in `supabase_realtime`.
+- Checked through the API with the publishable key, as anon:
+  - `invite_exists` works.
+  - `companies` returns no rows.
+  - `create_company` is refused (42501).
+- **From now on**, apply new migrations the same way, or with `npm run db:migrate` once `DATABASE_URL` is set. Never both for the same file.

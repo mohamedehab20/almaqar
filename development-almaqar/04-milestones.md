@@ -14,6 +14,10 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-12 — Database live on Supabase (task A1)
+The schema, RLS, functions, storage bucket and realtime publication now exist on the Supabase project `rosifnxvdpwkvpqzguzj`. They were applied through the Supabase MCP and recorded for Drizzle, so `npm run db:migrate` will not re-apply them. The task board is in `08-backend-tasks.md`.
+Files: `development-almaqar/08-backend-tasks.md` (no code change).
+
 ### 2026-10-12 — Backend foundation: Supabase + Drizzle + RLS
 The complete backend and database, with no UI changes. Screens still use mock data until they are wired up.
 - **Database:** 18 tables, Row Level Security on every table, document numbering, storage, realtime, and auth functions.
