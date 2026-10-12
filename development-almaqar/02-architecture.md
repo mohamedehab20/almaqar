@@ -68,7 +68,8 @@ public/
   landing/*.jpg, auth/diwan.png  page imagery
 drizzle/                       SQL migrations: 0000 tables (generated), 0001 RLS, 0002 numbering/storage/realtime, 0003 auth functions
 scripts/seed.ts                npm run db:seed
-tests/db/                      PGlite setup, RLS tests, service tests
+tests/db/                      PGlite setup, RLS tests, service tests, smoke-supabase.sql (live check)
+tests/server/                  action layer unit tests (no database)
 development-almaqar/           this documentation
 ```
 

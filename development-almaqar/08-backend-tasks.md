@@ -16,7 +16,7 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 | A2 | Run the Supabase security and performance advisors; fix the findings in a new migration | A | A1 | ✅ | Advisors show no errors; any remaining warnings are explained here |
 | A3 | Smoke test on the real database: RLS scenarios run inside a transaction that is rolled back (nothing is left behind), plus checks on storage policies and the realtime publication | A | A1 | ✅ | Every scenario passes on Supabase, same as on PGlite |
 | B1 | Orders → approval workflow: an order can point at an approval workflow. Making it `pending` starts the run, and finishing the run approves the order (or cancels it if the run is closed). | B | — | ✅ | Covered in `tests/db/services.test.ts`; new migration applied |
-| B2 | Unit tests for the action layer: Zod input schemas and the mapping of Postgres and auth errors to error codes | B | — | ⬜ | `npm run test:db` includes them and passes |
+| B2 | Unit tests for the action layer: Zod input schemas and the mapping of Postgres and auth errors to error codes | B | — | ✅ | `npm run test:db` includes them and passes |
 
 ## Phase 2 — Running on Supabase (needs `DATABASE_URL` in `.env.local`)
 
@@ -108,3 +108,22 @@ Note: invite codes are compared in uppercase. The app always generates them in u
   - **Following the run:** `actOnRun` calls `syncOrderWithRun`. A completed run sets the order to `approved`, and a closed run (rejected at the first step) sets it to `cancelled`. Each change logs `order.approved` or `order.cancelled` with source `automation`.
 - **Tests:** a new test in `tests/db/services.test.ts` covers start-on-create, the manual-approve block, approval by the manager, draft → pending → rejected twice → cancelled, the events, and the cross-company workflow check. `npm run test:db`: 15/15.
 - **On Supabase:** advisors are still clean on security, and the smoke test still passes.
+
+### B2 — Action layer tests (2026-10-12) ✅
+`tests/server/actions.test.ts` has 7 tests and needs no database:
+- **`action()`:**
+  - Valid input reaches the handler, and the result comes back as `{ ok: true, data }`.
+  - Invalid input returns `invalid` without calling the handler.
+  - Input is trimmed before the handler sees it.
+  - Thrown `AppError`s come back as their code, and the message stays on the server.
+- **`toErrorCode()`:**
+  - `42501` → forbidden, also when Drizzle wraps the error in `cause`.
+  - `23505` → conflict.
+  - `23503` / `P0002` → not_found.
+  - `22P02` / `23514` / `ZodError` → invalid.
+  - Anything else → `server_error` (logged). Auth error words such as `user_already_exists` are not mistaken for SQLSTATE codes.
+- **Validation helpers:** `id`; `localized` (one language is enough, blank in both is rejected, max length); `optionalLocalized`; `isoDate` (format, and impossible dates such as 2026-02-30).
+
+`npm run test:db` now runs every file matching `tests/**/*.test.ts`: 22/22 pass.
+
+Not covered: the Zod schemas written inline in each `actions.ts`. Those files import `server-only`, which cannot load outside Next.js. The services behind them are covered by `tests/db/services.test.ts`.

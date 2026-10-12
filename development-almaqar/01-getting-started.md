@@ -33,7 +33,7 @@ All forms use `noValidate` and skip real checks, so you can click through every 
 | `npm run start` | Serve the production build |
 | `npm run lint` | ESLint (Next + react-hooks rules) |
 | `npx tsc --noEmit` | Type check |
-| `npm run test:db` | Database + backend tests on an in-memory Postgres (PGlite): RLS policies and every service. No Supabase needed. |
+| `npm run test:db` | All backend tests (`tests/**/*.test.ts`): RLS policies and every service on an in-memory Postgres (PGlite), plus the action layer. No Supabase needed. |
 | `npm run db:generate` | Create a migration in `drizzle/` after editing `src/db/schema.ts` |
 | `npm run db:migrate` | Apply pending migrations to the database in `DATABASE_URL` |
 | `npm run db:seed -- --owner you@example.com` | Load the demo data into a `demo` company (add `--reset` to replace it) |

@@ -14,6 +14,10 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-12 — Tests for the action layer (task B2)
+Unit tests cover input validation, error-code mapping (including errors wrapped by Drizzle) and the shared Zod helpers. `npm run test:db` now runs every test under `tests/` (22 tests).
+Files: `tests/server/actions.test.ts`, `package.json`.
+
 ### 2026-10-12 — Orders go through an approval workflow (task B1)
 An order can name an approval workflow:
 - Becoming pending starts the run.
