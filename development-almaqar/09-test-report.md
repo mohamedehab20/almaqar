@@ -47,7 +47,7 @@ Run through the Supabase MCP.
 | `invite_exists('demoC1')` | ✅ true, case-insensitive |
 | List storage files | ✅ 0 |
 
-Note: the first run reported "19 tables" as a failure. The check itself was wrong; 18 is the correct count. Fixed in the check, not in the database.
+Note: the run reported one failure, "19 public tables". The check was written with the wrong expected number. The schema has 18 tables (see [02-architecture.md](02-architecture.md)), so the database is correct. When you repeat this check, expect 18.
 
 ### 3. Frontend (production server with the Supabase keys)
 
