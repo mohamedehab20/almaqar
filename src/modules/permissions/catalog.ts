@@ -69,6 +69,7 @@ export const AREAS: { area: PermissionArea; label: Localized }[] = [
 export const ROOM_VIEW: Record<string, PermissionKey> = {
   hr: "hr.view",
   operations: "operations.view",
+  meetings: "operations.view",
   automation: "automation.view",
   sales: "sales.view",
   marketing: "marketing.view",

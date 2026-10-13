@@ -14,6 +14,14 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-14 — «غرفة الاجتماعات» page (schedule + task management)
+- **Sidebar:** «اجتماعات» now opens `/c/<slug>/meetings` (no longer "coming soon"), with the tabs «إدارة المهام» and «الجدولة» side by side. «مهام» opens the same room on the tasks tab (`?tab=tasks`).
+- **The schedule** is the one from the Operations room: meetings, appointments, trips outside and interviews, with full details per item. It stays in the Operations room too.
+- **Access:** the room opens with `operations.view` (`ROOM_VIEW.meetings`) and is guarded like the other rooms.
+- **Demo data** is built in the browser, so dates follow the viewer's clock.
+- **Checked:** route checks (ar/en, both tabs) and a real browser.
+Files: `src/app/[locale]/(app)/c/[companySlug]/meetings/{page,layout}.tsx`, `src/modules/operations/components/meetings-room.tsx`, `src/components/layout/{app-sidebar,app-topbar}.tsx`, `src/modules/permissions/catalog.ts`, `scripts/check-routes.mjs`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-14 — Login: the skeleton stays until the real form is drawn
 - **Found by a load test:** a cold browser on the live site, polling every 150 ms. The first fix (`ClerkLoading`) hid the skeleton as soon as Clerk's script was ready, but the form's own code loads after that. That left the guest button alone for 3–4 s, and the form took up to 12 s on a first visit.
 - **Now:**

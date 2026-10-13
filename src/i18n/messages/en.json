@@ -1527,5 +1527,13 @@
       "saved": "Marketing settings saved.",
       "demoSaved": "This is the demo; nothing was saved."
     }
+  },
+  "meetings": {
+    "title": "Meeting room",
+    "subtitle": "The company's appointments, meetings, trips and interviews, and the team's tasks, in one place.",
+    "tabs": {
+      "tasks": "Task management",
+      "schedule": "Schedule"
+    }
   }
 }

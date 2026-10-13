@@ -46,7 +46,8 @@ export function AppSidebar({ companySlug, access = null, onClose }: { companySlu
   const visible = (item: NavItem) => {
     if (!access) return true;
     if (item.key === "permissions") return access.owner;
-    return !(item.key in ROOM_VIEW) || access.rooms.includes(item.key);
+    const room = item.key === "tasks" ? "meetings" : item.key;
+    return !(room in ROOM_VIEW) || access.rooms.includes(room);
   };
 
   // Items without href have no page yet and are marked "coming soon".
@@ -75,8 +76,8 @@ export function AppSidebar({ companySlug, access = null, onClose }: { companySlu
         { key: "marketing", icon: Megaphone, href: `${base}/marketing` },
         { key: "agents", icon: BriefcaseBusiness }, // coming soon (page kept, closed in its layout)
         { key: "archive", icon: Archive },
-        { key: "meetings", icon: DoorOpen },
-        { key: "tasks", icon: CircleCheck },
+        { key: "meetings", icon: DoorOpen, href: `${base}/meetings` },
+        { key: "tasks", icon: CircleCheck, href: `${base}/meetings?tab=tasks` },
         { key: "permissions", icon: ShieldCheck, href: `${base}/permissions` },
       ],
     },

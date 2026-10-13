@@ -2,6 +2,17 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-14 — Login page load (guest button shown alone)
+
+Headless Edge with a fresh profile, cache disabled, and the page checked every 150 ms.
+
+| Page (live site) | Before the fix | After |
+|---|---|---|
+| `/login` | skeleton, then form missing for more than 12 s | skeleton → form at 6.1 s; guest alone 0 ms |
+| `/employee-login` | guest alone 3.15 s | form at 6.0 s; guest alone 0 ms |
+| `/en/login` | guest alone 3.75 s, form at 12 s | form at 4.7 s; guest alone 0 ms |
+| `/login` on a slow network (400 ms latency, 1.6 Mbps) | form not drawn within 25 s | form at 8.4 s; guest alone 0 ms |
+
 ## 2026-10-13 — Client profitability
 
 | Check | Result |
