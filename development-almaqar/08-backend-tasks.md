@@ -28,7 +28,16 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 | B3 | Manual end-to-end auth check against Supabase: sign-up with email confirmation, company-code login, visitor email OTP | B | A4 | ⏳ | Each flow reaches its page; results recorded here |
 | B4 | Vercel: add env vars (`NEXT_PUBLIC_*` now; `DATABASE_URL` and `SUPABASE_SECRET_KEY` as Sensitive after A5). Set Supabase Auth Site URL and redirect URLs to the Vercel domain. | B | A5, Vercel login | ⏳ | Production can sign in |
 
-## Notes per task
+## Phase 3 — Backend for the screens that still have no data source
+
+| # | Task | Owner | Depends on | Status | Done when |
+|---|---|---|---|---|---|
+| C1 | Activity feed (main hall) and operations KPIs, computed from `events` and `workflow_runs`. No new tables. | B | — | ✅ | Queries return the shapes the screens use; covered by tests |
+| C2 | Marketing sections: tables for social accounts and campaigns (with per-channel metrics); budgets and channel stats computed from them | A | — | ⬜ | Migration applied to Supabase, RLS, service + actions, tests, advisors clean |
+| C3 | Automated flows (trigger → condition → action): table, CRUD, enable/disable, templates, run counter for the future engine | A | — | ⬜ | Same as C2 |
+| C4 | Account self-service: password reset (email link), change password, edit own name/title/phone | B | — | ⬜ | Actions + DB guard allow self-edit of name/title only; tests |
+
+## ## Notes per task
 
 (Filled in as tasks land: what was done, anything surprising, follow-ups.)
 
@@ -169,3 +178,18 @@ Checked on Supabase:
 Note on the imported events: `brief.received` is recreated by the trigger at import time, so in `simulation` it appears last in the activity order.
 
 **Cleanup** (the `simulation` company only): `DELETE FROM public.companies WHERE slug = 'simulation';` cascades to all of its rows. Its fake users have no auth accounts. Then run `DELETE FROM public.lesson_progress WHERE lesson_id = 'owner-1-1' AND user_id::text LIKE '5a5a5a5a-%';`.
+
+### C1 — Activity feed and operations KPIs (2026-10-13) ✅
+- **Events now record who did them:** a new column `events.actor_id` (`0007_event_actor`, indexed, applied to Supabase). `emitEvent()` fills it in with the caller's member row. It is `null` for system or automation events and for client portal users, who are not members.
+- **`listActivity(companyId, limit)`** (`events/service.ts`; query in `hq/queries.ts`): newest first. Each item is `{ id, time (ISO), type, actorId, text: { ar, en } }`.
+  - The text is a noun phrase followed by the actor: "اعتماد الطلب PO-1001 — كريم عادل" / "Order approved: PO-1001 — Karim Adel".
+  - Noun phrases keep the Arabic correct whatever the actor's gender. Verbs such as "أنشأ" would read wrong for a woman.
+- **`getOperationsStats(companyId, days = 30)`** (`operations/service.ts` and `queries.ts`) replaces `kpis` and `categoryCounts` in mock.ts. It returns:
+  - `total`, `activeOperations`, `pendingApprovals`
+  - `oldestPendingHours`
+  - `automationRate` (share of operations that are not `human`)
+  - `avgCycleHours` (from creation to the last history entry)
+  - `byCategory`
+- **Tests:** a new service test covers the text format, the null actor for portal briefs, newest-first order, other companies seeing nothing, and the KPI figures. `npm run test:db`: 23/23.
+- **On Supabase:** advisors are clean on security and have no performance warnings.
+

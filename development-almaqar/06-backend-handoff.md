@@ -28,6 +28,8 @@ grep -rn "TODO(backend)" src
 | Events | `modules/events/api.ts` | Done: `fetchEvents(companyId)` reads the table when signed in. Callers still need to pass `companyId`. |
 | AI agents | `modules/agents/components/agents-view.tsx` | `listAgents`, `queueTask`, `setAgentStatus`, `createAgent`. Running tasks needs the agent runtime (future Python service), which consumes `agent.task_queued` events and calls `completeTask`. |
 | Academy progress | `modules/academy/components/academy-view.tsx` | `getMyProgress`, `setLessonDone` (lesson content stays in `mock.ts`) |
+| Activity panel | `hq/mock.ts` `activity`, `hq-view.tsx` | `hq/queries.ts` `listActivity(companyId)` → items with ISO `time` (format it in the UI) and bilingual `text` |
+| Operations KPIs | `operations/mock.ts` `kpis`, `categoryCounts` | `operations/queries.ts` `getOperationsStats(companyId)` |
 | Presence | `src/modules/hq/mock.ts`, `hq-view.tsx` | `listMembers`, `setMyStatus`; realtime on `members`. The floor plan comes from `getFloorPlan` and is saved with `saveFloorPlan`. |
 | Pricing / plans | `pricing-plans.tsx`, Premium dialog | Limits are enforced in `src/server/plans.ts` (Free: 5 members, 20 operations/month, 1 workflow), and actions return `plan_limit`. Billing is not built yet: `companies.plan` is set by hand (`free` / `pro`). |
 

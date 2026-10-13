@@ -314,9 +314,11 @@ export const events = pgTable(
     source: eventSource("source").notNull(),
     severity: eventSeverity("severity").notNull().default("info"),
     payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
+    /** Member who did it (null for the system, automations and client portal users) */
+    actorId: uuid("actor_id").references(() => members.id, { onDelete: "set null" }),
     createdAt: createdAt(),
   },
-  (t) => [index("events_company_created_idx").on(t.companyId, t.createdAt)],
+  (t) => [index("events_company_created_idx").on(t.companyId, t.createdAt), index("events_actor_id_idx").on(t.actorId)],
 );
 
 export const agents = pgTable("agents", {

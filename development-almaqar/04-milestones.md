@@ -14,6 +14,14 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Activity feed and operations KPIs (task C1)
+Events now record their actor. The main hall activity panel and the Operations KPI cards have real queries:
+- `listActivity`, which writes bilingual, gender-neutral lines.
+- `getOperationsStats`.
+
+Migration 0007 is applied to Supabase.
+Files: `src/db/schema.ts`, `drizzle/0007_event_actor.sql`, `src/modules/events/service.ts`, `src/modules/operations/{service,queries}.ts`, `src/modules/hq/queries.ts`, `tests/db/services.test.ts`.
+
 ### 2026-10-13 — Full test run: frontend, backend, live database
 Everything passed:
 - **Backend:** 22/22 tests, lint, types and build.

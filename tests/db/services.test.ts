@@ -249,3 +249,24 @@ test("orders with an approval workflow follow their run", async () => {
   // Another company's workflow cannot be attached
   await failsWith("not_found", t.as(owner, (ctx) => sales.createOrder(ctx, { companyId, type: "sale", partyId: supplier.id, items, workflowId: wf.id })));
 });
+
+test("activity feed names the actor; operations KPIs come from the runs", async () => {
+  const feed = await t.as(owner, (ctx) => events.listActivity(ctx, companyId, 50));
+  assert.ok(feed.length > 0);
+  const order = feed.find((a) => a.type === "order.created");
+  assert.match(order!.text.ar, /^طلب جديد PO-\d{4} — Eman$/, "action, number, then the actor's name");
+  assert.match(order!.text.en, /^New order PO-\d{4} — Eman$/);
+  const brief = feed.find((a) => a.type === "brief.received");
+  assert.equal(brief?.actorId, null, "a client portal user is not a member: no actor");
+  assert.equal(brief?.text.ar, "طلب جديد من عميل");
+  assert.ok(feed.every((a, i) => i === 0 || a.time <= feed[i - 1].time), "newest first");
+  assert.deepEqual(await t.as(outsider, (ctx) => events.listActivity(ctx, companyId)), [], "other companies see nothing");
+
+  const stats = await t.as(owner, (ctx) => operations.getOperationsStats(ctx, companyId));
+  assert.equal(stats.total, 1, "one operation this month: the leave request run");
+  assert.equal(stats.activeOperations, 0);
+  assert.equal(stats.pendingApprovals, 0);
+  assert.equal(stats.byCategory.operations, 1);
+  assert.equal(typeof stats.avgCycleHours, "number");
+  await failsWith("forbidden", t.as(outsider, (ctx) => operations.getOperationsStats(ctx, companyId)));
+});

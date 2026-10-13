@@ -1,5 +1,5 @@
-import { and, desc, eq } from "drizzle-orm";
-import { members, notes, type NoteAudience } from "@/db/schema";
+import { and, desc, eq, gte } from "drizzle-orm";
+import { members, notes, workflowRuns, type NoteAudience } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
@@ -61,4 +61,45 @@ export async function deleteNote(ctx: Ctx, input: { noteId: string }) {
   const me = await requireMember(ctx, note.companyId);
   if (note.authorId !== me.id && me.role === "employee") throw new AppError("forbidden");
   await ctx.tx.delete(notes).where(and(eq(notes.id, note.id), eq(notes.companyId, note.companyId)));
+}
+
+// ---------- KPIs (Operations room header) ----------
+
+const HOUR = 3_600_000;
+
+/**
+ * Figures for the KPI cards and category tabs, computed from the operations (workflow runs) of the
+ * last `days` days. Replaces `kpis` and `categoryCounts` in mock.ts.
+ */
+export async function getOperationsStats(ctx: Ctx, companyId: string, days = 30) {
+  await requireMember(ctx, companyId);
+  const since = new Date(Date.now() - days * 24 * HOUR);
+  const runs = await ctx.tx
+    .select()
+    .from(workflowRuns)
+    .where(and(eq(workflowRuns.companyId, companyId), gte(workflowRuns.createdAt, since)));
+
+  const active = runs.filter((r) => r.status === "in_progress" || r.status === "changes_requested");
+  const pending = active.filter((r) => r.workflowId !== null);
+  const oldestPending = pending.reduce<Date | null>((min, r) => (!min || r.createdAt < min ? r.createdAt : min), null);
+  const completed = runs.filter((r) => r.status === "completed");
+  const cycleHours = completed.map((r) => {
+    const last = r.history.at(-1)?.at;
+    return last ? (new Date(last).getTime() - r.createdAt.getTime()) / HOUR : 0;
+  });
+
+  const byCategory: Record<string, number> = {};
+  for (const r of runs) byCategory[r.category] = (byCategory[r.category] ?? 0) + 1;
+
+  return {
+    periodDays: days,
+    total: runs.length,
+    activeOperations: active.length,
+    pendingApprovals: pending.length,
+    oldestPendingHours: oldestPending ? Math.round(((Date.now() - oldestPending.getTime()) / HOUR) * 10) / 10 : null,
+    /** Share of operations that ran without a person (automated or auto-completed), 0–100 */
+    automationRate: runs.length ? Math.round((runs.filter((r) => r.nature !== "human").length / runs.length) * 1000) / 10 : 0,
+    avgCycleHours: cycleHours.length ? Math.round((cycleHours.reduce((a, b) => a + b, 0) / cycleHours.length) * 10) / 10 : null,
+    byCategory,
+  };
 }

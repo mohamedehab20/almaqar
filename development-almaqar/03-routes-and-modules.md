@@ -60,9 +60,9 @@ Each module has `service.ts` (logic), `queries.ts` (reads) and `actions.ts` (Ser
 | Module | Queries | Actions |
 |---|---|---|
 | `auth` | — | `signUp`, `signInWithCompanyCode` (company + employee login), `sendVisitorOtp` / `verifyVisitorOtp` (`channel: "email" | "sms"`), `signOut` |
-| `hq` | `getCompanyBySlug`, `listMyCompanies`, `listMembers`, `listDepartments`, `getFloorPlan` | `updateCompany`, `setMyStatus`, `inviteMember`, `updateMember`, `removeMember`, department CRUD, `saveFloorPlan` |
+| `hq` | `getCompanyBySlug`, `listMyCompanies`, `listMembers`, `listDepartments`, `getFloorPlan`, `listActivity` (activity panel) | `updateCompany`, `setMyStatus`, `inviteMember`, `updateMember`, `removeMember`, department CRUD, `saveFloorPlan` |
 | `marketing` | `listClients`, `listBriefs`, `listIdeas`, `getMyClients` and `listClientBriefs` (portal) | `createClient`, `updateClient`, `regenerateInviteCode`, `sendBrief`, `setBriefStatus`, `replyToBrief`, `createIdea`, `updateIdea`, `deleteIdea` |
-| `operations` | `listOperations`, `listNotes(companyId, departmentId?)` | `startOperation` (OP-####), `createNote`, `setNotePinned`, `deleteNote` |
+| `operations` | `listOperations`, `getOperationsStats(companyId, days?)` (KPI cards, category counts), `listNotes(companyId, departmentId?)` | `startOperation` (OP-####), `createNote`, `setNotePinned`, `deleteNote` |
 | `automation` | `listWorkflows`, `listRuns` | `createWorkflow`, `createWorkflowFromTemplate`, `updateWorkflow`, `deleteWorkflow`, `startRun`, `actOnRun` (only the current step's assignee; reuses `applyRunAction`) |
 | `sales` | `listOrders`, `listSuppliers` | `createOrder` (SO-/PO-####; optional `workflowId` → approval run), `updateOrder`, `setOrderStatus` (pending starts the run; approved only after the run completes), `createSupplier` |
 | `events` | `fetchEvents(companyId?, filter?)` in `api.ts` | `emitEvent()` is called by the other services (not an action). Brief events: `brief.received` (client sent it; logged by a DB trigger), `brief.acknowledged`, `brief.clarification_requested`, `brief.reopened` (team status changes). |
