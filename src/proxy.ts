@@ -5,10 +5,15 @@ import { routing } from "./i18n/routing";
 
 const handleI18n = createMiddleware(routing);
 
+/** Rooms marked "coming soon" in the sidebar: their URLs go back to the main hall (the pages stay in the code). */
+const COMING_SOON_ROOM = /^(\/en)?\/c\/([^/]+)\/(sales|agents)(\/.*)?$/;
+
 /** Locale routing for pages only; API routes and Clerk's proxy path are left alone. */
 function route(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith("/api") || pathname.startsWith("/trpc") || pathname.startsWith("/__clerk")) return NextResponse.next();
+  const soon = pathname.match(COMING_SOON_ROOM);
+  if (soon) return NextResponse.redirect(new URL(`${soon[1] ?? ""}/c/${soon[2]}`, request.url));
   return handleI18n(request);
 }
 

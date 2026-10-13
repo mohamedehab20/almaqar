@@ -71,9 +71,9 @@ export function AppSidebar({ companySlug, access = null, onClose }: { companySlu
         { key: "operations", icon: Workflow, href: `${base}/operations` },
         { key: "automation", icon: Zap, href: `${base}/automation` },
         { key: "accounts", icon: Banknote },
-        { key: "sales", icon: TrendingUp, href: `${base}/sales` },
+        { key: "sales", icon: TrendingUp }, // coming soon (page kept, closed in its layout)
         { key: "marketing", icon: Megaphone, href: `${base}/marketing` },
-        { key: "agents", icon: BriefcaseBusiness, href: `${base}/agents` },
+        { key: "agents", icon: BriefcaseBusiness }, // coming soon (page kept, closed in its layout)
         { key: "archive", icon: Archive },
         { key: "meetings", icon: DoorOpen },
         { key: "tasks", icon: CircleCheck },

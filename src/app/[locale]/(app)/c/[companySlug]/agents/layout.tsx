@@ -1,11 +1,7 @@
-import { RoomGuard } from "@/modules/permissions/components/room-guard";
+import { redirect } from "@/i18n/navigation";
 
-/** Closed for members without the room's view permission. */
-export default async function RoomLayout({ children, params }: LayoutProps<"/[locale]/c/[companySlug]/agents">) {
-  const { companySlug } = await params;
-  return (
-    <RoomGuard companySlug={companySlug} room="agents">
-      {children}
-    </RoomGuard>
-  );
+/** Coming soon: src/proxy.ts sends this URL back to the main hall; this is the fallback if it is reached anyway. */
+export default async function RoomLayout({ params }: LayoutProps<"/[locale]/c/[companySlug]/agents">) {
+  const { locale, companySlug } = await params;
+  redirect({ href: `/c/${companySlug}`, locale });
 }

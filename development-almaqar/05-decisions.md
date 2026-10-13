@@ -4,6 +4,13 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-13 — Sales and Al Jarab closed as "coming soon"
+**Chosen by the product owner.**
+
+- **Closed in two places:** the sidebar and the URL.
+- **Nothing deleted:** code, data and backend stay, so reopening them means restoring the two `href`s in `app-sidebar.tsx` and removing `COMING_SOON_ROOM` in `src/proxy.ts` and the two redirect layouts.
+- **Alternative:** deleting the rooms, rejected because the work is done and only the launch is postponed.
+
 ### 2026-10-13 — Permissions: owner-defined roles + per-member exceptions, scoped by department
 **Chosen by the product owner.**
 

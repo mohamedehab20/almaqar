@@ -14,6 +14,14 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Sales and Al Jarab back to "coming soon"
+- **Sidebar:** «المبيعات» and «الجراب» are dimmed, with the "coming soon" toast.
+- **Their URLs** (`/c/<slug>/sales`, `/c/<slug>/agents`) redirect to the main hall (307, in `src/proxy.ts`).
+- **The Compass guide** «كلّف وكيل بمهمة» was removed.
+- **Kept:** the pages, services, tables and permissions stay in the code for when they open again.
+
+Files: `src/components/layout/app-sidebar.tsx`, `src/proxy.ts`, `src/app/[locale]/(app)/c/[companySlug]/{sales,agents}/layout.tsx`, `src/modules/academy/mock.ts`, `scripts/check-routes.mjs`.
+
 ### 2026-10-13 — Permissions managed by the owner
 - **New page «صلاحيات»** (`/c/<slug>/permissions`, under «إدارة الأقسام»), owner only. The demo shows it on sample data without saving.
   - **Roles tab:** the built-in roles «مدير» (every permission) and «موظف» (open the rooms, add things, use agents), plus custom roles the owner creates (empty or copied from another role), renames and deletes. Each role has a permission matrix by area: HR, operations, automation, sales, marketing, Al Jarab and company.

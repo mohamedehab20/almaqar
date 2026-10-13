@@ -5,7 +5,7 @@ const base = process.env.BASE_URL ?? "http://localhost:3123";
 const pages = [
   ["/", "هنا يبدأ"], ["/pricing", "300"], ["/compass", "بوصلة"], ["/login", "افتح أبواب"], ["/employee-login", ""],
   ["/visitor-login", ""], ["/signup", ""], ["/join", "فعّل حسابك"], ["/client-portal", ""], ["/c/demo", ""], ["/c/demo/hr", ""],
-  ["/c/demo/operations", ""], ["/c/demo/automation", ""], ["/c/demo/sales", "SO-"], ["/c/demo/marketing", ""], ["/c/demo/agents", ""], ["/c/demo/permissions", "الصلاحيات"],
+  ["/c/demo/operations", ""], ["/c/demo/automation", ""], ["/c/demo/marketing", ""], ["/c/demo/permissions", "الصلاحيات"],
 ];
 let failures = 0;
 const rows = [];
@@ -50,6 +50,15 @@ const other = await fetch(base + "/c/does-not-exist", { redirect: "manual" });
 const toLogin = other.status === 307 && (other.headers.get("location") ?? "").endsWith("/login");
 if (!toLogin) failures++;
 console.log(`${toLogin ? "PASS" : "FAIL"} signed out, other company → ${other.status} ${other.headers.get("location") ?? ""}`);
+
+// Rooms marked "coming soon" go back to the main hall
+for (const path of ["/c/demo/sales", "/c/demo/agents", "/en/c/demo/sales", "/en/c/demo/agents"]) {
+  const res = await fetch(base + path, { redirect: "manual" });
+  const hall = path.startsWith("/en") ? "/en/c/demo" : "/c/demo";
+  const ok = [307, 308].includes(res.status) && (res.headers.get("location") ?? "").endsWith(hall);
+  if (!ok) failures++;
+  console.log(`${ok ? "PASS" : "FAIL"} ${path} (coming soon) → ${res.status} ${res.headers.get("location") ?? ""}`);
+}
 
 // Session refresh in the proxy must not break pages when a stale Supabase cookie is present
 const stale = await fetch(base + "/c/demo", { headers: { cookie: "sb-rosifnxvdpwkvpqzguzj-auth-token=base64-eyJhY2Nlc3NfdG9rZW4iOiJiYWQifQ" } });

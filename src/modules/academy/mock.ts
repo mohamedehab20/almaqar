@@ -145,12 +145,6 @@ export const guides: Guide[] = [
     description: { ar: "في غرفة العمليات", en: "In the operations room" },
     href: "/c/demo/operations",
   },
-  {
-    id: "g-agent",
-    title: { ar: "كلّف وكيل بمهمة", en: "Give an agent a task" },
-    description: { ar: "في الجراب", en: "In Al Jarab" },
-    href: "/c/demo/agents",
-  },
 ];
 
 export const courseMinutes = (course: Course) => course.lessons.reduce((sum, l) => sum + l.minutes, 0);
