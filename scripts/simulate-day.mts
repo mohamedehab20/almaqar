@@ -13,6 +13,7 @@ import * as sales from "../src/modules/sales/service";
 import * as events from "../src/modules/events/service";
 import * as agents from "../src/modules/agents/service";
 import * as academy from "../src/modules/academy/service";
+import * as permissions from "../src/modules/permissions/service";
 
 const out = process.argv[2];
 const t = await createTestDb();
@@ -34,7 +35,8 @@ step("company 'simulation' created by its owner (code SIM001)");
 const purchasing = await t.as(owner, (ctx) => hq.createDepartment(ctx, { companyId, name: { ar: "المشتريات", en: "Purchasing" }, color: "amber" }));
 const ops = await t.as(owner, (ctx) => hq.createDepartment(ctx, { companyId, name: { ar: "العمليات", en: "Operations" }, color: "blue" }));
 await t.as(owner, (ctx) => hq.inviteMember(ctx, { companyId, email: sara.email, name: { ar: "سارة يوسف", en: "Sara Youssef" }, title: { ar: "أخصائية مشتريات", en: "Purchasing specialist" }, departmentId: purchasing.id }));
-await t.as(owner, (ctx) => hq.inviteMember(ctx, { companyId, email: karim.email, name: { ar: "كريم عادل", en: "Karim Adel" }, title: { ar: "مدير العمليات", en: "Operations manager" }, departmentId: ops.id, role: "admin" }));
+const adminRole = (await t.as(owner, (ctx) => permissions.getPermissionsOverview(ctx, companyId))).roles.find((r) => r.systemKey === "admin")!;
+await t.as(owner, (ctx) => hq.inviteMember(ctx, { companyId, email: karim.email, name: { ar: "كريم عادل", en: "Karim Adel" }, title: { ar: "مدير العمليات", en: "Operations manager" }, departmentId: ops.id, roleId: adminRole.id }));
 step("2 departments, 2 employees invited");
 
 // 08:30 — employees sign in for the first time: invites are linked, presence set

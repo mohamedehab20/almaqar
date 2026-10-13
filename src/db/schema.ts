@@ -6,6 +6,7 @@
  */
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   check,
   date,
@@ -87,7 +88,10 @@ export const members = pgTable(
     userId: text("user_id"),
     /** Invite address: an invited member is linked to the auth user with this email on first sign-in */
     email: text("email"),
+    /** "owner" marks the company owner (all permissions). Everyone else gets permissions from roleId + overrides. */
     role: memberRole("role").notNull().default("employee"),
+    /** Permission role (roles table); null = no permissions beyond what overrides grant */
+    roleId: uuid("role_id").references((): AnyPgColumn => roles.id, { onDelete: "set null" }),
     name: jsonb("name").$type<Localized>().notNull(),
     title: jsonb("title").$type<Localized>(),
     departmentId: uuid("department_id").references(() => departments.id, { onDelete: "set null" }),
@@ -95,7 +99,59 @@ export const members = pgTable(
     currentTask: jsonb("current_task").$type<Localized>(),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex("members_company_user_idx").on(t.companyId, t.userId), index("members_user_idx").on(t.userId), index("members_department_id_idx").on(t.departmentId)],
+  (t) => [
+    uniqueIndex("members_company_user_idx").on(t.companyId, t.userId),
+    index("members_user_idx").on(t.userId),
+    index("members_department_id_idx").on(t.departmentId),
+    index("members_role_id_idx").on(t.roleId),
+  ],
+);
+
+// ---------- Permissions (roles the owner defines, per-member overrides) ----------
+
+export const permissionEffect = pgEnum("permission_effect", ["grant", "deny"]);
+
+/**
+ * A permission role the owner defines (e.g. "Sales manager"). system_key marks the two default roles of
+ * every company ("admin", "employee"): renamable, not deletable.
+ */
+export const roles = pgTable(
+  "roles",
+  {
+    id: id(),
+    companyId: companyId(),
+    name: jsonb("name").$type<Localized>().notNull(),
+    systemKey: text("system_key"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("roles_company_id_idx").on(t.companyId), uniqueIndex("roles_company_system_key_idx").on(t.companyId, t.systemKey)],
+);
+
+/** One permission of a role. departmentIds: null = every department; otherwise only those (scoped permissions). */
+export const rolePermissions = pgTable(
+  "role_permissions",
+  {
+    roleId: uuid("role_id")
+      .notNull()
+      .references(() => roles.id, { onDelete: "cascade" }),
+    permission: text("permission").notNull(),
+    departmentIds: uuid("department_ids").array(),
+  },
+  (t) => [primaryKey({ columns: [t.roleId, t.permission] })],
+);
+
+/** Per-member exception on top of the role: grant or deny one permission (optionally for some departments). */
+export const memberPermissionOverrides = pgTable(
+  "member_permission_overrides",
+  {
+    memberId: uuid("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    permission: text("permission").notNull(),
+    effect: permissionEffect("effect").notNull(),
+    departmentIds: uuid("department_ids").array(),
+  },
+  (t) => [primaryKey({ columns: [t.memberId, t.permission] })],
 );
 
 // ---------- Floor plan ----------
@@ -402,6 +458,8 @@ export const orders = pgTable(
     date: date("date").notNull().defaultNow(),
     deliveryDate: date("delivery_date"),
     status: orderStatus("status").notNull().default("draft"),
+    /** Member who created it (scopes orders.approve by department) */
+    createdById: uuid("created_by_id").references(() => members.id, { onDelete: "set null" }),
     /** Approval workflow this order goes through when it becomes pending (optional) */
     workflowId: uuid("workflow_id").references(() => workflows.id, { onDelete: "set null" }),
     /** The approval run started for this order; its outcome sets the order status */
@@ -411,6 +469,7 @@ export const orders = pgTable(
   (t) => [
     uniqueIndex("orders_company_number_idx").on(t.companyId, t.number),
     index("orders_workflow_id_idx").on(t.workflowId),
+    index("orders_created_by_id_idx").on(t.createdById),
     index("orders_run_id_idx").on(t.runId),
   ],
 );

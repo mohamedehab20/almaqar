@@ -113,6 +113,20 @@
       "when": 1791903920174,
       "tag": "0015_tasks_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791913299667,
+      "tag": "0016_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791913304247,
+      "tag": "0017_permissions_logic",
+      "breakpoints": true
     }
   ]
 }

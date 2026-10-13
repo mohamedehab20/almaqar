@@ -3,6 +3,7 @@ import { members, notes, tasks, workflowRuns, type NoteAudience } from "@/db/sch
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
+import { departmentOf, requirePermission } from "@/server/permissions";
 import { emitEvent } from "@/modules/events/service";
 import { noteConcernsDepartment, type Note } from "./notes";
 import type { Task, TaskPriority, TaskStatus } from "./tasks";
@@ -41,6 +42,7 @@ export async function listNotes(ctx: Ctx, companyId: string, departmentId?: stri
 
 export async function createNote(ctx: Ctx, input: { companyId: string; text: string; audience: NoteAudience; operationId?: string | null; pinned?: boolean }) {
   const me = await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "notes.write");
   const [row] = await ctx.tx
     .insert(notes)
     .values({ ...input, authorId: me.id })
@@ -50,17 +52,25 @@ export async function createNote(ctx: Ctx, input: { companyId: string; text: str
   return toNote(row);
 }
 
+/** Your own notes need notes.write; someone else's need notes.manage for the author's department. */
+async function requireNoteAccess(ctx: Ctx, note: NoteRow) {
+  const me = await requireMember(ctx, note.companyId);
+  if (note.authorId === me.id) await requirePermission(ctx, note.companyId, "notes.write");
+  else await requirePermission(ctx, note.companyId, "notes.manage", await departmentOf(ctx, note.authorId));
+}
+
 export async function setNotePinned(ctx: Ctx, input: { noteId: string; pinned: boolean }) {
+  const [current] = await ctx.tx.select().from(notes).where(eq(notes.id, input.noteId));
+  await requireNoteAccess(ctx, found(current));
   const [row] = await ctx.tx.update(notes).set({ pinned: input.pinned }).where(eq(notes.id, input.noteId)).returning();
   return toNote(found(row));
 }
 
-/** The author or an owner/admin may delete a note. */
+/** The author, or whoever has notes.manage for the author's department, may delete a note. */
 export async function deleteNote(ctx: Ctx, input: { noteId: string }) {
   const [row] = await ctx.tx.select().from(notes).where(eq(notes.id, input.noteId));
   const note = found(row);
-  const me = await requireMember(ctx, note.companyId);
-  if (note.authorId !== me.id && me.role === "employee") throw new AppError("forbidden");
+  await requireNoteAccess(ctx, note);
   await ctx.tx.delete(notes).where(and(eq(notes.id, note.id), eq(notes.companyId, note.companyId)));
 }
 
@@ -144,6 +154,7 @@ export async function createTask(
   input: { companyId: string; title: string; assigneeId?: string | null; dueDate?: string | null; priority?: TaskPriority; operationId?: string | null },
 ) {
   const me = await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "tasks.create");
   const assigneeId = input.assigneeId ?? me.id;
   await assertMemberOf(ctx, input.companyId, assigneeId);
   const [row] = await ctx.tx
@@ -154,12 +165,26 @@ export async function createTask(
   return toTask(row);
 }
 
+/**
+ * The creator and the assignee may work on their own task. Anyone else needs tasks.manage for the
+ * assignee's department (and for the new assignee's department when reassigning).
+ */
+async function requireTaskAccess(ctx: Ctx, task: TaskRow, newAssigneeId?: string | null) {
+  const me = await requireMember(ctx, task.companyId);
+  const own = task.createdById === me.id || task.assigneeId === me.id;
+  if (!own) await requirePermission(ctx, task.companyId, "tasks.manage", await departmentOf(ctx, task.assigneeId));
+  if (newAssigneeId && newAssigneeId !== task.assigneeId && newAssigneeId !== me.id && !own) {
+    await requirePermission(ctx, task.companyId, "tasks.manage", await departmentOf(ctx, newAssigneeId));
+  }
+}
+
 export async function updateTask(
   ctx: Ctx,
   input: { taskId: string; title?: string; assigneeId?: string | null; dueDate?: string | null; priority?: TaskPriority; status?: TaskStatus },
 ) {
   const [current] = await ctx.tx.select().from(tasks).where(eq(tasks.id, input.taskId));
   const task = found(current);
+  await requireTaskAccess(ctx, task, input.assigneeId);
   if (input.assigneeId) await assertMemberOf(ctx, task.companyId, input.assigneeId);
   const { taskId, ...patch } = input;
   const completedAt = input.status === undefined ? undefined : input.status === "done" ? new Date() : null;
@@ -174,11 +199,10 @@ export async function updateTask(
   return toTask(found(row));
 }
 
-/** The creator, the assignee or an owner/admin may delete a task. */
+/** The creator, the assignee, or whoever has tasks.manage for the assignee's department may delete a task. */
 export async function deleteTask(ctx: Ctx, input: { taskId: string }) {
   const [row] = await ctx.tx.select().from(tasks).where(eq(tasks.id, input.taskId));
   const task = found(row);
-  const me = await requireMember(ctx, task.companyId);
-  if (me.role === "employee" && task.createdById !== me.id && task.assigneeId !== me.id) throw new AppError("forbidden");
+  await requireTaskAccess(ctx, task);
   await ctx.tx.delete(tasks).where(eq(tasks.id, task.id));
 }

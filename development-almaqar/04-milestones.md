@@ -14,6 +14,22 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Permissions managed by the owner
+- **New page «صلاحيات»** (`/c/<slug>/permissions`, under «إدارة الأقسام»), owner only. The demo shows it on sample data without saving.
+  - **Roles tab:** the built-in roles «مدير» (every permission) and «موظف» (open the rooms, add things, use agents), plus custom roles the owner creates (empty or copied from another role), renames and deletes. Each role has a permission matrix by area: HR, operations, automation, sales, marketing, Al Jarab and company.
+  - **Department scopes:** «إضافة/تعديل/إزالة موظفين», «تثبيت وحذف ملاحظات الآخرين», «إدارة مهام الآخرين» and «اعتماد الطلبات» can be limited to chosen departments.
+  - **Members tab:** each member's role, plus personal exceptions per permission (by role / grant / deny, with a scope), and how many permissions are in effect.
+- **Closed rooms:** a room without its «فتح …» permission disappears from the sidebar, and its URL shows «مالكش صلاحية هنا».
+- **Server:** every action checks its permission (`requirePermission`); the old fixed admin/employee checks are gone.
+- **HR → Employees:** the role column shows the member's role, the owner picks a role when adding, and add/remove follow the permissions.
+- **Database:**
+  - Migrations 0016–0017, applied to Supabase: `roles`, `role_permissions`, `member_permission_overrides`, `members.role_id` and `orders.created_by_id`.
+  - `private.has_permission` decides each check.
+  - Existing companies got both roles: admins → «مدير», employees → «موظف», so nobody lost access.
+- **Checks:** tests 35/35 (7 new in `tests/db/permissions.test.ts`). The smoke test on Supabase now covers permissions. Security advisors are clean. Build and route checks pass.
+
+Files: `src/modules/permissions/{catalog,service,actions,queries}.ts`, `src/modules/permissions/components/{permissions-manager,room-guard}.tsx`, `src/server/permissions.ts`, `src/app/[locale]/(app)/c/[companySlug]/permissions/page.tsx`, `src/app/[locale]/(app)/c/[companySlug]/*/layout.tsx`, every `modules/*/service.ts`, `src/components/layout/{app-shell,app-sidebar,app-topbar}.tsx`, `src/modules/hr/components/employees-panel.tsx`, `src/db/schema.ts`, `drizzle/0016_permissions.sql`, `drizzle/0017_permissions_logic.sql`, `tests/db/*`.
+
 ### 2026-10-13 — Task management in the Operations room
 - **Button:** "إدارة المهام" sits next to Notes and shows the number of open tasks.
 - **Board:** opens with three columns (to do / in progress / done).

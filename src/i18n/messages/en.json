@@ -633,14 +633,16 @@
       "adding": "Adding…",
       "added": "{name} was added. Ask them to activate their account with their email; the company code is {code}.",
       "addedEmailed": "{name} was added and an invitation email was sent.",
-      "onlyAdmins": "Only the owner and admins can add or remove employees.",
+      "onlyAdmins": "Adding employees needs a permission from the owner.",
       "demoNotice": "This is the demo. Sign in with your account to manage your real company's employees.",
       "phone": "WhatsApp number (optional)",
       "phonePlaceholder": "+20 1xx xxx xxxx",
       "whatsapp": "Send the invite on WhatsApp",
       "resendWhatsapp": "Resend the invite on WhatsApp",
       "whatsappMessage": "Hi {name} 👋\nYou were added to «{company}» on Al Maqr.\nActivate your account from this link and sign up with this email: {email}\n{link}",
-      "addedShare": "{name} was added. Send them the invite on WhatsApp so they can activate their account."
+      "addedShare": "{name} was added. Send them the invite on WhatsApp so they can activate their account.",
+      "noRole": "No role",
+      "noPermission": "You have no permission for this employee or department."
     }
   },
   "marketing": {
@@ -1263,6 +1265,65 @@
       "subtitle": "Start free — the academy is with you every step.",
       "signup": "Create your account",
       "pricing": "See pricing"
+    }
+  },
+  "permissions": {
+    "title": "Permissions",
+    "subtitle": "Decide who can open each room and what they can do in it. Roles apply to a group; exceptions to one person.",
+    "demoNotice": "This is the demo: try anything, nothing is saved.",
+    "demoSaved": "Changed in the demo only (not saved).",
+    "tabs": {
+      "roles": "Roles",
+      "members": "Members"
+    },
+    "errors": {
+      "forbidden": "Only the owner manages permissions."
+    },
+    "systemRole": "Built-in role",
+    "customRole": "Custom role",
+    "memberCount": "{count, plural, =0 {no members} one {# member} other {# members}}",
+    "roleCreated": "Role “{name}” created. Pick its permissions and save.",
+    "saved": "Saved.",
+    "roleDeleted": "Role deleted; its members are back on Employee.",
+    "deleteConfirm": "Delete role “{name}”? Its members go back to Employee.",
+    "newRole": "New role",
+    "newRolePlaceholder": "e.g. Sales manager",
+    "copyFrom": "Start from",
+    "startEmpty": "No permissions",
+    "createRole": "Create role",
+    "roleName": "Role name",
+    "save": "Save",
+    "rename": "Rename",
+    "deleteRole": "Delete role",
+    "systemHint": {
+      "admin": "Built-in, cannot be deleted. Starts with every permission; you can remove some.",
+      "employee": "Built-in, cannot be deleted. New members get it automatically."
+    },
+    "clearAll": "Clear all",
+    "selectAll": "Select all",
+    "scopedBadge": "By department",
+    "savePermissions": "Save permissions",
+    "selectedCount": "{count} of {total} permissions",
+    "pickDepartment": "Pick at least one department for department-limited permissions, or they will not be saved.",
+    "scope": "Scope",
+    "scopeAll": "All departments",
+    "scopeSome": "Some departments",
+    "ownerAll": "Owner: every permission",
+    "role": "Role",
+    "noRole": "No role",
+    "effectiveCount": "{count} of {total} permissions in effect",
+    "exceptions": "Exceptions",
+    "exceptionsHint": "“By role” follows their role. “Grant” gives the permission even if the role lacks it; “Deny” removes it even if the role has it.",
+    "byRoleOn": "By role ✓",
+    "byRoleOff": "By role —",
+    "grant": "Grant",
+    "deny": "Deny",
+    "saveExceptions": "Save exceptions",
+    "resetToRole": "Reset all to role",
+    "noAccess": {
+      "title": "No access here",
+      "body": "This room is closed to you. If you need it, ask the company owner for the permission.",
+      "back": "Back to HQ"
     }
   }
 }

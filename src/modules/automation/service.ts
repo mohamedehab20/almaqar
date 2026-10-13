@@ -3,6 +3,7 @@ import { automationFlows, events, workflowRuns, workflows, type Localized, type 
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
+import { requirePermission } from "@/server/permissions";
 import { assertWithinPlan } from "@/server/plans";
 import { emitEvent } from "@/modules/events/service";
 import { applyRunAction, workflowTemplates, type Workflow, type WorkflowRun } from "./workflows";
@@ -43,6 +44,12 @@ export function toRun(r: RunRow): WorkflowRun & {
   };
 }
 
+/** Company of a row (updates and deletes check the permission against it). */
+async function companyOfRow(ctx: Ctx, table: typeof workflows | typeof automationFlows, id: string) {
+  const [row] = await ctx.tx.select({ companyId: table.companyId }).from(table).where(eq(table.id, id));
+  return found(row).companyId;
+}
+
 // ---------- Workflows ----------
 
 export async function listWorkflows(ctx: Ctx, companyId: string) {
@@ -56,7 +63,7 @@ export async function createWorkflow(
   ctx: Ctx,
   input: { companyId: string; name: Localized; steps: StepInput[]; attachments?: WorkflowAttachment[] },
 ) {
-  await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "workflows.manage");
   await assertWithinPlan(ctx, input.companyId, "workflows");
   const [row] = await ctx.tx
     .insert(workflows)
@@ -86,6 +93,7 @@ export async function updateWorkflow(
   ctx: Ctx,
   input: { workflowId: string; name?: Localized; steps?: (StepInput & { id?: string })[]; attachments?: WorkflowAttachment[] },
 ) {
+  await requirePermission(ctx, await companyOfRow(ctx, workflows, input.workflowId), "workflows.manage");
   const [row] = await ctx.tx
     .update(workflows)
     .set({
@@ -99,6 +107,7 @@ export async function updateWorkflow(
 }
 
 export async function deleteWorkflow(ctx: Ctx, input: { workflowId: string }) {
+  await requirePermission(ctx, await companyOfRow(ctx, workflows, input.workflowId), "workflows.manage");
   const deleted = await ctx.tx.delete(workflows).where(eq(workflows.id, input.workflowId)).returning({ id: workflows.id });
   found(deleted[0]);
 }
@@ -123,14 +132,17 @@ export async function listRuns(ctx: Ctx, companyId: string) {
 
 /**
  * Starts an operation. With a workflow it enters its approval steps (the starter completes step 0,
- * like the frontend demo); without one it is a standalone task. Counts toward the plan's monthly operations.
+ * like the frontend demo) and needs runs.start; without one it is a standalone task (operations.create).
+ * Counts toward the plan's monthly operations. `internal`: started by another service that already
+ * checked its own permission (an order's approval run).
  */
 export async function startOperation(
   ctx: Ctx,
   input: { companyId: string; subject: Localized; category?: string; nature?: RunRow["nature"]; workflowId?: string | null },
-  options: { countsTowardPlan?: boolean } = {},
+  options: { countsTowardPlan?: boolean; internal?: boolean } = {},
 ) {
   const me = await requireMember(ctx, input.companyId);
+  if (!options.internal) await requirePermission(ctx, input.companyId, input.workflowId ? "runs.start" : "operations.create");
   if (options.countsTowardPlan !== false) await assertWithinPlan(ctx, input.companyId, "operationsPerMonth");
   const now = new Date().toISOString();
   const history: RunRow["history"] = [{ action: "started", stepIndex: 0, byId: me.id, at: now }];
@@ -240,7 +252,7 @@ export async function createFlow(
   ctx: Ctx,
   input: { companyId: string; name: Localized; trigger: Localized; condition?: Localized | null; action: Localized; triggerEvent?: string | null; enabled?: boolean },
 ) {
-  await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "flows.manage");
   const [row] = await ctx.tx.insert(automationFlows).values(input).returning();
   await emitEvent(ctx, input.companyId, { type: "automation.flow_created", payload: { flowId: row.id } });
   return toFlow(row);
@@ -268,11 +280,13 @@ export async function updateFlow(
   input: { flowId: string; name?: Localized; trigger?: Localized; condition?: Localized | null; action?: Localized; triggerEvent?: string | null; enabled?: boolean },
 ) {
   const { flowId, ...patch } = input;
+  await requirePermission(ctx, await companyOfRow(ctx, automationFlows, flowId), "flows.manage");
   const [row] = await ctx.tx.update(automationFlows).set(patch).where(eq(automationFlows.id, flowId)).returning();
   return toFlow(found(row));
 }
 
 export async function deleteFlow(ctx: Ctx, input: { flowId: string }) {
+  await requirePermission(ctx, await companyOfRow(ctx, automationFlows, input.flowId), "flows.manage");
   const deleted = await ctx.tx.delete(automationFlows).where(eq(automationFlows.id, input.flowId)).returning({ id: automationFlows.id });
   found(deleted[0]);
 }

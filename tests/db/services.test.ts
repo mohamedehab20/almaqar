@@ -11,6 +11,8 @@ import * as sales from "../../src/modules/sales/service";
 import * as events from "../../src/modules/events/service";
 import * as agents from "../../src/modules/agents/service";
 import * as academy from "../../src/modules/academy/service";
+import * as permissions from "../../src/modules/permissions/service";
+import { EMPLOYEE_DEFAULTS } from "../../src/modules/permissions/catalog";
 import { createTestDb, L, user } from "./setup";
 
 let t: Awaited<ReturnType<typeof createTestDb>>;
@@ -67,6 +69,15 @@ test("company, invite and presence", async () => {
   const renamed = await t.as(employee, (ctx) => hq.updateMyProfile(ctx, { companyId, title: { ar: "مصممة", en: "Designer" } }));
   assert.deepEqual([renamed.id, renamed.title.en, renamed.name.en], [employeeMemberId, "Designer", "Eman"], "only the given fields change, on your own row");
   await failsWith("forbidden", t.as(outsider, (ctx) => hq.updateMyProfile(ctx, { companyId, name: L("x") })));
+
+  // The default Employee role cannot manage suppliers; the owner gives Eman a custom role that can
+  await failsWith("forbidden", t.as(employee, (ctx) => sales.createSupplier(ctx, { companyId, name: L("Too early") })));
+  const coordinator = await t.as(owner, (ctx) => permissions.createRole(ctx, { companyId, name: L("Coordinator") }));
+  const extra = ["suppliers.manage", "clients.manage", "briefs.manage", "campaigns.manage", "flows.manage"] as const;
+  await t.as(owner, (ctx) =>
+    permissions.setRolePermissions(ctx, { roleId: coordinator.id, permissions: [...EMPLOYEE_DEFAULTS, ...extra].map((key) => ({ key, departmentIds: null })) }),
+  );
+  await t.as(owner, (ctx) => permissions.assignRole(ctx, { memberId: employeeMemberId, roleId: coordinator.id }));
 
   const list = await t.as(owner, (ctx) => hq.listMembers(ctx, companyId));
   assert.equal(list.length, 2);
@@ -316,7 +327,7 @@ test("marketing sections: accounts, campaigns, budgets and channel stats; the cl
   assert.deepEqual(mine.map((k) => k.name.en), ["Ramadan reels"]);
   assert.deepEqual(await t.as(visitor, (ctx) => marketing.listCampaigns(ctx, { clientId: other.id })), []);
   assert.equal((await t.as(visitor, (ctx) => marketing.listSocialAccounts(ctx, { clientId: bakery.id }))).length, 1);
-  await failsWith("not_found", t.as(visitor, (ctx) => marketing.updateCampaign(ctx, { campaignId: k1.id, spent: 1 })));
+  await failsWith("forbidden", t.as(visitor, (ctx) => marketing.updateCampaign(ctx, { campaignId: k1.id, spent: 1 })));
   await failsWith("forbidden", t.as(visitor, (ctx) => marketing.createCampaign(ctx, { clientId: bakery.id, name: L("x"), channels: ["X"] })));
 
   const done = await t.as(employee, (ctx) => marketing.updateCampaign(ctx, { campaignId: k1.id, stage: "done" }));

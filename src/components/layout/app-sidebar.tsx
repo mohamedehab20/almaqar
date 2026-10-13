@@ -29,14 +29,25 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { ROOM_VIEW } from "@/modules/permissions/catalog";
 
 type NavItem = { key: string; icon: LucideIcon; href?: string };
 type NavGroup = NavItem & { children: NavItem[] };
 
-export function AppSidebar({ companySlug, onClose }: { companySlug: string; onClose?: () => void }) {
+/** Rooms a signed-in member may open, and whether they are the owner. null: the public demo (all open). */
+export type RoomAccess = { owner: boolean; rooms: string[] } | null;
+
+export function AppSidebar({ companySlug, access = null, onClose }: { companySlug: string; access?: RoomAccess; onClose?: () => void }) {
   const t = useTranslations("app");
   const pathname = usePathname();
   const base = `/c/${companySlug}`;
+
+  // Rooms without permission are hidden; the permissions page is the owner's (open in the demo).
+  const visible = (item: NavItem) => {
+    if (!access) return true;
+    if (item.key === "permissions") return access.owner;
+    return !(item.key in ROOM_VIEW) || access.rooms.includes(item.key);
+  };
 
   // Items without href have no page yet and are marked "coming soon".
   const groups: NavGroup[] = [
@@ -66,10 +77,10 @@ export function AppSidebar({ companySlug, onClose }: { companySlug: string; onCl
         { key: "archive", icon: Archive },
         { key: "meetings", icon: DoorOpen },
         { key: "tasks", icon: CircleCheck },
-        { key: "permissions", icon: ShieldCheck },
+        { key: "permissions", icon: ShieldCheck, href: `${base}/permissions` },
       ],
     },
-  ];
+  ].map((group) => ({ ...group, children: group.children.filter(visible) }));
 
   // A group starts open when the current page is one of its children
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>

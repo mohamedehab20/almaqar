@@ -43,6 +43,18 @@ BEGIN
   IF NOT failed THEN RAISE EXCEPTION 'FAIL: employee promoted themself'; END IF;
   log := array_append(log, 'member guard');
 
+  -- Permissions: a new company gets the Admin and Employee roles; only the owner manages them
+  PERFORM pg_temp.act_as(a);
+  SELECT count(*) INTO n FROM public.roles WHERE company_id = c1 AND system_key IN ('admin', 'employee');
+  IF n <> 2 THEN RAISE EXCEPTION 'FAIL: new company has % default roles', n; END IF;
+  IF NOT private.has_permission(c1, 'company.settings') THEN RAISE EXCEPTION 'FAIL: the owner lacks a permission'; END IF;
+  PERFORM pg_temp.act_as(e);
+  IF private.has_permission(c1, 'hr.view') THEN RAISE EXCEPTION 'FAIL: a member without a role has a permission'; END IF;
+  failed := false;
+  BEGIN INSERT INTO public.roles (company_id, name) VALUES (c1, '{"ar":"x","en":"x"}'); EXCEPTION WHEN others THEN failed := true; END;
+  IF NOT failed THEN RAISE EXCEPTION 'FAIL: an employee created a role'; END IF;
+  log := array_append(log, 'permissions');
+
   -- Numbering
   INSERT INTO public.orders (company_id, type, party_id, number) VALUES (c1, 'sale', gen_random_uuid(), '') RETURNING number INTO txt;
   IF txt <> 'SO-1001' THEN RAISE EXCEPTION 'FAIL: first order number is %', txt; END IF;

@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { redirect } from "@/i18n/navigation";
 import { currentUserId, demoCompany, members } from "@/modules/hq/mock";
 import { getSignedInCompany } from "@/modules/hq/queries";
+import { getRoomAccess } from "@/modules/permissions/queries";
 
 export default async function CompanyLayout({ children, params }: LayoutProps<"/[locale]/c/[companySlug]">) {
   const { locale, companySlug } = await params;
@@ -13,8 +14,9 @@ export default async function CompanyLayout({ children, params }: LayoutProps<"/
   // Signed in and a member: the real company
   const current = await getSignedInCompany(companySlug);
   if (current) {
+    const access = await getRoomAccess(companySlug);
     return (
-      <AppShell companySlug={companySlug} userName={current.me.name[lang] || current.me.name.ar || current.me.name.en} signedIn>
+      <AppShell companySlug={companySlug} userName={current.me.name[lang] || current.me.name.ar || current.me.name.en} signedIn access={access}>
         {children}
       </AppShell>
     );

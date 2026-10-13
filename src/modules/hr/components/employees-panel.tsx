@@ -21,6 +21,7 @@ export type EmployeeRow = {
   departmentId: string;
   status: PresenceStatus;
   role: "owner" | "admin" | "employee";
+  roleId: string | null;
   email: string | null;
   linked: boolean;
 };
@@ -33,9 +34,14 @@ type EmployeesPanelProps = {
   meRole: EmployeeRow["role"];
   employees: EmployeeRow[];
   departments: Department[];
+  /** The company's roles (names for the table; the owner picks one when adding) */
+  roles: { id: string; name: Localized; systemKey: string | null }[];
+  /** From the caller's permissions (members.invite / members.remove); the server checks each action again */
+  canInvite: boolean;
+  canRemove: boolean;
 };
 
-/** HR → employees: company code to share, the team, and adding/removing employees (owner and admins). */
+/** HR → employees: company code to share, the team, and adding/removing employees (by permission). */
 /**
  * wa.me link with a ready invite message. With a number it opens that chat, otherwise WhatsApp asks
  * who to send it to. Local Egyptian numbers (01xxxxxxxxx) get the country code 20.
@@ -49,7 +55,7 @@ function whatsappLink(message: string, phone?: string) {
 
 type Invite = { name: string; email: string; phone?: string };
 
-export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRole, employees, departments }: EmployeesPanelProps) {
+export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRole, employees, departments, roles, canInvite, canRemove }: EmployeesPanelProps) {
   const t = useTranslations("hr.employees");
   const tErr = useTranslations("auth.errors");
   const lang = useLocale() as "ar" | "en";
@@ -57,7 +63,6 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const canManage = meRole !== "employee";
   const [lastInvite, setLastInvite] = useState<Invite | null>(null);
 
   /** Opens WhatsApp with the invite for this person: the join page in the current language + their email. */
@@ -67,6 +72,12 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
     window.open(whatsappLink(message, invite.phone), "_blank", "noopener,noreferrer");
   };
   const text = (v: Localized) => v[lang] || v.ar || v.en;
+  const roleName = (m: EmployeeRow) => {
+    if (m.role === "owner") return t("roles.owner");
+    const role = roles.find((r) => r.id === m.roleId);
+    return role ? text(role.name) : t("noRole");
+  };
+  const defaultRoleId = roles.find((r) => r.systemKey === "employee")?.id ?? "";
   const departmentName = (id: string) => {
     const d = departments.find((x) => x.id === id);
     return d ? text(d.name) : t("noDepartment");
@@ -112,7 +123,7 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
                   {t(key)}
                 </th>
               ))}
-              {canManage && <th className="px-3 py-2" />}
+              {canRemove && <th className="px-3 py-2" />}
             </tr>
           </thead>
           <tbody>
@@ -136,7 +147,7 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
                 </td>
                 <td className="px-3 py-3">{text(m.title) || "—"}</td>
                 <td className="px-3 py-3">{departmentName(m.departmentId)}</td>
-                <td className="px-3 py-3">{t(`roles.${m.role}`)}</td>
+                <td className="px-3 py-3">{roleName(m)}</td>
                 <td className="px-3 py-3">
                   <span
                     className={
@@ -147,7 +158,7 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
                   >
                     {m.linked ? t("linked") : t("pending")}
                   </span>
-                  {!m.linked && m.email && canManage && (
+                  {!m.linked && m.email && canInvite && (
                     <button
                       type="button"
                       onClick={() => sendOnWhatsApp({ name: text(m.name), email: m.email! })}
@@ -159,7 +170,7 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
                     </button>
                   )}
                 </td>
-                {canManage && (
+                {canRemove && (
                   <td className="px-3 py-3 text-end">
                     {m.role !== "owner" && m.id !== meId && (
                       <button
@@ -169,7 +180,7 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
                           if (!window.confirm(t("removeConfirm", { name: text(m.name) }))) return;
                           startTransition(async () => {
                             const result = await removeMember({ companyId, memberId: m.id });
-                            setMessage(result.ok ? null : tErr(result.error));
+                            setMessage(result.ok ? null : result.error === "forbidden" ? t("noPermission") : tErr(result.error));
                             router.refresh();
                           });
                         }}
@@ -187,7 +198,7 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
         </table>
       </div>
 
-      {canManage ? (
+      {canInvite ? (
         <form
           className="grid gap-4 rounded-lg bg-surface-container-low p-4 sm:grid-cols-2 lg:grid-cols-3 lg:items-end"
           onSubmit={(event) => {
@@ -204,9 +215,9 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
                 name: { ar: name, en: name },
                 title: title ? { ar: title, en: title } : undefined,
                 departmentId: value("departmentId") || null,
-                role: value("role") === "admin" ? "admin" : "employee",
+                roleId: meRole === "owner" ? value("roleId") || null : undefined,
               });
-              if (!result.ok) return setMessage(tErr(result.error));
+              if (!result.ok) return setMessage(result.error === "forbidden" ? t("noPermission") : tErr(result.error));
               setMessage(result.data.emailed ? t("addedEmailed", { name }) : t("addedShare", { name }));
               setLastInvite({ name, email: value("email").toLowerCase(), phone: value("phone") || undefined });
               form.reset();
@@ -238,9 +249,12 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
           <div className="flex items-end gap-3">
             {meRole === "owner" && (
               <Field label={t("role")} htmlFor="emp-role" className="flex-1">
-                <Select id="emp-role" name="role" defaultValue="employee">
-                  <option value="employee">{t("roles.employee")}</option>
-                  <option value="admin">{t("roles.admin")}</option>
+                <Select id="emp-role" name="roleId" defaultValue={defaultRoleId}>
+                  {roles.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {text(r.name)}
+                    </option>
+                  ))}
                 </Select>
               </Field>
             )}

@@ -33,18 +33,19 @@ Wrapped by `layout.tsx` → `AppShell` (sidebar + topbar). The layout calls `get
 
 The rooms' screens still show mock data. Only the layout and HR → Employees read the real company so far.
 
-**Sidebar** (`app-sidebar.tsx`): logo → `/`; groups «نظرة عامة» (voice, camera, recording, calendar, chat — coming soon) and «إدارة الأقسام». Enabled items: HR, operations, automation, sales, marketing, Al Jarab. Accounts, archive, meetings, tasks and permissions are dimmed and show a "coming soon" toast. «الترقية إلى الذهبية» → `/pricing`.
+**Sidebar** (`app-sidebar.tsx`): logo → `/`; groups «نظرة عامة» (voice, camera, recording, calendar, chat — coming soon) and «إدارة الأقسام». Enabled items: HR, operations, automation, sales, marketing, Al Jarab, and permissions (owner only; open in the demo). A signed-in member does not see rooms they have no `.view` permission for. Accounts, archive, meetings and tasks are dimmed and show a "coming soon" toast. «الترقية إلى الذهبية» → `/pricing`.
 
 **Topbar** (`app-topbar.tsx`): menu button and logo on small screens, page title from `sectionTitles`, main-hall tabs (placeholders), notifications, avatar.
 
 | Route | View | Highlights |
 |---|---|---|
 | `/c/demo` | `modules/hq/components/hq-view.tsx` | Main hall. Floor plan (`floor-plan.tsx`) with rooms, furniture and an open workspace split into department zones; status chips pinned in a fixed strip; zoom controls; presence / activity side panel; control bar (status menu, mic, camera, history). «إضافة طبقة أخرى» opens the Premium dialog (`premium-layer-dialog.tsx`) → `/pricing`. |
-| `/c/demo/hr` | `modules/hr/components/hr-home.tsx` + `employees-panel.tsx` | HR home. **Signed in:** an Employees panel at the top shows the company code (with copy), the team with role and account status (active, or waiting for activation), an add-employee form (owner/admin; only the owner can make admins; optional WhatsApp number), a "Send the invite on WhatsApp" button after adding and on every employee still waiting, and remove. **Demo:** a note asking you to sign in. |
+| `/c/demo/hr` | `modules/hr/components/hr-home.tsx` + `employees-panel.tsx` | HR home. **Signed in:** an Employees panel at the top shows the company code (with copy), the team with role and account status (active, or waiting for activation), an add-employee form (needs «إضافة موظفين»; only the owner picks the role, others add with «موظف»; optional WhatsApp number), a "Send the invite on WhatsApp" button after adding and on every employee still waiting, and remove. **Demo:** a note asking you to sign in. |
 | `/c/demo/operations` | `modules/operations/components/operations-view.tsx` | Operations room: header actions (audit log, add operation, analysis, notes toggle), KPI cards, operations table by category (contracts, purchasing, finance, maintenance, operations, sales) with approve / reject / request changes, notes section with audience picker (whole company, or departments + employees). |
 | `/c/demo/automation` | `modules/automation/components/automation-view.tsx` | Automation room: views all / workflows / flows / templates. Approval workflows built from employees (name + role + department), with attachments up to 10 MB. Runs follow `applyRunAction` in `workflows.ts`: approve → next step, reject → previous step (closes at the first), request changes → first step. Template `tpl-sales-ops` (7 steps). |
 | `/c/demo/sales` | `modules/sales/components/sales-view.tsx` | Sale (SO-) and purchase (PO-) orders, totals, filter, order dialog, status changes. |
 | `/c/demo/marketing` | `modules/marketing/components/marketing-view.tsx` | Idea bank, lab (version comparison), delivery; sections for clients, accounts, campaigns, channel budgets, channels; incoming briefs shared with the client portal. |
+| `/c/demo/permissions` | `modules/permissions/components/permissions-manager.tsx` | «الصلاحيات» (owner only; others get «مالكش صلاحية هنا»). Roles tab: built-in «مدير»/«موظف» + custom roles (create, copy, rename, delete) with a permission matrix by area and department scopes. Members tab: role per member, personal exceptions (by role / grant / deny + scope), permissions in effect. Demo: sample data, nothing saved. |
 | `/c/demo/agents` | `modules/agents/components/agents-view.tsx` | «الجراب» — 2 general agents and 6 specialists; metrics, filter, assign-task dialog (adds to the agent's queue), pause/resume. |
 
 ## Client portal — `src/app/[locale]/(client)`
@@ -75,4 +76,5 @@ Each module has `service.ts` (logic), `queries.ts` (reads) and `actions.ts` (Ser
 | `events` | `fetchEvents(companyId?, filter?)` in `api.ts` | `emitEvent()` is called by the other services (not an action). Brief events: `brief.received` (client sent it; logged by a DB trigger), `brief.acknowledged`, `brief.clarification_requested`, `brief.reopened` (team status changes). |
 | `agents` | `listAgents` | `createAgent`, `setAgentStatus`, `queueTask`, `completeTask` |
 | `academy` | `getMyProgress` | `setLessonDone` |
+| `permissions` | `getMyPermissions`, `listRoles`, `getPermissionsOverview` (owner), `getRoomAccess(slug)` (sidebar + room guards) | `createRole`, `renameRole`, `deleteRole`, `setRolePermissions`, `assignRole`, `setMemberOverrides` (all owner only) |
 | `files` | — | `uploadAttachment` (FormData), `getAttachmentUrl`, `deleteAttachment` |

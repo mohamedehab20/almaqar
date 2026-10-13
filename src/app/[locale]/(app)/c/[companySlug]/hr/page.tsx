@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSignedInCompany, listDepartments, listMembers } from "@/modules/hq/queries";
 import { EmployeesPanel } from "@/modules/hr/components/employees-panel";
 import { HrHome } from "@/modules/hr/components/hr-home";
+import { getMyPermissions, listRoles } from "@/modules/permissions/queries";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/c/[companySlug]/hr">): Promise<Metadata> {
   const { locale } = await params;
@@ -25,7 +26,12 @@ export default async function HrPage({ params }: PageProps<"/[locale]/c/[company
   }
 
   const { company, me } = current;
-  const [employees, departments] = await Promise.all([listMembers(company.id), listDepartments(company.id)]);
+  const [employees, departments, roles, mine] = await Promise.all([
+    listMembers(company.id),
+    listDepartments(company.id),
+    listRoles(company.id),
+    getMyPermissions(company.id),
+  ]);
   return (
     <HrHome>
       <EmployeesPanel
@@ -36,6 +42,9 @@ export default async function HrPage({ params }: PageProps<"/[locale]/c/[company
         meRole={me.role}
         employees={employees}
         departments={departments}
+        roles={roles}
+        canInvite={Boolean(mine.scopes["members.invite"])}
+        canRemove={Boolean(mine.scopes["members.remove"])}
       />
     </HrHome>
   );

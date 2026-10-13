@@ -1,8 +1,9 @@
 import { and, asc, eq } from "drizzle-orm";
-import { companies, departments, furniture, members, rooms, zones, type Localized } from "@/db/schema";
+import { companies, departments, furniture, members, roles, rooms, zones, type Localized } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
-import { found, requireAdmin, requireMember } from "@/server/membership";
+import { found, requireMember } from "@/server/membership";
+import { requirePermission } from "@/server/permissions";
 import { assertWithinPlan } from "@/server/plans";
 import { emitEvent } from "@/modules/events/service";
 import type { Department, FurnitureItem, Member, PresenceStatus, Room, Zone } from "./mock";
@@ -12,7 +13,7 @@ const EMPTY: Localized = { ar: "", en: "" };
 type MemberRow = typeof members.$inferSelect;
 type MemberRole = MemberRow["role"];
 
-export function toMember(r: MemberRow): Member & { role: MemberRole; email: string | null; linked: boolean } {
+export function toMember(r: MemberRow): Member & { role: MemberRole; roleId: string | null; email: string | null; linked: boolean } {
   return {
     id: r.id,
     name: r.name,
@@ -21,6 +22,7 @@ export function toMember(r: MemberRow): Member & { role: MemberRole; email: stri
     status: r.status,
     currentTask: r.currentTask ?? undefined,
     role: r.role,
+    roleId: r.roleId,
     email: r.email,
     linked: r.userId !== null,
   };
@@ -47,7 +49,7 @@ export async function listMyCompanies(ctx: Ctx) {
 }
 
 export async function updateCompany(ctx: Ctx, input: { companyId: string; name?: Localized; floor?: { widthM: number; depthM: number } }) {
-  await requireAdmin(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "company.settings");
   const [row] = await ctx.tx
     .update(companies)
     .set({ name: input.name, floor: input.floor })
@@ -85,13 +87,30 @@ export async function updateMyProfile(ctx: Ctx, input: { companyId: string; name
   return toMember(found(row));
 }
 
-/** Adds a member by email. They are linked to their account when they first sign in (claim_invites). */
+/** The company's default Employee role (every company has one, see private.seed_default_roles). */
+async function employeeRoleId(ctx: Ctx, companyId: string) {
+  const [role] = await ctx.tx.select({ id: roles.id }).from(roles).where(and(eq(roles.companyId, companyId), eq(roles.systemKey, "employee")));
+  return role?.id ?? null;
+}
+
+/** A role id sent by the UI must belong to this company. */
+async function assertRoleInCompany(ctx: Ctx, companyId: string, roleId: string) {
+  const [role] = await ctx.tx.select({ id: roles.id }).from(roles).where(and(eq(roles.id, roleId), eq(roles.companyId, companyId)));
+  if (!role) throw new AppError("not_found");
+}
+
+/**
+ * Adds a member by email (needs members.invite for their department). They are linked to their account
+ * when they first sign in (claim_invites). Choosing a role is owner-only; others add with the default Employee role.
+ */
 export async function inviteMember(
   ctx: Ctx,
-  input: { companyId: string; email: string; name: Localized; title?: Localized; departmentId?: string | null; role?: "admin" | "employee" },
+  input: { companyId: string; email: string; name: Localized; title?: Localized; departmentId?: string | null; roleId?: string | null },
 ) {
-  const me = await requireAdmin(ctx, input.companyId);
-  if (input.role === "admin" && me.role !== "owner") throw new AppError("forbidden");
+  const me = await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "members.invite", input.departmentId);
+  if (input.roleId && me.role !== "owner") throw new AppError("forbidden");
+  if (input.roleId) await assertRoleInCompany(ctx, input.companyId, input.roleId);
   await assertWithinPlan(ctx, input.companyId, "members");
   const email = input.email.trim().toLowerCase();
   const [taken] = await ctx.tx
@@ -108,42 +127,54 @@ export async function inviteMember(
       name: input.name,
       title: input.title,
       departmentId: input.departmentId ?? null,
-      role: input.role ?? "employee",
+      role: "employee",
+      roleId: input.roleId ?? (await employeeRoleId(ctx, input.companyId)),
     })
     .returning();
   await emitEvent(ctx, input.companyId, { type: "member.invited", payload: { memberId: row.id } });
   return toMember(row);
 }
 
+/** Edits a member (members.edit for their department, and for the new one when moving). Roles: owner only, never the owner's own record. */
 export async function updateMember(
   ctx: Ctx,
-  input: { companyId: string; memberId: string; name?: Localized; title?: Localized; departmentId?: string | null; role?: "admin" | "employee" },
+  input: { companyId: string; memberId: string; name?: Localized; title?: Localized; departmentId?: string | null; roleId?: string | null },
 ) {
-  const me = await requireAdmin(ctx, input.companyId);
+  const me = await requireMember(ctx, input.companyId);
   const [target] = await ctx.tx
     .select()
     .from(members)
     .where(and(eq(members.id, input.memberId), eq(members.companyId, input.companyId)));
   found(target);
-  // Only the owner changes roles, and the owner's own role never changes here.
-  if (input.role !== undefined && (me.role !== "owner" || target.role === "owner")) throw new AppError("forbidden");
+  if (input.roleId !== undefined) {
+    if (me.role !== "owner" || target.role === "owner") throw new AppError("forbidden");
+    if (input.roleId) await assertRoleInCompany(ctx, input.companyId, input.roleId);
+  }
+  if (input.name !== undefined || input.title !== undefined || input.departmentId !== undefined) {
+    if (target.role === "owner" && me.role !== "owner") throw new AppError("forbidden");
+    await requirePermission(ctx, input.companyId, "members.edit", target.departmentId);
+    if (input.departmentId !== undefined && input.departmentId !== target.departmentId) {
+      await requirePermission(ctx, input.companyId, "members.edit", input.departmentId);
+    }
+  }
 
   const [row] = await ctx.tx
     .update(members)
-    .set({ name: input.name, title: input.title, departmentId: input.departmentId, role: input.role })
+    .set({ name: input.name, title: input.title, departmentId: input.departmentId, roleId: input.roleId })
     .where(eq(members.id, input.memberId))
     .returning();
   return toMember(found(row));
 }
 
 export async function removeMember(ctx: Ctx, input: { companyId: string; memberId: string }) {
-  const me = await requireAdmin(ctx, input.companyId);
+  const me = await requireMember(ctx, input.companyId);
   const [target] = await ctx.tx
     .select()
     .from(members)
     .where(and(eq(members.id, input.memberId), eq(members.companyId, input.companyId)));
   found(target);
   if (target.role === "owner" || target.id === me.id) throw new AppError("forbidden");
+  await requirePermission(ctx, input.companyId, "members.remove", target.departmentId);
   await ctx.tx.delete(members).where(eq(members.id, input.memberId));
   await emitEvent(ctx, input.companyId, { type: "member.removed", payload: { memberId: input.memberId } });
 }
@@ -156,13 +187,13 @@ export async function listDepartments(ctx: Ctx, companyId: string): Promise<Depa
 }
 
 export async function createDepartment(ctx: Ctx, input: { companyId: string; name: Localized; color?: Department["color"] }) {
-  await requireAdmin(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "departments.manage");
   const [row] = await ctx.tx.insert(departments).values(input).returning();
   return { id: row.id, name: row.name, color: row.color } satisfies Department;
 }
 
 export async function updateDepartment(ctx: Ctx, input: { companyId: string; departmentId: string; name?: Localized; color?: Department["color"] }) {
-  await requireAdmin(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "departments.manage");
   const [row] = await ctx.tx
     .update(departments)
     .set({ name: input.name, color: input.color })
@@ -173,7 +204,7 @@ export async function updateDepartment(ctx: Ctx, input: { companyId: string; dep
 }
 
 export async function deleteDepartment(ctx: Ctx, input: { companyId: string; departmentId: string }) {
-  await requireAdmin(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "departments.manage");
   const deleted = await ctx.tx
     .delete(departments)
     .where(and(eq(departments.id, input.departmentId), eq(departments.companyId, input.companyId)))
@@ -210,7 +241,7 @@ export async function saveFloorPlan(
     zones: (Omit<Zone, "id" | "roomId"> & { roomIndex: number })[];
   },
 ) {
-  await requireAdmin(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "company.settings");
   const { companyId } = input;
   await ctx.tx.delete(rooms).where(eq(rooms.companyId, companyId)); // cascades to furniture and zones
   const roomRows = input.rooms.length

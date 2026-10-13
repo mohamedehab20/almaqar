@@ -4,6 +4,26 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-13 — Permissions: owner-defined roles + per-member exceptions, scoped by department
+**Chosen by the product owner.**
+
+- **Roles:** the owner defines roles and their permissions. Every company has two built-in roles that cannot be deleted: «مدير» and «موظف» (`roles.system_key`).
+- **Exceptions:** per member, grant or deny any permission.
+- **Department scopes:** some permissions can be limited to departments.
+- **The rule, in the database** (`private.has_permission`):
+  1. The owner → yes.
+  2. A deny exception → no.
+  3. A grant exception → yes.
+  4. A permission from the member's role → yes.
+  5. Otherwise → no.
+- **What the scope applies to:** the member the action is about. That is the target member, the task's assignee, the note's author or the order's creator.
+- **Owner-only:** managing permissions, and choosing a member's role. These can never be granted, so nobody can raise their own access.
+- **A room without its `.view` permission is closed:** hidden in the sidebar, a blocked page, and the server refuses the actions.
+- **Reads stay with RLS (company members).** The permission checks are on actions.
+- **`members.role` stays** only to mark the owner. `admin`/`employee` no longer decide anything; `role_id` does.
+
+Alternatives: fixed roles only (no custom roles), or per-member toggles without roles. Both were rejected as too rigid or too much work for the owner.
+
 ### 2026-10-13 — Clerk for accounts and sign-in; Supabase only for data
 **Chosen by the product owner.** This reverses the Supabase Auth decision.
 

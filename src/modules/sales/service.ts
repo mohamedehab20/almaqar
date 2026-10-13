@@ -3,6 +3,7 @@ import { orders, suppliers, workflowRuns, workflows, type Localized, type OrderI
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
+import { departmentOf, requirePermission } from "@/server/permissions";
 import { assertWithinPlan } from "@/server/plans";
 import { emitEvent } from "@/modules/events/service";
 import { startOperation } from "@/modules/automation/service";
@@ -48,7 +49,7 @@ async function startApproval(ctx: Ctx, order: OrderRow): Promise<OrderRow> {
       subject: { ar: `اعتماد الطلب ${order.number}`, en: `Approve order ${order.number}` },
       category: order.type === "sale" ? "sales" : "purchasing",
     },
-    { countsTowardPlan: false },
+    { countsTowardPlan: false, internal: true },
   );
   // A one-step workflow is approved by the starter right away
   const status = run.status === "completed" ? "approved" : order.status;
@@ -70,7 +71,8 @@ export async function createOrder(
     workflowId?: string | null;
   },
 ) {
-  await requireMember(ctx, input.companyId);
+  const me = await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "orders.create");
   await assertWithinPlan(ctx, input.companyId, "operationsPerMonth");
   if (input.workflowId) {
     const [workflow] = await ctx.tx.select({ companyId: workflows.companyId }).from(workflows).where(eq(workflows.id, input.workflowId));
@@ -78,7 +80,7 @@ export async function createOrder(
   }
   const [inserted] = await ctx.tx
     .insert(orders)
-    .values({ ...input, number: "", status: input.status ?? "pending" })
+    .values({ ...input, number: "", status: input.status ?? "pending", createdById: me.id })
     .returning();
   await emitEvent(ctx, input.companyId, {
     type: "order.created",
@@ -95,6 +97,9 @@ export async function createOrder(
 export async function setOrderStatus(ctx: Ctx, input: { orderId: string; status: OrderStatus }) {
   const [current] = await ctx.tx.select().from(orders).where(eq(orders.id, input.orderId));
   const order = found(current);
+  // The creator may submit or withdraw their own draft; any other change needs orders.approve.
+  const ownDraft = order.status === "draft" && (input.status === "pending" || input.status === "cancelled");
+  await requireOrderAccess(ctx, order, ownDraft);
   if (input.status === "approved" && order.workflowId) {
     const [run] = order.runId
       ? await ctx.tx.select({ status: workflowRuns.status }).from(workflowRuns).where(eq(workflowRuns.id, order.runId))
@@ -124,8 +129,18 @@ export async function syncOrderWithRun(ctx: Ctx, run: { id: string; status: stri
   }
 }
 
+/** The creator editing their own draft needs orders.create; everything else orders.approve for the creator's department. */
+async function requireOrderAccess(ctx: Ctx, order: OrderRow, creatorMayAct: boolean) {
+  const me = await requireMember(ctx, order.companyId);
+  if (creatorMayAct && order.createdById === me.id) await requirePermission(ctx, order.companyId, "orders.create");
+  else await requirePermission(ctx, order.companyId, "orders.approve", await departmentOf(ctx, order.createdById));
+}
+
 export async function updateOrder(ctx: Ctx, input: { orderId: string; items?: OrderItem[]; deliveryDate?: string | null; partyId?: string }) {
   const { orderId, ...patch } = input;
+  const [current] = await ctx.tx.select().from(orders).where(eq(orders.id, orderId));
+  const order = found(current);
+  await requireOrderAccess(ctx, order, order.status === "draft");
   const [row] = await ctx.tx.update(orders).set(patch).where(eq(orders.id, orderId)).returning();
   return toOrder(found(row));
 }
@@ -138,7 +153,7 @@ export async function listSuppliers(ctx: Ctx, companyId: string): Promise<Suppli
 }
 
 export async function createSupplier(ctx: Ctx, input: { companyId: string; name: Localized; category?: Localized }): Promise<Supplier> {
-  await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "suppliers.manage");
   const [row] = await ctx.tx.insert(suppliers).values(input).returning();
   return { id: row.id, name: row.name, category: row.category ?? EMPTY };
 }

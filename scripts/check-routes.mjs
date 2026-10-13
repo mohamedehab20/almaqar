@@ -5,7 +5,7 @@ const base = process.env.BASE_URL ?? "http://localhost:3123";
 const pages = [
   ["/", "هنا يبدأ"], ["/pricing", "300"], ["/compass", "بوصلة"], ["/login", "افتح أبواب"], ["/employee-login", ""],
   ["/visitor-login", ""], ["/signup", ""], ["/join", "فعّل حسابك"], ["/client-portal", ""], ["/c/demo", ""], ["/c/demo/hr", ""],
-  ["/c/demo/operations", ""], ["/c/demo/automation", ""], ["/c/demo/sales", "SO-"], ["/c/demo/marketing", ""], ["/c/demo/agents", ""],
+  ["/c/demo/operations", ""], ["/c/demo/automation", ""], ["/c/demo/sales", "SO-"], ["/c/demo/marketing", ""], ["/c/demo/agents", ""], ["/c/demo/permissions", "الصلاحيات"],
 ];
 let failures = 0;
 const rows = [];

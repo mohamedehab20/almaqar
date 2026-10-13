@@ -2,7 +2,8 @@ import { asc, eq, sql } from "drizzle-orm";
 import { agents, type Localized } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
-import { found, requireMember } from "@/server/membership";
+import { found } from "@/server/membership";
+import { requirePermission } from "@/server/permissions";
 import { emitEvent } from "@/modules/events/service";
 import type { Agent, AgentKind, AgentStatus } from "./mock";
 
@@ -34,12 +35,19 @@ export async function createAgent(
   ctx: Ctx,
   input: { companyId: string; kind: AgentKind; name: Localized; role?: Localized; description?: Localized; skills?: Localized[]; area?: Localized },
 ) {
-  await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "agents.manage");
   const [row] = await ctx.tx.insert(agents).values(input).returning();
   return toAgent(row);
 }
 
+/** Company of an agent (actions on it check the permission against it). */
+async function companyOfAgent(ctx: Ctx, agentId: string) {
+  const [row] = await ctx.tx.select({ companyId: agents.companyId }).from(agents).where(eq(agents.id, agentId));
+  return found(row).companyId;
+}
+
 export async function setAgentStatus(ctx: Ctx, input: { agentId: string; status: AgentStatus }) {
+  await requirePermission(ctx, await companyOfAgent(ctx, input.agentId), "agents.manage");
   const [row] = await ctx.tx.update(agents).set({ status: input.status }).where(eq(agents.id, input.agentId)).returning();
   return toAgent(found(row));
 }
@@ -50,6 +58,7 @@ export async function setAgentStatus(ctx: Ctx, input: { agentId: string; status:
  */
 export async function queueTask(ctx: Ctx, input: { agentId: string; task: string }) {
   const [current] = await ctx.tx.select().from(agents).where(eq(agents.id, input.agentId));
+  await requirePermission(ctx, found(current).companyId, "agents.use");
   if (found(current).status === "paused") throw new AppError("invalid");
   const [row] = await ctx.tx
     .update(agents)

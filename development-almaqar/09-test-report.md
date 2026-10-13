@@ -2,6 +2,16 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-13 — Permissions
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 35/35. The 7 new tests in `tests/db/permissions.test.ts` cover: catalog = database keys; default roles; Admin keeps the old admin access; owner-only management (also through raw SQL); owner → deny → grant → role order; department scopes for members and tasks; deleting a role; a member with no role. |
+| Migrations 0016–0017 on Supabase | Applied. All 4 companies have both roles (28 and 13 permissions), every non-owner member has a role, and RLS is on for the 3 new tables. |
+| Smoke test on Supabase | SMOKE OK, with the new "permissions" step (default roles, owner has everything, a member without a role has nothing, an employee cannot create roles). |
+| Advisors | Security: 0. Performance: only INFO "unused index" (new indexes). |
+| `npm run build`, `npm run lint`, `npm run check:routes` | Pass, including `/c/demo/permissions` in ar and en. |
+
 ## 2026-10-13 — Retest after the product owner's first real sign-up (production, Clerk + Supabase)
 
 **Result: passed.** The product owner signed up on https://almaqar-theta.vercel.app as mohamed.ehab8999@gmail.com.

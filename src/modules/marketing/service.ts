@@ -15,12 +15,19 @@ import {
 } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
-import { found, requireAdmin, requireMember } from "@/server/membership";
+import { found, requireMember } from "@/server/membership";
+import { requirePermission } from "@/server/permissions";
 import { emitEvent } from "@/modules/events/service";
 import type { Brief, BriefStatus, CampaignType } from "./briefs-mock";
 import type { Campaign, ChannelStat, Client, Platform, SocialAccount } from "./sections-mock";
 
 const EMPTY: Localized = { ar: "", en: "" };
+
+/** Company of a row (company-side updates and deletes check the permission against it). */
+async function companyOfRow(ctx: Ctx, table: typeof clients | typeof marketingIdeas | typeof socialAccounts | typeof campaigns, id: string) {
+  const [row] = await ctx.tx.select({ companyId: table.companyId }).from(table).where(eq(table.id, id));
+  return found(row).companyId;
+}
 
 // ---------- Clients ----------
 
@@ -68,7 +75,7 @@ export async function createClient(
   ctx: Ctx,
   input: { companyId: string; name: Localized; industry?: Localized; managerId?: string | null; monthlyBudget?: number; status?: Client["status"] },
 ) {
-  await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "clients.manage");
   const [row] = await ctx.tx
     .insert(clients)
     .values({ ...input, inviteCode: newInviteCode() })
@@ -82,14 +89,14 @@ export async function updateClient(
   input: { clientId: string; name?: Localized; industry?: Localized; managerId?: string | null; monthlyBudget?: number; status?: Client["status"] },
 ) {
   const { clientId, ...patch } = input;
+  await requirePermission(ctx, await companyOfRow(ctx, clients, clientId), "clients.manage");
   const [row] = await ctx.tx.update(clients).set(patch).where(eq(clients.id, clientId)).returning();
   return toClient(found(row), null, 0);
 }
 
 /** New invite code; the old one stops working. Portal users already linked keep access. */
 export async function regenerateInviteCode(ctx: Ctx, input: { clientId: string }) {
-  const [client] = await ctx.tx.select({ companyId: clients.companyId }).from(clients).where(eq(clients.id, input.clientId));
-  await requireAdmin(ctx, found(client).companyId);
+  await requirePermission(ctx, await companyOfRow(ctx, clients, input.clientId), "clients.manage");
   const [row] = await ctx.tx.update(clients).set({ inviteCode: newInviteCode() }).where(eq(clients.id, input.clientId)).returning();
   return found(row).inviteCode;
 }
@@ -168,7 +175,7 @@ const BRIEF_STATUS_EVENT: Record<BriefStatus, `brief.${string}`> = {
 /** Company side: mark a brief received, or ask the client for clarification. */
 export async function setBriefStatus(ctx: Ctx, input: { briefId: string; status: BriefStatus }) {
   const [current] = await ctx.tx.select().from(briefs).where(eq(briefs.id, input.briefId));
-  await requireMember(ctx, found(current).companyId);
+  await requirePermission(ctx, found(current).companyId, "briefs.manage");
   const [row] = await ctx.tx.update(briefs).set({ status: input.status }).where(eq(briefs.id, input.briefId)).returning();
   await emitEvent(ctx, row.companyId, { type: BRIEF_STATUS_EVENT[input.status], payload: { briefId: row.id, clientId: row.clientId } });
   return toBrief(row);
@@ -226,6 +233,7 @@ export async function createIdea(
   input: { companyId: string; title: Localized; clientId?: string | null; briefId?: string | null; format?: Localized; hook?: Localized; message?: Localized },
 ) {
   const me = await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "ideas.manage");
   let clientId = input.clientId ?? null;
   if (input.briefId) {
     const [brief] = await ctx.tx.select({ clientId: briefs.clientId }).from(briefs).where(eq(briefs.id, input.briefId));
@@ -253,11 +261,13 @@ export async function updateIdea(
   },
 ) {
   const { ideaId, ...patch } = input;
+  await requirePermission(ctx, await companyOfRow(ctx, marketingIdeas, ideaId), "ideas.manage");
   const [row] = await ctx.tx.update(marketingIdeas).set(patch).where(eq(marketingIdeas.id, ideaId)).returning();
   return toIdea(found(row), null, null);
 }
 
 export async function deleteIdea(ctx: Ctx, input: { ideaId: string }) {
+  await requirePermission(ctx, await companyOfRow(ctx, marketingIdeas, input.ideaId), "ideas.manage");
   const deleted = await ctx.tx.delete(marketingIdeas).where(eq(marketingIdeas.id, input.ideaId)).returning({ id: marketingIdeas.id });
   found(deleted[0]);
 }
@@ -291,7 +301,7 @@ export async function createSocialAccount(
 ) {
   const [client] = await ctx.tx.select({ companyId: clients.companyId }).from(clients).where(eq(clients.id, input.clientId));
   const companyId = found(client).companyId;
-  await requireMember(ctx, companyId);
+  await requirePermission(ctx, companyId, "campaigns.manage");
   const [row] = await ctx.tx.insert(socialAccounts).values({ ...input, companyId }).returning();
   return toAccount(row);
 }
@@ -301,11 +311,13 @@ export async function updateSocialAccount(
   input: { accountId: string; handle?: string; followers?: number; status?: SocialAccount["status"]; lastPost?: Localized },
 ) {
   const { accountId, ...patch } = input;
+  await requirePermission(ctx, await companyOfRow(ctx, socialAccounts, accountId), "campaigns.manage");
   const [row] = await ctx.tx.update(socialAccounts).set(patch).where(eq(socialAccounts.id, accountId)).returning();
   return toAccount(found(row));
 }
 
 export async function deleteSocialAccount(ctx: Ctx, input: { accountId: string }) {
+  await requirePermission(ctx, await companyOfRow(ctx, socialAccounts, input.accountId), "campaigns.manage");
   const deleted = await ctx.tx.delete(socialAccounts).where(eq(socialAccounts.id, input.accountId)).returning({ id: socialAccounts.id });
   found(deleted[0]);
 }
@@ -359,7 +371,7 @@ export async function createCampaign(
   if (input.start && input.end && input.end < input.start) throw new AppError("invalid");
   const [client] = await ctx.tx.select({ companyId: clients.companyId }).from(clients).where(eq(clients.id, clientId));
   const companyId = found(client).companyId;
-  await requireMember(ctx, companyId);
+  await requirePermission(ctx, companyId, "campaigns.manage");
   const [row] = await ctx.tx
     .insert(campaigns)
     .values({
@@ -393,6 +405,7 @@ export async function updateCampaign(
 ) {
   const [current] = await ctx.tx.select().from(campaigns).where(eq(campaigns.id, input.campaignId));
   const before = found(current);
+  await requirePermission(ctx, before.companyId, "campaigns.manage");
   const start = input.start !== undefined ? input.start : before.startDate;
   const end = input.end !== undefined ? input.end : before.endDate;
   if (start && end && end < start) throw new AppError("invalid");
@@ -419,6 +432,7 @@ export async function updateCampaign(
 }
 
 export async function deleteCampaign(ctx: Ctx, input: { campaignId: string }) {
+  await requirePermission(ctx, await companyOfRow(ctx, campaigns, input.campaignId), "campaigns.manage");
   const deleted = await ctx.tx.delete(campaigns).where(eq(campaigns.id, input.campaignId)).returning({ id: campaigns.id });
   found(deleted[0]);
 }

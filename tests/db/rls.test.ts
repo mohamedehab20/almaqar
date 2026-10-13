@@ -30,7 +30,7 @@ test("companies are isolated", async () => {
 
 test("members: admins manage, employees only their own presence", async () => {
   assert.equal((await t.sqlAs(E.sub, "UPDATE members SET status='busy' WHERE user_id=$1 RETURNING status", [E.sub]))[0].status, "busy");
-  await assert.rejects(t.sqlAs(E.sub, "UPDATE members SET role='admin' WHERE user_id=$1", [E.sub]), /owners and admins/);
+  await assert.rejects(t.sqlAs(E.sub, "UPDATE members SET role='admin' WHERE user_id=$1", [E.sub]), /Only the owner can change roles/);
   await assert.rejects(t.sqlAs(E.sub, "INSERT INTO members (company_id,name) VALUES ($1,$2)", [c1, j(L("x"))]));
   assert.equal((await t.sqlAs(E.sub, "UPDATE members SET status='away' WHERE user_id=$1 RETURNING id", [A.sub])).length, 0);
 });
@@ -126,7 +126,7 @@ test("Clerk user ids (text, not uuid) work everywhere: company, invites, portal,
   await sql1(owner, "INSERT INTO members (company_id,email,name) VALUES ($1,'staff@clerk.test',$2)", [cid, j(L("Staff"))]);
   assert.equal((await sql1(staff, "SELECT public.claim_invites() AS n", [], "Staff@Clerk.test"))[0].n, 1);
   assert.equal((await sql1(staff, "SELECT public.company_slug_for_code('clerk1') AS s"))[0].s, "clerk-co");
-  await assert.rejects(sql1(staff, "UPDATE members SET role='admin' WHERE user_id = $1", [staff]), /owners and admins/);
+  await assert.rejects(sql1(staff, "UPDATE members SET role='admin' WHERE user_id = $1", [staff]), /Only the owner can change roles/);
   await sql1(staff, "INSERT INTO lesson_progress (user_id, lesson_id) VALUES ($1, 'l9')", [staff]);
   await assert.rejects(sql1(staff, "INSERT INTO lesson_progress (user_id, lesson_id) VALUES ($1, 'l9')", [owner]));
   assert.equal((await sql1("user_2outsider", "SELECT id FROM companies WHERE id = $1", [cid])).length, 0);

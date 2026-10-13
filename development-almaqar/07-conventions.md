@@ -33,6 +33,11 @@
   - Logic goes in `modules/<f>/service.ts` as `fn(ctx, input)`. Never import Next.js there.
   - Reads for pages go in `queries.ts` (`import "server-only"`, wrapped in `cache()`).
   - Mutations go in `actions.ts` (`"use server"`, every export is `action(zodSchema, input => withUser(ctx => svc.fn(ctx, input)))`).
+- **Every company-side mutation checks a permission:** call `requirePermission(ctx, companyId, "<key>", departmentId?)` from `src/server/permissions.ts` before writing.
+  - Pass the department of the member the action is about, for scoped keys.
+  - Never check `members.role` for anything except "is the owner".
+  - **A new permission:** add it to `src/modules/permissions/catalog.ts`, then add a migration that redefines `private.permission_keys()` (and `employee_default_permissions()` if needed). Test "the database knows exactly the catalog's permissions" fails until both match.
+- **A new room:** add its `.view` key to `ROOM_VIEW` and a `layout.tsx` with `RoomGuard`.
 - **Use `withUser` for all user data, never `db()`.** Only migrations, the seed and background jobs use `db()`.
 - **Throw `AppError(code)` for expected failures.** Postgres errors are mapped for you: RLS → `forbidden`, unique → `conflict`, foreign key → `not_found`.
 - **Changing the schema:**

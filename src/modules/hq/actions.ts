@@ -33,7 +33,7 @@ export const inviteMember = action(
     name: localized(80),
     title: optionalLocalized(80).optional(),
     departmentId: id.nullable().optional(),
-    role: z.enum(["admin", "employee"]).optional(),
+    roleId: id.nullable().optional(),
   }),
   async (input) => {
     const member = await withUser((ctx) => svc.inviteMember(ctx, input));
@@ -53,7 +53,7 @@ export const updateMember = action(
     name: localized(80).optional(),
     title: optionalLocalized(80).optional(),
     departmentId: id.nullable().optional(),
-    role: z.enum(["admin", "employee"]).optional(),
+    roleId: id.nullable().optional(),
   }),
   (input) => withUser((ctx) => svc.updateMember(ctx, input)),
 );
