@@ -14,6 +14,18 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Client contracts in Marketing → Clients
+- **New «العقد» column** after the status: a red **PDF** button opens the client's contract in a new tab. A client without one shows «مفيش عقد».
+- **Demo:** four sample clients open `public/demo/contract-sample.pdf`.
+- **Backend:**
+  - `clients.contract_path` (migration 0018, applied to Supabase).
+  - Upload with `uploadAttachment` (new folder `contracts`), save with `updateClient({ contractPath })`, open with `getAttachmentUrl`.
+  - The path must be in the client's company folder (`<company_id>/contracts/…`), and saving needs `clients.manage`.
+- **Proxy fix:** `.pdf` files are no longer sent through locale routing, which returned 404.
+
+Tests 35/35 (the contract path check is in the client portal test). Smoke test OK, security advisors clean, route checks pass.
+Files: `src/modules/marketing/{components/sections.tsx,sections-mock.ts,service.ts,actions.ts}`, `src/modules/files/actions.ts`, `src/db/schema.ts`, `drizzle/0018_client_contracts.sql`, `src/proxy.ts`, `public/demo/contract-sample.pdf`, `tests/db/services.test.ts`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — Automation room: «تصميم مسار عمل» moved to the header
 The button that opens the approval-workflow builder now sits in the room header next to «إنشاء مسار عمل مؤتمت جديد», instead of inside the workflows section. A new workflow opens selected in the workflows section (switching there from the flows or templates view).
 Files: `src/modules/automation/components/{automation-view,workflows-section}.tsx`.

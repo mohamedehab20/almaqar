@@ -13,13 +13,18 @@ export type Client = {
   activeCampaigns: number;
   monthlyBudget: number;
   status: "active" | "onboarding" | "paused";
+  /** Link to the signed contract (PDF); missing while there is none */
+  contractUrl?: string;
 };
 
+/** Demo contract (the real one comes from storage via getAttachmentUrl(client.contractPath)). */
+const DEMO_CONTRACT = "/demo/contract-sample.pdf";
+
 export const clients: Client[] = [
-  { id: "c1", name: { ar: "مخبز الصباح", en: "Morning Bakery" }, industry: { ar: "أغذية ومطاعم", en: "Food & restaurants" }, manager: { ar: "مريم سامي", en: "Mariam Sami" }, activeCampaigns: 2, monthlyBudget: 18000, status: "active" },
-  { id: "c2", name: { ar: "عيادات نور", en: "Nour Clinics" }, industry: { ar: "صحة", en: "Healthcare" }, manager: { ar: "كريم عادل", en: "Karim Adel" }, activeCampaigns: 1, monthlyBudget: 25000, status: "active" },
-  { id: "c3", name: { ar: "أكاديمية المسار", en: "Al Masar Academy" }, industry: { ar: "تعليم وتدريب", en: "Education & training" }, manager: { ar: "مريم سامي", en: "Mariam Sami" }, activeCampaigns: 3, monthlyBudget: 32000, status: "active" },
-  { id: "c4", name: { ar: "بيت الديكور", en: "Decor House" }, industry: { ar: "تجزئة", en: "Retail" }, manager: { ar: "عمر حسن", en: "Omar Hassan" }, activeCampaigns: 0, monthlyBudget: 12000, status: "onboarding" },
+  { id: "c1", name: { ar: "مخبز الصباح", en: "Morning Bakery" }, industry: { ar: "أغذية ومطاعم", en: "Food & restaurants" }, manager: { ar: "مريم سامي", en: "Mariam Sami" }, activeCampaigns: 2, monthlyBudget: 18000, status: "active", contractUrl: DEMO_CONTRACT },
+  { id: "c2", name: { ar: "عيادات نور", en: "Nour Clinics" }, industry: { ar: "صحة", en: "Healthcare" }, manager: { ar: "كريم عادل", en: "Karim Adel" }, activeCampaigns: 1, monthlyBudget: 25000, status: "active", contractUrl: DEMO_CONTRACT },
+  { id: "c3", name: { ar: "أكاديمية المسار", en: "Al Masar Academy" }, industry: { ar: "تعليم وتدريب", en: "Education & training" }, manager: { ar: "مريم سامي", en: "Mariam Sami" }, activeCampaigns: 3, monthlyBudget: 32000, status: "active", contractUrl: DEMO_CONTRACT },
+  { id: "c4", name: { ar: "بيت الديكور", en: "Decor House" }, industry: { ar: "تجزئة", en: "Retail" }, manager: { ar: "عمر حسن", en: "Omar Hassan" }, activeCampaigns: 0, monthlyBudget: 12000, status: "onboarding", contractUrl: DEMO_CONTRACT },
   { id: "c5", name: { ar: "تطبيق مشوار", en: "Mishwar App" }, industry: { ar: "تقنية", en: "Technology" }, manager: { ar: "كريم عادل", en: "Karim Adel" }, activeCampaigns: 0, monthlyBudget: 20000, status: "paused" },
 ];
 

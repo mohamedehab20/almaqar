@@ -127,6 +127,13 @@
       "when": 1791913304247,
       "tag": "0017_permissions_logic",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791917245732,
+      "tag": "0018_client_contracts",
+      "breakpoints": true
     }
   ]
 }

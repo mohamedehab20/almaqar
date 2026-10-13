@@ -1,6 +1,6 @@
 "use client";
 
-import { Link2, Link2Off, TriangleAlert, Users, type LucideIcon } from "lucide-react";
+import { FileText, Link2, Link2Off, TriangleAlert, Users, type LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { accounts, budgets, campaigns, channels, clients, type CampaignStage } from "../sections-mock";
@@ -54,7 +54,7 @@ export function ClientsSection() {
         <table className="w-full min-w-[760px] text-sm">
           <thead className="bg-surface-container-low text-xs text-on-surface-variant">
             <tr>
-              {(["name", "industry", "manager", "campaigns", "budget", "status"] as const).map((col) => (
+              {(["name", "industry", "manager", "campaigns", "budget", "status", "contract"] as const).map((col) => (
                 <th key={col} className="whitespace-nowrap px-5 py-3 text-start font-semibold">{t(`cols.${col}`)}</th>
               ))}
             </tr>
@@ -75,6 +75,23 @@ export function ClientsSection() {
                 <td className="px-5 py-4 font-mono">{client.activeCampaigns}</td>
                 <td className="px-5 py-4"><Money value={client.monthlyBudget} /></td>
                 <td className="px-5 py-4"><Pill className={clientStatus[client.status]}>{t(`status.${client.status}`)}</Pill></td>
+                <td className="px-5 py-4">
+                  {client.contractUrl ? (
+                    <a
+                      href={client.contractUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={t("openContract", { name: client.name[locale] })}
+                      aria-label={t("openContract", { name: client.name[locale] })}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-danger-container px-2.5 py-1.5 text-xs font-bold text-danger transition hover:brightness-95"
+                    >
+                      <FileText className="size-4" aria-hidden />
+                      PDF
+                    </a>
+                  ) : (
+                    <span className="text-xs text-muted">{t("noContract")}</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -44,13 +44,13 @@ async function assertCanAccess(ctx: Ctx, path: string, write: boolean) {
 
 /**
  * Uploads a file (FormData field "file") and returns its storage path and metadata.
- * - Company files (workflow attachments, ...): { companyId, folder: "workflows" }
+ * - Company files (workflow attachments, client contracts, ...): { companyId, folder: "workflows" | "contracts" | ... }
  * - Client portal brief attachments: { companyId, folder: "briefs", clientId }
  */
 export const uploadAttachment = action(
   z.object({
     companyId: id,
-    folder: z.enum(["workflows", "briefs", "notes", "orders"]),
+    folder: z.enum(["workflows", "briefs", "notes", "orders", "contracts"]),
     clientId: id.optional(),
     file: z.instanceof(File),
   }),

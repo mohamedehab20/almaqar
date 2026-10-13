@@ -741,13 +741,16 @@
         "manager": "مسؤول الحساب",
         "campaigns": "حملات نشطة",
         "budget": "الميزانية الشهرية",
-        "status": "الحالة"
+        "status": "الحالة",
+        "contract": "العقد"
       },
       "status": {
         "active": "نشط",
         "onboarding": "قيد التجهيز",
         "paused": "متوقف مؤقتًا"
-      }
+      },
+      "openContract": "افتح عقد {name}",
+      "noContract": "مفيش عقد"
     },
     "accounts": {
       "followers": "المتابعين",

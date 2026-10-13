@@ -31,6 +31,8 @@ export const updateClient = action(
     managerId: id.nullable().optional(),
     monthlyBudget: money.optional(),
     status: clientStatus.optional(),
+    /** Storage path from uploadAttachment (folder "contracts"); null removes the contract */
+    contractPath: z.string().min(3).max(400).nullable().optional(),
   }),
   (input) => withUser((ctx) => svc.updateClient(ctx, input)),
 );

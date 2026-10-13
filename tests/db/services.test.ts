@@ -139,6 +139,12 @@ test("sales orders get numbers and events", async () => {
 
 test("client portal: invite code, brief, clarification, idea", async () => {
   const client = await t.as(employee, (ctx) => marketing.createClient(ctx, { companyId, name: L("Morning Bakery"), managerId: employeeMemberId }));
+  // The signed contract: only a file in this company's contracts folder
+  const contractPath = `${companyId}/contracts/${crypto.randomUUID()}-contract.pdf`;
+  const withContract = await t.as(employee, (ctx) => marketing.updateClient(ctx, { clientId: client.id, contractPath }));
+  assert.equal(withContract.contractPath, contractPath);
+  await failsWith("invalid", t.as(employee, (ctx) => marketing.updateClient(ctx, { clientId: client.id, contractPath: `${crypto.randomUUID()}/contracts/x.pdf` })));
+  await failsWith("invalid", t.as(employee, (ctx) => marketing.updateClient(ctx, { clientId: client.id, contractPath: `${companyId}/workflows/x.pdf` })));
   assert.match(client.inviteCode!, /^[A-Z2-9]{7}$/);
 
   await t.as(visitor, ({ tx }) => tx.execute(sql`select public.redeem_client_invite(${client.inviteCode})`));

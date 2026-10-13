@@ -741,13 +741,16 @@
         "manager": "Account manager",
         "campaigns": "Active campaigns",
         "budget": "Monthly budget",
-        "status": "Status"
+        "status": "Status",
+        "contract": "Contract"
       },
       "status": {
         "active": "Active",
         "onboarding": "Onboarding",
         "paused": "Paused"
-      }
+      },
+      "openContract": "Open {name}'s contract",
+      "noContract": "No contract"
     },
     "accounts": {
       "followers": "Followers",

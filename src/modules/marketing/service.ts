@@ -40,7 +40,11 @@ function newInviteCode() {
 
 type ClientRow = typeof clients.$inferSelect;
 
-function toClient(r: ClientRow, manager: Localized | null, activeCampaigns: number): Client & { inviteCode: string | null; managerId: string | null } {
+function toClient(
+  r: ClientRow,
+  manager: Localized | null,
+  activeCampaigns: number,
+): Client & { inviteCode: string | null; managerId: string | null; contractPath: string | null } {
   return {
     id: r.id,
     name: r.name,
@@ -51,6 +55,7 @@ function toClient(r: ClientRow, manager: Localized | null, activeCampaigns: numb
     status: r.status,
     inviteCode: r.inviteCode,
     managerId: r.managerId,
+    contractPath: r.contractPath,
   };
 }
 
@@ -86,10 +91,21 @@ export async function createClient(
 
 export async function updateClient(
   ctx: Ctx,
-  input: { clientId: string; name?: Localized; industry?: Localized; managerId?: string | null; monthlyBudget?: number; status?: Client["status"] },
+  input: {
+    clientId: string;
+    name?: Localized;
+    industry?: Localized;
+    managerId?: string | null;
+    monthlyBudget?: number;
+    status?: Client["status"];
+    /** Uploaded with folder "contracts"; must be in this company's folder */
+    contractPath?: string | null;
+  },
 ) {
   const { clientId, ...patch } = input;
-  await requirePermission(ctx, await companyOfRow(ctx, clients, clientId), "clients.manage");
+  const companyId = await companyOfRow(ctx, clients, clientId);
+  await requirePermission(ctx, companyId, "clients.manage");
+  if (input.contractPath && !input.contractPath.startsWith(`${companyId}/contracts/`)) throw new AppError("invalid");
   const [row] = await ctx.tx.update(clients).set(patch).where(eq(clients.id, clientId)).returning();
   return toClient(found(row), null, 0);
 }

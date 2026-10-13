@@ -208,6 +208,8 @@ export const clients = pgTable("clients", {
   status: clientStatus("status").notNull().default("onboarding"),
   /** Code a client's contact uses on the visitor login page */
   inviteCode: text("invite_code").unique(),
+  /** Signed contract (PDF) in the attachments bucket: "<company_id>/contracts/…" */
+  contractPath: text("contract_path"),
   createdAt: createdAt(),
 }, (t) => [index("clients_company_id_idx").on(t.companyId), index("clients_manager_id_idx").on(t.managerId)]);
 
