@@ -4,8 +4,10 @@
  * Row Level Security, helper functions and grants live in a hand-written migration
  * (drizzle/0001_rls.sql) — every tenant table is scoped by company_id.
  */
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   date,
   integer,
   jsonb,
@@ -45,6 +47,9 @@ export const orderType = pgEnum("order_type", ["sale", "purchase"]);
 export const orderStatus = pgEnum("order_status", ["draft", "pending", "approved", "fulfilled", "cancelled"]);
 export const eventSource = pgEnum("event_source", ["system", "user", "automation", "integration"]);
 export const eventSeverity = pgEnum("event_severity", ["info", "warning", "critical"]);
+export const socialPlatform = pgEnum("social_platform", ["Instagram", "TikTok", "Snapchat", "X", "Google Ads", "LinkedIn", "Facebook", "Email"]);
+export const accountStatus = pgEnum("account_status", ["connected", "attention", "disconnected"]);
+export const campaignStage = pgEnum("campaign_stage", ["planning", "running", "review", "done"]);
 export const ideaStage = pgEnum("idea_stage", ["bank", "lab", "delivery"]);
 export const agentKind = pgEnum("agent_kind", ["general", "specialist"]);
 export const agentStatus = pgEnum("agent_status", ["active", "busy", "paused"]);
@@ -182,6 +187,62 @@ export const briefs = pgTable("briefs", {
 }, (t) => [index("briefs_company_id_idx").on(t.companyId), index("briefs_client_id_idx").on(t.clientId)]);
 
 /** A test version in the lab (Version in src/modules/marketing/mock.ts) */
+/** A client's account on a social / ads platform (Marketing → sections → accounts) */
+export const socialAccounts = pgTable(
+  "social_accounts",
+  {
+    id: id(),
+    companyId: companyId(),
+    clientId: uuid("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    platform: socialPlatform("platform").notNull(),
+    handle: text("handle").notNull(),
+    followers: integer("followers").notNull().default(0),
+    status: accountStatus("status").notNull().default("connected"),
+    /** Human text such as "2 hours ago", until a platform integration provides real timestamps */
+    lastPost: jsonb("last_post").$type<Localized>(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("social_accounts_company_id_idx").on(t.companyId),
+    uniqueIndex("social_accounts_client_platform_handle_idx").on(t.clientId, t.platform, t.handle),
+  ],
+);
+
+/** Per-platform results of a campaign; channel stats are computed from these. */
+export type ChannelMetrics = { reach: number; results: number; conversions: number; spend: number };
+
+/** A client's campaign (Marketing → sections → campaigns); budgets and channel stats are derived from campaigns. */
+export const campaigns = pgTable(
+  "campaigns",
+  {
+    id: id(),
+    companyId: companyId(),
+    clientId: uuid("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    /** The brief it answers, if any */
+    briefId: uuid("brief_id").references(() => briefs.id, { onDelete: "set null" }),
+    name: jsonb("name").$type<Localized>().notNull(),
+    channels: socialPlatform("channels").array().notNull().default([]),
+    stage: campaignStage("stage").notNull().default("planning"),
+    /** 0–1 */
+    progress: numeric("progress", { mode: "number" }).notNull().default(0),
+    startDate: date("start_date"),
+    endDate: date("end_date"),
+    spent: numeric("spent", { mode: "number" }).notNull().default(0),
+    metrics: jsonb("metrics").$type<Partial<Record<(typeof socialPlatform.enumValues)[number], ChannelMetrics>>>().notNull().default({}),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("campaigns_company_id_idx").on(t.companyId),
+    index("campaigns_client_id_idx").on(t.clientId),
+    index("campaigns_brief_id_idx").on(t.briefId),
+    check("campaigns_progress_range", sql`${t.progress} >= 0 and ${t.progress} <= 1`),
+  ],
+);
+
 export type IdeaVersion = {
   id: string;
   label: string;

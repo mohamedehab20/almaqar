@@ -29,6 +29,7 @@ grep -rn "TODO(backend)" src
 | AI agents | `modules/agents/components/agents-view.tsx` | `listAgents`, `queueTask`, `setAgentStatus`, `createAgent`. Running tasks needs the agent runtime (future Python service), which consumes `agent.task_queued` events and calls `completeTask`. |
 | Academy progress | `modules/academy/components/academy-view.tsx` | `getMyProgress`, `setLessonDone` (lesson content stays in `mock.ts`) |
 | Activity panel | `hq/mock.ts` `activity`, `hq-view.tsx` | `hq/queries.ts` `listActivity(companyId)` → items with ISO `time` (format it in the UI) and bilingual `text` |
+| Marketing sections | `marketing/sections-mock.ts` `accounts`, `campaigns`, `budgets`, `channels` | `listSocialAccounts`, `listCampaigns`, `getClientBudgets`, `getChannelStats`, plus the account and campaign actions. Units match the mock: progress and spendShare are 0–1, conversion is a %. |
 | Operations KPIs | `operations/mock.ts` `kpis`, `categoryCounts` | `operations/queries.ts` `getOperationsStats(companyId)` |
 | Presence | `src/modules/hq/mock.ts`, `hq-view.tsx` | `listMembers`, `setMyStatus`; realtime on `members`. The floor plan comes from `getFloorPlan` and is saved with `saveFloorPlan`. |
 | Pricing / plans | `pricing-plans.tsx`, Premium dialog | Limits are enforced in `src/server/plans.ts` (Free: 5 members, 20 operations/month, 1 workflow), and actions return `plan_limit`. Billing is not built yet: `companies.plan` is set by hand (`free` / `pro`). |
@@ -38,7 +39,6 @@ grep -rn "TODO(backend)" src
 - **Billing provider** and switching plans.
 - **Agent runtime** (Python).
 - **Account self-service:** profile, password reset, and choosing a company when a user belongs to several (`listMyCompanies` exists).
-- **Marketing sections:** accounts, campaigns, budgets and channels have no tables yet.
 - **HR room:** no tables yet.
 - **Automated flows** (`automation/mock.ts` `flows`): still static. Approval workflows are real.
 

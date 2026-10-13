@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/server/context";
 import * as s from "./schema";
 import * as hq from "@/modules/hq/mock";
-import { clients as mockClients } from "@/modules/marketing/sections-mock";
+import { accounts as mockAccounts, campaigns as mockCampaigns, channels as mockChannels, clients as mockClients } from "@/modules/marketing/sections-mock";
 import { briefs as mockBriefs } from "@/modules/marketing/briefs-mock";
 import { ideas as mockIdeas } from "@/modules/marketing/mock";
 import { suppliers as mockSuppliers, orders as mockOrders } from "@/modules/sales/mock";
@@ -115,6 +115,47 @@ export async function seedDemo(database: Db, options: SeedOptions = {}) {
         })
         .returning();
       ids.set(b.id, row.id);
+    }
+    if (mockAccounts.length) {
+      await tx.insert(s.socialAccounts).values(
+        mockAccounts.map((a) => ({
+          companyId,
+          clientId: need(a.clientId),
+          platform: a.platform,
+          handle: a.handle,
+          followers: a.followers,
+          status: a.status,
+          lastPost: a.lastPost,
+        })),
+      );
+    }
+    // Per-channel metrics are spread from the demo channel stats, so computed channel stats look like the mock.
+    for (const k of mockCampaigns) {
+      const metrics: Record<string, s.ChannelMetrics> = {};
+      for (const platform of k.channels) {
+        const stat = mockChannels.find((c) => c.platform === platform);
+        if (!stat || k.spent === 0) continue;
+        const spend = Math.round(k.spent / k.channels.length);
+        const results = Math.round(spend / stat.costPerResult);
+        metrics[platform] = {
+          reach: Math.round(stat.reach / stat.campaigns),
+          results,
+          conversions: Math.round((results * stat.conversion) / 100),
+          spend,
+        };
+      }
+      await tx.insert(s.campaigns).values({
+        companyId,
+        clientId: need(k.clientId),
+        name: k.name,
+        channels: k.channels,
+        stage: k.stage,
+        progress: k.progress,
+        startDate: k.start || null,
+        endDate: k.end || null,
+        spent: k.spent,
+        metrics,
+      });
     }
     if (mockIdeas.length) {
       await tx.insert(s.marketingIdeas).values(

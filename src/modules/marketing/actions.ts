@@ -107,3 +107,54 @@ export const updateIdea = action(
 );
 
 export const deleteIdea = action(z.object({ ideaId: id }), (input) => withUser((ctx) => svc.deleteIdea(ctx, input)));
+
+// ---------- Sections ----------
+
+const platform = z.enum(["Instagram", "TikTok", "Snapchat", "X", "Google Ads", "LinkedIn", "Facebook", "Email"]);
+const accountStatus = z.enum(["connected", "attention", "disconnected"]);
+const campaignStage = z.enum(["planning", "running", "review", "done"]);
+const count = z.number().int().min(0).max(1e12);
+const metrics = z.object({ reach: count, results: count, conversions: count, spend: money });
+
+export const createSocialAccount = action(
+  z.object({ clientId: id, platform, handle: z.string().trim().min(1).max(120), followers: count.optional(), status: accountStatus.optional(), lastPost: optionalLocalized(60).optional() }),
+  (input) => withUser((ctx) => svc.createSocialAccount(ctx, input)),
+);
+
+export const updateSocialAccount = action(
+  z.object({ accountId: id, handle: z.string().trim().min(1).max(120).optional(), followers: count.optional(), status: accountStatus.optional(), lastPost: optionalLocalized(60).optional() }),
+  (input) => withUser((ctx) => svc.updateSocialAccount(ctx, input)),
+);
+
+export const deleteSocialAccount = action(z.object({ accountId: id }), (input) => withUser((ctx) => svc.deleteSocialAccount(ctx, input)));
+
+export const createCampaign = action(
+  z.object({
+    clientId: id.optional(),
+    briefId: id.nullable().optional(),
+    name: localized(120),
+    channels: z.array(platform).min(1).max(8),
+    stage: campaignStage.optional(),
+    start: isoDate.nullable().optional(),
+    end: isoDate.nullable().optional(),
+  }),
+  (input) => withUser((ctx) => svc.createCampaign(ctx, input)),
+);
+
+export const updateCampaign = action(
+  z.object({
+    campaignId: id,
+    name: localized(120).optional(),
+    channels: z.array(platform).min(1).max(8).optional(),
+    stage: campaignStage.optional(),
+    progress: z.number().min(0).max(1).optional(),
+    start: isoDate.nullable().optional(),
+    end: isoDate.nullable().optional(),
+    spent: money.optional(),
+    metrics: z.partialRecord(platform, metrics).optional(),
+  }),
+  (input) => withUser((ctx) => svc.updateCampaign(ctx, input)),
+);
+
+export const deleteCampaign = action(z.object({ campaignId: id }), (input) => withUser((ctx) => svc.deleteCampaign(ctx, input)));
+

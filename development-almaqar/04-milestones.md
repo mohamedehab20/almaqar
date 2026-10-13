@@ -14,6 +14,12 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Marketing sections backend (task C2)
+New tables: social accounts and campaigns, with per-channel metrics. Client budgets and channel stats are computed from them. The client portal can read its own campaigns.
+
+Migrations 0008–0009 are applied to Supabase, the demo data is added there, and a new test covers it.
+Files: `src/db/schema.ts`, `drizzle/0008_marketing_sections.sql`, `drizzle/0009_marketing_sections_rls.sql`, `src/modules/marketing/{service,actions,queries}.ts`, `src/db/seed.ts`, `tests/db/services.test.ts`.
+
 ### 2026-10-13 — Activity feed and operations KPIs (task C1)
 Events now record their actor. The main hall activity panel and the Operations KPI cards have real queries:
 - `listActivity`, which writes bilingual, gender-neutral lines.

@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { before, test } from "node:test";
 import { sql } from "drizzle-orm";
-import { AppError } from "../../src/server/errors";
+import { toErrorCode } from "../../src/server/errors";
 import * as hq from "../../src/modules/hq/service";
 import * as marketing from "../../src/modules/marketing/service";
 import * as automation from "../../src/modules/automation/service";
@@ -22,7 +22,8 @@ let companyId = "";
 let employeeMemberId = "";
 let ownerMemberId = "";
 
-const code = (error: unknown) => (error instanceof AppError ? error.code : (error as Error).message);
+// Same mapping the app uses in action(): AppError codes and Postgres errors (RLS, unique, ...) become stable codes
+const code = (error: unknown) => toErrorCode(error);
 const failsWith = async (expected: string, p: Promise<unknown>) => {
   try {
     await p;
@@ -269,4 +270,53 @@ test("activity feed names the actor; operations KPIs come from the runs", async 
   assert.equal(stats.byCategory.operations, 1);
   assert.equal(typeof stats.avgCycleHours, "number");
   await failsWith("forbidden", t.as(outsider, (ctx) => operations.getOperationsStats(ctx, companyId)));
+});
+
+test("marketing sections: accounts, campaigns, budgets and channel stats; the client reads only its own", async () => {
+  const bakery = (await t.as(owner, (ctx) => marketing.listClients(ctx, companyId))).find((c) => c.name.en === "Morning Bakery")!;
+  const other = await t.as(owner, (ctx) => marketing.createClient(ctx, { companyId, name: L("Other client"), monthlyBudget: 5000 }));
+
+  const account = await t.as(employee, (ctx) => marketing.createSocialAccount(ctx, { clientId: bakery.id, platform: "Instagram", handle: "@bakery", followers: 1200 }));
+  assert.equal(account.status, "connected");
+  await failsWith("conflict", t.as(employee, (ctx) => marketing.createSocialAccount(ctx, { clientId: bakery.id, platform: "Instagram", handle: "@bakery" })));
+
+  const month = new Date().toISOString().slice(0, 8);
+  const k1 = await t.as(employee, (ctx) =>
+    marketing.createCampaign(ctx, { clientId: bakery.id, name: L("Ramadan reels"), channels: ["Instagram", "TikTok"], start: `${month}01`, end: `${month}28` }),
+  );
+  await failsWith("invalid", t.as(employee, (ctx) => marketing.createCampaign(ctx, { clientId: bakery.id, name: L("Bad dates"), channels: ["X"], start: "2026-12-10", end: "2026-12-01" })));
+  await t.as(employee, (ctx) =>
+    marketing.updateCampaign(ctx, {
+      campaignId: k1.id,
+      stage: "running",
+      spent: 9000,
+      metrics: {
+        Instagram: { reach: 50000, results: 1000, conversions: 40, spend: 6000 },
+        TikTok: { reach: 90000, results: 1500, conversions: 30, spend: 3000 },
+      },
+    }),
+  );
+  await t.as(employee, (ctx) => marketing.createCampaign(ctx, { clientId: other.id, name: L("Other launch"), channels: ["Instagram"] }));
+
+  const budgets = await t.as(owner, (ctx) => marketing.getClientBudgets(ctx, companyId));
+  assert.deepEqual(budgets.find((b) => b.clientId === bakery.id), { clientId: bakery.id, allocated: 0, spent: 9000 });
+  assert.deepEqual(budgets.find((b) => b.clientId === other.id), { clientId: other.id, allocated: 5000, spent: 0 });
+
+  const stats = await t.as(owner, (ctx) => marketing.getChannelStats(ctx, companyId));
+  const ig = stats.find((s) => s.platform === "Instagram")!;
+  assert.deepEqual(ig, { platform: "Instagram", campaigns: 2, reach: 50000, costPerResult: 6, conversion: 4, spendShare: 0.667 });
+  assert.equal(stats[0].platform, "Instagram", "sorted by spend share");
+
+  // The portal visitor of the bakery: reads the bakery's campaigns and accounts, nothing else, and cannot change them
+  const mine = await t.as(visitor, (ctx) => marketing.listCampaigns(ctx, { clientId: bakery.id }));
+  assert.deepEqual(mine.map((k) => k.name.en), ["Ramadan reels"]);
+  assert.deepEqual(await t.as(visitor, (ctx) => marketing.listCampaigns(ctx, { clientId: other.id })), []);
+  assert.equal((await t.as(visitor, (ctx) => marketing.listSocialAccounts(ctx, { clientId: bakery.id }))).length, 1);
+  await failsWith("not_found", t.as(visitor, (ctx) => marketing.updateCampaign(ctx, { campaignId: k1.id, spent: 1 })));
+  await failsWith("forbidden", t.as(visitor, (ctx) => marketing.createCampaign(ctx, { clientId: bakery.id, name: L("x"), channels: ["X"] })));
+
+  const done = await t.as(employee, (ctx) => marketing.updateCampaign(ctx, { campaignId: k1.id, stage: "done" }));
+  assert.equal(done.progress, 1, "finishing a campaign completes its progress");
+  const log = await t.as(owner, (ctx) => events.listEvents(ctx, companyId, { type: ["campaign.created", "campaign.running", "campaign.done"] }));
+  assert.equal(log.length, 4);
 });

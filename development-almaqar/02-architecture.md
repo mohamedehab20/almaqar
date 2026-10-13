@@ -66,7 +66,8 @@ src/
 public/
   brand/logo.png               trimmed logo
   landing/*.jpg, auth/diwan.png  page imagery
-drizzle/                       SQL migrations: 0000 tables (generated), 0001 RLS, 0002 numbering/storage/realtime, 0003 auth functions
+drizzle/                       SQL migrations: 0000 tables (generated), 0001 RLS, 0002 numbering/storage/realtime, 0003 auth functions,
+                               0004 FK indexes, 0005 advisor fixes, 0006 order approval, 0007 event actor, 0008–0009 marketing sections
 scripts/seed.ts                npm run db:seed
 tests/db/                      PGlite setup, RLS tests, service tests, smoke-supabase.sql (live check)
 tests/server/                  action layer unit tests (no database)

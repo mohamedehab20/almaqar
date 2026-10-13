@@ -1,11 +1,24 @@
 import { and, asc, desc, eq } from "drizzle-orm";
-import { briefs, clientUsers, clients, marketingIdeas, members, type IdeaDelivery, type IdeaRatings, type IdeaVersion, type Localized } from "@/db/schema";
+import {
+  briefs,
+  campaigns,
+  clientUsers,
+  clients,
+  marketingIdeas,
+  members,
+  socialAccounts,
+  type ChannelMetrics,
+  type IdeaDelivery,
+  type IdeaRatings,
+  type IdeaVersion,
+  type Localized,
+} from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireAdmin, requireMember } from "@/server/membership";
 import { emitEvent } from "@/modules/events/service";
 import type { Brief, BriefStatus, CampaignType } from "./briefs-mock";
-import type { Client } from "./sections-mock";
+import type { Campaign, ChannelStat, Client, Platform, SocialAccount } from "./sections-mock";
 
 const EMPTY: Localized = { ar: "", en: "" };
 
@@ -248,3 +261,222 @@ export async function deleteIdea(ctx: Ctx, input: { ideaId: string }) {
   const deleted = await ctx.tx.delete(marketingIdeas).where(eq(marketingIdeas.id, input.ideaId)).returning({ id: marketingIdeas.id });
   found(deleted[0]);
 }
+
+// ---------- Sections: social accounts ----------
+
+type AccountRow = typeof socialAccounts.$inferSelect;
+
+function toAccount(r: AccountRow): SocialAccount {
+  return {
+    id: r.id,
+    platform: r.platform,
+    handle: r.handle,
+    clientId: r.clientId,
+    followers: r.followers,
+    status: r.status,
+    lastPost: r.lastPost ?? EMPTY,
+  };
+}
+
+/** Company side: every account. Portal side: pass clientId (RLS limits it to the visitor's client). */
+export async function listSocialAccounts(ctx: Ctx, filter: { companyId: string } | { clientId: string }) {
+  const where = "companyId" in filter ? eq(socialAccounts.companyId, filter.companyId) : eq(socialAccounts.clientId, filter.clientId);
+  const rows = await ctx.tx.select().from(socialAccounts).where(where).orderBy(asc(socialAccounts.createdAt));
+  return rows.map(toAccount);
+}
+
+export async function createSocialAccount(
+  ctx: Ctx,
+  input: { clientId: string; platform: Platform; handle: string; followers?: number; status?: SocialAccount["status"]; lastPost?: Localized },
+) {
+  const [client] = await ctx.tx.select({ companyId: clients.companyId }).from(clients).where(eq(clients.id, input.clientId));
+  const companyId = found(client).companyId;
+  await requireMember(ctx, companyId);
+  const [row] = await ctx.tx.insert(socialAccounts).values({ ...input, companyId }).returning();
+  return toAccount(row);
+}
+
+export async function updateSocialAccount(
+  ctx: Ctx,
+  input: { accountId: string; handle?: string; followers?: number; status?: SocialAccount["status"]; lastPost?: Localized },
+) {
+  const { accountId, ...patch } = input;
+  const [row] = await ctx.tx.update(socialAccounts).set(patch).where(eq(socialAccounts.id, accountId)).returning();
+  return toAccount(found(row));
+}
+
+export async function deleteSocialAccount(ctx: Ctx, input: { accountId: string }) {
+  const deleted = await ctx.tx.delete(socialAccounts).where(eq(socialAccounts.id, input.accountId)).returning({ id: socialAccounts.id });
+  found(deleted[0]);
+}
+
+// ---------- Sections: campaigns ----------
+
+type CampaignRow = typeof campaigns.$inferSelect;
+
+function toCampaign(r: CampaignRow): Campaign & { briefId: string | null; metrics: CampaignRow["metrics"] } {
+  return {
+    id: r.id,
+    name: r.name,
+    clientId: r.clientId,
+    channels: r.channels,
+    stage: r.stage,
+    progress: r.progress,
+    start: r.startDate ?? "",
+    end: r.endDate ?? "",
+    spent: r.spent,
+    briefId: r.briefId,
+    metrics: r.metrics,
+  };
+}
+
+/** Company side: every campaign. Portal side: pass clientId (the client follows its campaigns, read-only). */
+export async function listCampaigns(ctx: Ctx, filter: { companyId: string } | { clientId: string }) {
+  const where = "companyId" in filter ? eq(campaigns.companyId, filter.companyId) : eq(campaigns.clientId, filter.clientId);
+  const rows = await ctx.tx.select().from(campaigns).where(where).orderBy(desc(campaigns.createdAt));
+  return rows.map(toCampaign);
+}
+
+/** New campaign for a client; from a brief it takes that brief's client. */
+export async function createCampaign(
+  ctx: Ctx,
+  input: {
+    clientId?: string;
+    briefId?: string | null;
+    name: Localized;
+    channels: Platform[];
+    stage?: Campaign["stage"];
+    start?: string | null;
+    end?: string | null;
+  },
+) {
+  let clientId = input.clientId;
+  if (input.briefId) {
+    const [brief] = await ctx.tx.select({ clientId: briefs.clientId }).from(briefs).where(eq(briefs.id, input.briefId));
+    clientId = found(brief).clientId;
+  }
+  if (!clientId) throw new AppError("invalid");
+  if (input.start && input.end && input.end < input.start) throw new AppError("invalid");
+  const [client] = await ctx.tx.select({ companyId: clients.companyId }).from(clients).where(eq(clients.id, clientId));
+  const companyId = found(client).companyId;
+  await requireMember(ctx, companyId);
+  const [row] = await ctx.tx
+    .insert(campaigns)
+    .values({
+      companyId,
+      clientId,
+      briefId: input.briefId ?? null,
+      name: input.name,
+      channels: input.channels,
+      stage: input.stage ?? "planning",
+      startDate: input.start ?? null,
+      endDate: input.end ?? null,
+    })
+    .returning();
+  await emitEvent(ctx, companyId, { type: "campaign.created", payload: { campaignId: row.id, clientId } });
+  return toCampaign(row);
+}
+
+export async function updateCampaign(
+  ctx: Ctx,
+  input: {
+    campaignId: string;
+    name?: Localized;
+    channels?: Platform[];
+    stage?: Campaign["stage"];
+    progress?: number;
+    start?: string | null;
+    end?: string | null;
+    spent?: number;
+    metrics?: Partial<Record<Platform, ChannelMetrics>>;
+  },
+) {
+  const [current] = await ctx.tx.select().from(campaigns).where(eq(campaigns.id, input.campaignId));
+  const before = found(current);
+  const start = input.start !== undefined ? input.start : before.startDate;
+  const end = input.end !== undefined ? input.end : before.endDate;
+  if (start && end && end < start) throw new AppError("invalid");
+  const [row] = await ctx.tx
+    .update(campaigns)
+    .set({
+      name: input.name,
+      channels: input.channels,
+      stage: input.stage,
+      // Finishing a campaign completes its progress
+      progress: input.stage === "done" ? 1 : input.progress,
+      startDate: input.start,
+      endDate: input.end,
+      spent: input.spent,
+      metrics: input.metrics,
+    })
+    .where(eq(campaigns.id, input.campaignId))
+    .returning();
+  const after = found(row);
+  if (input.stage && input.stage !== before.stage) {
+    await emitEvent(ctx, after.companyId, { type: `campaign.${input.stage}`, payload: { campaignId: after.id, clientId: after.clientId } });
+  }
+  return toCampaign(after);
+}
+
+export async function deleteCampaign(ctx: Ctx, input: { campaignId: string }) {
+  const deleted = await ctx.tx.delete(campaigns).where(eq(campaigns.id, input.campaignId)).returning({ id: campaigns.id });
+  found(deleted[0]);
+}
+
+// ---------- Sections: budgets and channel stats (computed) ----------
+
+const overlapsMonth = (c: CampaignRow, from: string, to: string) => (!c.startDate || c.startDate <= to) && (!c.endDate || c.endDate >= from);
+
+/**
+ * This month's budget per client: allocated = the client's monthly budget, spent = what its campaigns
+ * that run during this month have spent. Shape of `budgets` in sections-mock.ts.
+ */
+export async function getClientBudgets(ctx: Ctx, companyId: string, month = new Date()) {
+  const from = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1)).toISOString().slice(0, 10);
+  const to = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 0)).toISOString().slice(0, 10);
+  const [clientRows, campaignRows] = await Promise.all([
+    ctx.tx.select({ id: clients.id, allocated: clients.monthlyBudget }).from(clients).where(eq(clients.companyId, companyId)).orderBy(asc(clients.createdAt)),
+    ctx.tx.select().from(campaigns).where(eq(campaigns.companyId, companyId)),
+  ]);
+  return clientRows.map((c) => ({
+    clientId: c.id,
+    allocated: c.allocated,
+    spent: campaignRows.filter((k) => k.clientId === c.id && overlapsMonth(k, from, to)).reduce((sum, k) => sum + k.spent, 0),
+  }));
+}
+
+/**
+ * Per platform: how many campaigns use it, and totals from the campaigns' per-channel metrics.
+ * conversion is a percentage (conversions / results); spendShare is 0–1 of all channel spend.
+ */
+export async function getChannelStats(ctx: Ctx, companyId: string): Promise<ChannelStat[]> {
+  const rows = await ctx.tx.select().from(campaigns).where(eq(campaigns.companyId, companyId));
+  const totals = new Map<Platform, ChannelMetrics & { campaigns: number }>();
+  for (const k of rows) {
+    for (const platform of k.channels) {
+      const t = totals.get(platform) ?? { campaigns: 0, reach: 0, results: 0, conversions: 0, spend: 0 };
+      const m = k.metrics[platform];
+      t.campaigns += 1;
+      if (m) {
+        t.reach += m.reach;
+        t.results += m.results;
+        t.conversions += m.conversions;
+        t.spend += m.spend;
+      }
+      totals.set(platform, t);
+    }
+  }
+  const allSpend = [...totals.values()].reduce((sum, t) => sum + t.spend, 0);
+  const round = (n: number, digits = 1) => Math.round(n * 10 ** digits) / 10 ** digits;
+  return [...totals.entries()]
+    .map(([platform, t]) => ({
+      platform,
+      campaigns: t.campaigns,
+      reach: t.reach,
+      costPerResult: t.results ? round(t.spend / t.results) : 0,
+      conversion: t.results ? round((t.conversions / t.results) * 100) : 0,
+      spendShare: allSpend ? round(t.spend / allSpend, 3) : 0,
+    }))
+    .sort((a, b) => b.spendShare - a.spendShare || b.campaigns - a.campaigns);
+}
+

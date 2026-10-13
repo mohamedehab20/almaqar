@@ -57,6 +57,20 @@
       "when": 1791881697532,
       "tag": "0007_event_actor",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791881908470,
+      "tag": "0008_marketing_sections",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791881921238,
+      "tag": "0009_marketing_sections_rls",
+      "breakpoints": true
     }
   ]
 }

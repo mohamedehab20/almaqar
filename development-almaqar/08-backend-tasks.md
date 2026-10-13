@@ -33,7 +33,7 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 | # | Task | Owner | Depends on | Status | Done when |
 |---|---|---|---|---|---|
 | C1 | Activity feed (main hall) and operations KPIs, computed from `events` and `workflow_runs`. No new tables. | B | — | ✅ | Queries return the shapes the screens use; covered by tests |
-| C2 | Marketing sections: tables for social accounts and campaigns (with per-channel metrics); budgets and channel stats computed from them | A | — | ⬜ | Migration applied to Supabase, RLS, service + actions, tests, advisors clean |
+| C2 | Marketing sections: tables for social accounts and campaigns (with per-channel metrics); budgets and channel stats computed from them | A | — | ✅ | Migration applied to Supabase, RLS, service + actions, tests, advisors clean |
 | C3 | Automated flows (trigger → condition → action): table, CRUD, enable/disable, templates, run counter for the future engine | A | — | ⬜ | Same as C2 |
 | C4 | Account self-service: password reset (email link), change password, edit own name/title/phone | B | — | ⬜ | Actions + DB guard allow self-edit of name/title only; tests |
 
@@ -192,4 +192,32 @@ Note on the imported events: `brief.received` is recreated by the trigger at imp
   - `byCategory`
 - **Tests:** a new service test covers the text format, the null actor for portal briefs, newest-first order, other companies seeing nothing, and the KPI figures. `npm run test:db`: 23/23.
 - **On Supabase:** advisors are clean on security and have no performance warnings.
+
+### C2 — Marketing sections (2026-10-13) ✅
+- **Tables** (`0008_marketing_sections` + `0009_marketing_sections_rls`, applied to Supabase):
+  - `social_accounts`: client, platform, handle, followers, status, last post. Unique per client + platform + handle.
+  - `campaigns`: client, optional brief, name, channels (`social_platform[]`), stage, progress 0–1 (checked by a constraint), dates, spent, and per-platform `metrics` (`{ reach, results, conversions, spend }`).
+  - New enums: `social_platform`, `account_status`, `campaign_stage`.
+  - The foreign keys are indexed.
+- **RLS:**
+  - Members manage their company's rows. The client must belong to the same company.
+  - A client portal user can **read** their own client's accounts and campaigns, but cannot change them.
+  - `campaigns` is added to realtime.
+- **Computed, no tables:**
+  - `getClientBudgets`: allocated is the client's `monthly_budget`; spent is the spend of campaigns that run during the month.
+  - `getChannelStats`: per platform, the campaign count and reach, cost per result, conversion % and spend share, from the campaign metrics.
+- **Service and actions** (`marketing/service.ts`, `actions.ts`, `queries.ts`):
+  - Accounts: create, update and delete.
+  - Campaigns: create (from a brief takes its client), update (`done` sets progress to 1; dates are checked) and delete.
+  - Events: `campaign.created` and `campaign.<stage>`.
+  - Portal queries: `listClientCampaigns` and `listClientAccounts`.
+- **Seed:** `seedDemo` adds the 6 demo accounts and 5 campaigns. Their per-channel metrics are spread from the demo channel stats, so computed figures match the screens. The live `demo` company got the same rows, with clients matched by name.
+- **Tests:** a new service test (`npm run test:db` 24/24) covers:
+  - duplicate account → `conflict`
+  - bad dates → `invalid`
+  - exact budget and channel-stat figures
+  - the portal user reading only their client and unable to change it (`not_found` / `forbidden`)
+  - done → progress 1, and the events
+- **Test helper:** `tests/db/services.test.ts` now maps errors with `toErrorCode`, exactly like `action()`. Database errors such as a unique violation are checked as their app code.
+- **On Supabase:** RLS is on, there are 8 policies, the security advisor is clean, and there are no performance warnings.
 
