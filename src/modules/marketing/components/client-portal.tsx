@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Check, Inbox, MessageCircleQuestion, Paperclip, Send, Wallet, X } from "lucide-react";
+import { CalendarDays, Check, Clapperboard, Inbox, MessageCircleQuestion, Paperclip, Send, Wallet, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Field } from "@/components/ui/field";
@@ -9,6 +9,8 @@ import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { campaignTypes, type Brief, type BriefStatus, type CampaignType } from "../briefs-mock";
 import { clients } from "../sections-mock";
+import type { Idea } from "../mock";
+import { SentVideos } from "./sent-videos";
 
 const statusStyle: Record<BriefStatus, string> = {
   new: "bg-primary-fixed text-primary",
@@ -20,6 +22,8 @@ export type NewBrief = Omit<Brief, "id" | "receivedOn" | "status">;
 
 type ClientPortalProps = {
   briefs: Brief[];
+  /** Ideas delivered to clients (what was sent for approval) */
+  sent: Idea[];
   onClose: () => void;
   onReceive: (brief: Brief) => void;
   onClarify: (brief: Brief) => void;
@@ -30,9 +34,10 @@ type ClientPortalProps = {
  * The bridge between client and team: clients hand in briefs, the team picks them up
  * (a received brief becomes an idea in the production pipeline).
  */
-export function ClientPortal({ briefs, onClose, onReceive, onClarify, onSubmitBrief }: ClientPortalProps) {
+export function ClientPortal({ briefs, sent, onClose, onReceive, onClarify, onSubmitBrief }: ClientPortalProps) {
   const t = useTranslations("marketing.portal");
-  const [tab, setTab] = useState<"inbox" | "submit">("inbox");
+  const [tab, setTab] = useState<"inbox" | "sent" | "submit">("inbox");
+  const waiting = sent.filter((idea) => idea.delivery?.status === "awaiting").length;
   const newCount = briefs.filter((b) => b.status === "new").length;
 
   useEffect(() => {
@@ -67,10 +72,11 @@ export function ClientPortal({ briefs, onClose, onReceive, onClarify, onSubmitBr
           </button>
         </header>
 
-        <nav className="grid grid-cols-2 gap-1 bg-surface-container-lowest px-6 pb-4" role="tablist">
+        <nav className="grid grid-cols-3 gap-1 bg-surface-container-lowest px-6 pb-4" role="tablist">
           {(
             [
               ["inbox", Inbox],
+              ["sent", Clapperboard],
               ["submit", Send],
             ] as const
           ).map(([key, Icon]) => (
@@ -90,6 +96,9 @@ export function ClientPortal({ briefs, onClose, onReceive, onClarify, onSubmitBr
               {key === "inbox" && newCount > 0 && (
                 <span className="rounded-full bg-danger px-1.5 text-[11px] font-bold text-white">{newCount}</span>
               )}
+              {key === "sent" && waiting > 0 && (
+                <span className="rounded-full bg-tertiary-fixed px-1.5 text-[11px] font-bold text-tertiary">{waiting}</span>
+              )}
             </button>
           ))}
         </nav>
@@ -97,6 +106,8 @@ export function ClientPortal({ briefs, onClose, onReceive, onClarify, onSubmitBr
         <div className="min-h-0 flex-1 overflow-y-auto p-6">
           {tab === "inbox" ? (
             <BriefInbox briefs={briefs} onReceive={onReceive} onClarify={onClarify} />
+          ) : tab === "sent" ? (
+            <SentVideos sent={sent} />
           ) : (
             <BriefForm
               onSubmit={(brief) => {

@@ -794,7 +794,8 @@
       "close": "إغلاق",
       "tabs": {
         "inbox": "الطلبات الواردة",
-        "submit": "إرسال بريف"
+        "submit": "إرسال بريف",
+        "sent": "الفيديوهات المرسلة"
       },
       "status": {
         "new": "جديد",
@@ -842,7 +843,21 @@
         "clarify": "اتبعت طلب توضيح لـ {client}.",
         "submitted": "البريف اتبعت ووصل للطلبات الواردة."
       },
-      "clientReply": "رد العميل"
+      "clientReply": "رد العميل",
+      "sent": {
+        "client": "العميل",
+        "allClients": "كل العملاء",
+        "summary": "{items, plural, =0 {مفيش حاجة مرسلة} one {تسليم واحد} two {تسليمين} few {# تسليمات} other {# تسليم}} · {files, plural, =0 {من غير ملفات} one {ملف واحد} two {ملفين} few {# ملفات} other {# ملف}}",
+        "empty": "لسه مفيش فيديوهات اتبعتت للعميل ده.",
+        "sentOn": "اتبعت",
+        "owner": "المسؤول",
+        "rounds": "جولات التعديل",
+        "hook": "الفكرة",
+        "version": "نسخة {version}",
+        "noFiles": "مفيش ملفات مرفقة بالتسليم ده.",
+        "tested": "أفضل نسخة في الاختبار ({version}): {views} مشاهدة، {completion} كمّلوا الفيديو، تفاعل {engagement}",
+        "feedback": "رد العميل"
+      }
     }
   },
   "automation": {

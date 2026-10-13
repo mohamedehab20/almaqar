@@ -14,6 +14,15 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Client portal: «الفيديوهات المرسلة»
+- **New tab** in the team's client portal (Marketing → «بوابة العميل») listing everything sent to clients for approval, newest first.
+- **Each delivery shows:** the client, format, title, sent date, the owner, revision rounds, the hook, and the client's feedback when changes were requested. Its files list name, duration, aspect, size and version, plus the best lab-test result (views, completion, engagement) when it came from the lab.
+- **Header:** a filter by client, counts by status (awaiting / approved / changes), and a badge on the tab for items awaiting the client.
+- **From the lab:** an idea sent to the client carries its tested versions as the files.
+- **Data:** demo only (`marketing/mock.ts`: `SentVideo`, `Idea.clientId`, `Idea.videos`, `delivery.feedback` / `rounds`). The three demo deliveries now belong to real demo clients.
+- **Checked:** in a real browser.
+Files: `src/modules/marketing/components/{sent-videos,client-portal,marketing-view}.tsx`, `src/modules/marketing/mock.ts`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — Shared company links ask to sign in
 - **The problem:** a company link copied to another browser (not signed in) opened the guest demo instead of asking to sign in. The demo company is also the product owner's real company.
 - **Now:** every company page (`/c/<slug>/…`) without a sign-in goes to `/login?next=<that page>`, and after signing in it opens that same page again.

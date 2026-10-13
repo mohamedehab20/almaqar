@@ -89,7 +89,15 @@ export function MarketingView({ profitability = null }: { profitability?: Profit
   const decide = (id: string, decision: Decision) => {
     const title = ideas.find((idea) => idea.id === id)?.title[locale] ?? "";
     if (decision === "continue") {
-      update(id, (idea) => ({ ...idea, stage: "delivery", delivery: { status: "awaiting", sentOn: new Date().toISOString().slice(0, 10) } }));
+      update(id, (idea) => ({
+        ...idea,
+        stage: "delivery",
+        delivery: { status: "awaiting", sentOn: new Date().toISOString().slice(0, 10), rounds: 0 },
+        // The tested versions are what the client receives
+        videos:
+          idea.videos ??
+          idea.versions?.map((v) => ({ id: `${idea.id}-${v.id}`, name: `${idea.id}-version-${v.label.toLowerCase()}.mp4`, duration: v.duration, aspect: "9:16", sizeMb: 0, version: v.label })),
+      }));
       setSelectedLabId(undefined);
     } else if (decision === "cancel") {
       update(id, (idea) => ({ ...idea, stage: "bank" }));
@@ -313,6 +321,7 @@ export function MarketingView({ profitability = null }: { profitability?: Profit
       {portalOpen && (
         <ClientPortal
           briefs={briefs}
+          sent={ideas.filter((idea) => idea.stage === "delivery")}
           onClose={() => setPortalOpen(false)}
           onReceive={receiveBrief}
           onClarify={clarifyBrief}

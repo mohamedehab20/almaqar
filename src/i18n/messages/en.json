@@ -794,7 +794,8 @@
       "close": "Close",
       "tabs": {
         "inbox": "Incoming requests",
-        "submit": "Send a brief"
+        "submit": "Send a brief",
+        "sent": "Sent videos"
       },
       "status": {
         "new": "New",
@@ -842,7 +843,21 @@
         "clarify": "Clarification request sent to {client}.",
         "submitted": "Brief sent — it's now in incoming requests."
       },
-      "clientReply": "Client reply"
+      "clientReply": "Client reply",
+      "sent": {
+        "client": "Client",
+        "allClients": "All clients",
+        "summary": "{items, plural, =0 {Nothing sent} one {# delivery} other {# deliveries}} · {files, plural, =0 {no files} one {# file} other {# files}}",
+        "empty": "No videos sent to this client yet.",
+        "sentOn": "Sent",
+        "owner": "Owner",
+        "rounds": "Revision rounds",
+        "hook": "Hook",
+        "version": "Version {version}",
+        "noFiles": "No files attached to this delivery.",
+        "tested": "Best version in testing ({version}): {views} views, {completion} watched to the end, {engagement} engagement",
+        "feedback": "Client feedback"
+      }
     }
   },
   "automation": {

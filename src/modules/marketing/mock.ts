@@ -22,6 +22,19 @@ export type Version = {
 
 export type DeliveryStatus = "awaiting" | "approved" | "changes";
 
+/** One file sent to the client for approval */
+export type SentVideo = {
+  id: string;
+  name: string;
+  /** "0:45" */
+  duration: string;
+  /** "9:16", "16:9", "1:1" */
+  aspect: string;
+  sizeMb: number;
+  /** Lab version it came from (A, B…) or the revision number (v2…) */
+  version: string;
+};
+
 export type Idea = {
   id: string;
   stage: Stage;
@@ -35,7 +48,11 @@ export type Idea = {
   versions?: Version[];
   ratings?: Record<Criterion, number>;
   /** Delivery only */
-  delivery?: { status: DeliveryStatus; sentOn: string };
+  delivery?: { status: DeliveryStatus; sentOn: string; /** The client's reply when asking for changes */ feedback?: Localized; /** Rounds of changes so far */ rounds?: number };
+  /** The client it is for (sections-mock clients) */
+  clientId?: string;
+  /** Files sent to the client (videos, or images for posts) */
+  videos?: SentVideo[];
 };
 
 const placeholderClient = { ar: "[اسم العميل]", en: "[Client name]" };
@@ -113,33 +130,51 @@ export const ideas: Idea[] = [
     id: "d1",
     stage: "delivery",
     title: { ar: "حملة «رجوع المكتب» — ٣ ريلز", en: "“Back to the office” campaign — 3 reels" },
-    client: placeholderClient,
+    client: { ar: "أكاديمية المسار", en: "Al Masar Academy" },
+    clientId: "c3",
     format: reel,
-    owner: placeholderOwner,
-    hook: { ar: "—", en: "—" },
-    message: { ar: "—", en: "—" },
-    delivery: { status: "awaiting", sentOn: "2026-10-08" },
+    owner: { ar: "مريم سامي", en: "Mariam Sami" },
+    hook: { ar: "«أول يوم بعد الإجازة… والمنبه مش راحمك»", en: "“First day back… and the alarm shows no mercy”" },
+    message: { ar: "كورسات المسار بتبدأ معاك من أول الأسبوع.", en: "Al Masar courses start with you from day one." },
+    delivery: { status: "awaiting", sentOn: "2026-10-08", rounds: 0 },
+    videos: [
+      { id: "d1-1", name: "back-to-office-reel-1.mp4", duration: "0:28", aspect: "9:16", sizeMb: 18.4, version: "A" },
+      { id: "d1-2", name: "back-to-office-reel-2.mp4", duration: "0:32", aspect: "9:16", sizeMb: 21.1, version: "A" },
+      { id: "d1-3", name: "back-to-office-reel-3.mp4", duration: "0:25", aspect: "9:16", sizeMb: 16.7, version: "B" },
+    ],
   },
   {
     id: "d2",
     stage: "delivery",
     title: { ar: "بوستات الإطلاق — الأسبوع الأول", en: "Launch posts — week one" },
-    client: placeholderClient,
+    client: { ar: "مخبز الصباح", en: "Morning Bakery" },
+    clientId: "c1",
     format: { ar: "٦ بوستات", en: "6 posts" },
-    owner: placeholderOwner,
-    hook: { ar: "—", en: "—" },
-    message: { ar: "—", en: "—" },
-    delivery: { status: "approved", sentOn: "2026-10-05" },
+    owner: { ar: "عمر حسن", en: "Omar Hassan" },
+    hook: { ar: "«ريحة العيش السخن بتصحّي الحي»", en: "“The smell of fresh bread wakes the street”" },
+    message: { ar: "مخبز الصباح فتح فرع جديد.", en: "Morning Bakery opened a new branch." },
+    delivery: { status: "approved", sentOn: "2026-10-05", rounds: 1 },
+    videos: [{ id: "d2-1", name: "launch-teaser.mp4", duration: "0:15", aspect: "1:1", sizeMb: 9.8, version: "v2" }],
   },
   {
     id: "d3",
     stage: "delivery",
     title: { ar: "فيديو تعريفي ٦٠ ثانية", en: "60-second intro video" },
-    client: placeholderClient,
+    client: { ar: "عيادات نور", en: "Nour Clinics" },
+    clientId: "c2",
     format: { ar: "فيديو ١٦:٩", en: "Video 16:9" },
-    owner: placeholderOwner,
-    hook: { ar: "—", en: "—" },
-    message: { ar: "—", en: "—" },
-    delivery: { status: "changes", sentOn: "2026-10-03" },
+    owner: { ar: "كريم عادل", en: "Karim Adel" },
+    hook: { ar: "«ابتسامتك تستاهل دكتور فاضيلك»", en: "“Your smile deserves a doctor with time for you”" },
+    message: { ar: "حجز أول كشف مجاني في عيادات نور.", en: "Book your first check-up free at Nour Clinics." },
+    delivery: {
+      status: "changes",
+      sentOn: "2026-10-03",
+      rounds: 2,
+      feedback: { ar: "عايزين اللوجو يظهر في أول ٣ ثواني، وصوت المعلّق أهدى شوية.", en: "Show the logo in the first 3 seconds, and a calmer voice-over." },
+    },
+    videos: [
+      { id: "d3-1", name: "nour-intro-60s-v3.mp4", duration: "1:00", aspect: "16:9", sizeMb: 84.5, version: "v3" },
+      { id: "d3-2", name: "nour-intro-cutdown-15s.mp4", duration: "0:15", aspect: "9:16", sizeMb: 12.2, version: "v3" },
+    ],
   },
 ];
