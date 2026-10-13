@@ -2,6 +2,16 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-13 — Client profitability
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 41/41. 6 new tests: every formula on a hand-checked case; zones and «insufficient data»; each advice cause and the 3-month rule; the 5 demo situations; owner/admin-only access (also raw SQL on `invoices`); a report built from real tasks, portal revisions, a meeting, an invoice and a freelancer payment. |
+| Migrations 0019–0022 on Supabase | Applied. RLS is on for the 4 new tables, every Admin role has `profitability.view`, and no Employee role does. |
+| Smoke test, advisors | SMOKE OK. Security: none. Performance: only INFO "unused index", after removing overlapping policies (including the two left from permissions). |
+| Real browser (headless Edge over DevTools) | Marketing → «ربحية العملاء»: table, alerts, details for two clients, recommendation and "consider ending". Permissions → «إعدادات التسويق». No page errors. Fixed: percentages reversed inside Arabic text, and numbers sticking to the next column. |
+| `build`, `lint`, `check:routes` | Pass. |
+
 ## 2026-10-13 — Permissions
 
 | Check | Result |

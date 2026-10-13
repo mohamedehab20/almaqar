@@ -4,6 +4,28 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-13 — Client profitability on minimal tables, computed on the server
+**Chosen by the product owner:** minimal tables, not full Calendar/Invoices/Freelancers modules.
+
+- **What existed:**
+  - Clients, tasks, and the approval portal (`marketing_ideas.delivery`).
+  - There was no calendar, no invoices, no freelancers and no cost settings.
+- **Added, the least needed:**
+  - **Columns:** `clients.package_deliverables` / `package_revisions_per_post`, and `tasks.client_id` / `task_type` / `tracked_minutes` / `revisions`. `marketing_ideas.task_id` links content to its production task, so a client's change request in the portal adds one revision to that task.
+  - **Tables:** `meetings`, `invoices` (income per `period` month, plus due/paid dates), `freelancer_payments` and `profitability_settings`.
+  - **No screens yet** for meetings, invoices or freelancers; there are actions only.
+- **Formulas:** one pure module, `src/modules/profitability/calc.ts`. Both the real service and the demo use it, on the server. The UI only filters and sorts.
+- **Income = invoices of the month.** `clients.monthly_budget` is the client's ad budget, not the agency's fee.
+- **Main cause of a red month** = the biggest number of hours beyond the contract:
+  - extra revisions,
+  - pieces above the package,
+  - meetings above 20 % of the client's hours.
+  - If none of these, the price is too low.
+- **Money tables** (`invoices`, `freelancer_payments`) are readable only with `profitability.view`, also through RLS. Cost settings are written by the owner only.
+- **Currency of this screen: EGP (ج.م).** The rest of the marketing room still shows ر.س from Phase 0.
+
+Alternatives: build the full modules first (much larger), or compute in the browser on demo data (rejected: the owner asked for server-side calculation).
+
 ### 2026-10-13 — Sales and Al Jarab closed as "coming soon"
 **Chosen by the product owner.**
 

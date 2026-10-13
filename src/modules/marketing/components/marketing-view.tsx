@@ -14,6 +14,7 @@ import {
   Wallet,
   Workflow,
   X,
+  HandCoins,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
@@ -27,6 +28,8 @@ import { clients } from "../sections-mock";
 import { ClientPortal, type NewBrief } from "./client-portal";
 import { LabView, type Decision } from "./lab-view";
 import { AccountsSection, BudgetsSection, CampaignsSection, ChannelsSection, ClientsSection } from "./sections";
+import type { ProfitReport } from "@/modules/profitability/calc";
+import { ProfitabilitySection } from "@/modules/profitability/components/profitability-section";
 
 const stages: { key: Stage; icon: typeof Lightbulb }[] = [
   { key: "bank", icon: Lightbulb },
@@ -34,7 +37,7 @@ const stages: { key: Stage; icon: typeof Lightbulb }[] = [
   { key: "delivery", icon: Send },
 ];
 
-type Section = "pipeline" | "clients" | "accounts" | "campaigns" | "budgets" | "channels";
+type Section = "pipeline" | "clients" | "accounts" | "campaigns" | "budgets" | "channels" | "profitability";
 
 const sections: { key: Section; icon: typeof Lightbulb }[] = [
   { key: "pipeline", icon: Workflow },
@@ -43,6 +46,7 @@ const sections: { key: Section; icon: typeof Lightbulb }[] = [
   { key: "campaigns", icon: Megaphone },
   { key: "budgets", icon: Wallet },
   { key: "channels", icon: Radio },
+  { key: "profitability", icon: HandCoins },
 ];
 
 const deliveryStyle: Record<DeliveryStatus, string> = {
@@ -51,7 +55,8 @@ const deliveryStyle: Record<DeliveryStatus, string> = {
   changes: "bg-danger-container text-danger",
 };
 
-export function MarketingView() {
+/** `profitability`: the report computed on the server, or null when the viewer may not see it (owner and admins). */
+export function MarketingView({ profitability = null }: { profitability?: ProfitReport | null }) {
   const t = useTranslations("marketing");
   const locale = useLocale() as "ar" | "en";
   const [ideas, setIdeas] = useState<Idea[]>(demoIdeas);
@@ -200,7 +205,7 @@ export function MarketingView() {
 
         {/* Department sections */}
         <nav className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1" aria-label={t("sectionsLabel")}>
-          {sections.map(({ key, icon: Icon }) => (
+          {sections.filter(({ key }) => key !== "profitability" || profitability).map(({ key, icon: Icon }) => (
             <button
               key={key}
               type="button"
@@ -224,6 +229,7 @@ export function MarketingView() {
         {section === "campaigns" && <CampaignsSection />}
         {section === "budgets" && <BudgetsSection />}
         {section === "channels" && <ChannelsSection />}
+        {section === "profitability" && profitability && <ProfitabilitySection report={profitability} />}
 
         {section === "pipeline" && (
           <>

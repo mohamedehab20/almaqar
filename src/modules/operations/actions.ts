@@ -5,6 +5,7 @@ import { action } from "@/server/action";
 import { withUser } from "@/server/session";
 import { companyInput, id, isoDate, localized } from "@/server/validation";
 import { startOperation as startOperationSvc } from "@/modules/automation/service";
+import { TASK_TYPES } from "@/modules/profitability/calc";
 import * as svc from "./service";
 
 const audience = z.discriminatedUnion("type", [
@@ -35,6 +36,12 @@ export const deleteNote = action(z.object({ noteId: id }), (input) => withUser((
 // ---------- Tasks ----------
 
 const taskPriority = z.enum(["low", "medium", "high"]);
+/** Client work fields (profitability): client, kind of work, optional timer in minutes */
+const clientWork = {
+  clientId: id.nullable().optional(),
+  taskType: z.enum(TASK_TYPES).nullable().optional(),
+  trackedMinutes: z.number().int().min(0).max(100_000).nullable().optional(),
+};
 
 export const createTask = action(
   companyInput.extend({
@@ -43,6 +50,7 @@ export const createTask = action(
     dueDate: isoDate.nullable().optional(),
     priority: taskPriority.optional(),
     operationId: id.nullable().optional(),
+    ...clientWork,
   }),
   (input) => withUser((ctx) => svc.createTask(ctx, input)),
 );
@@ -55,6 +63,7 @@ export const updateTask = action(
     dueDate: isoDate.nullable().optional(),
     priority: taskPriority.optional(),
     status: z.enum(["todo", "in_progress", "done"]).optional(),
+    ...clientWork,
   }),
   (input) => withUser((ctx) => svc.updateTask(ctx, input)),
 );

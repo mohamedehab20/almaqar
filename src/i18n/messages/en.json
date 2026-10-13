@@ -732,7 +732,8 @@
       "accounts": "Accounts",
       "campaigns": "Marketing operations",
       "budgets": "Budgets",
-      "channels": "Marketing channels"
+      "channels": "Marketing channels",
+      "profitability": "Client profitability"
     },
     "clients": {
       "cols": {
@@ -1277,7 +1278,8 @@
     "demoSaved": "Changed in the demo only (not saved).",
     "tabs": {
       "roles": "Roles",
-      "members": "Members"
+      "members": "Members",
+      "marketing": "Marketing settings"
     },
     "errors": {
       "forbidden": "Only the owner manages permissions."
@@ -1327,6 +1329,110 @@
       "title": "No access here",
       "body": "This room is closed to you. If you need it, ask the company owner for the permission.",
       "back": "Back to HQ"
+    }
+  },
+  "profitability": {
+    "currency": "EGP",
+    "month": "Month",
+    "sector": "Sector",
+    "allSectors": "All sectors",
+    "noSettings": "Set the costs in Permissions → Marketing settings to get the hourly cost.",
+    "hourlyCost": "Internal hourly cost",
+    "alertsTitle": "This month's alerts",
+    "alert": {
+      "package": "reached {usage} of the package this month",
+      "margin": "margin dropped to {margin}",
+      "revisions": "averages {avg} revisions per post where the contract allows {allowed}"
+    },
+    "and": ", and ",
+    "cols": {
+      "client": "Client",
+      "margin": "Margin",
+      "effectiveHourly": "Effective hourly yield",
+      "usage": "Package use",
+      "avgRevisions": "Revisions / post",
+      "lateDays": "Payment delay",
+      "profit": "Profit"
+    },
+    "insufficient": "Insufficient data",
+    "noPackage": "No package in the contract",
+    "delivered": "Delivered {delivered} of {agreed}",
+    "days": "{count, plural, =0 {On time} one {# day} other {# days}}",
+    "details": "Details",
+    "legend": {
+      "green": "Green: above {value}",
+      "yellow": "Yellow: {range}",
+      "red": "Red: below {value}"
+    },
+    "sectorsTitle": "Average profitability by sector",
+    "sectorsHint": "Use it when pricing a new client in the same sector.",
+    "clientsCount": "{count, plural, one {# client} other {# clients}}",
+    "hoursTitle": "Hours used: {hours} h",
+    "hours": {
+      "tasks": "Tasks",
+      "revisions": "Revisions",
+      "meetings": "Meetings"
+    },
+    "untimed": "{count, plural, one {# task has} other {# tasks have}} neither a standard time nor a timer (not counted in the hours).",
+    "money": {
+      "income": "Income",
+      "teamCost": "Team cost",
+      "freelancers": "Freelancers",
+      "profit": "Profit"
+    },
+    "missing": "Missing: {list}",
+    "missingItem": {
+      "settings": "agency costs",
+      "income": "this month's invoice",
+      "hours": "recorded work"
+    },
+    "historyTitle": "Compared with previous months",
+    "history": {
+      "month": "Month",
+      "margin": "Margin",
+      "hours": "Hours",
+      "income": "Income",
+      "usage": "Package"
+    },
+    "causes": {
+      "revisions": "Too many revisions",
+      "scope": "More work than the package",
+      "meetings": "Too many meetings",
+      "price": "The price is too low"
+    },
+    "advice": {
+      "revisions": "{extra} revisions above the contract ({hours} h ≈ <cost></cost>). Cap revisions in the contract and charge for extras.",
+      "scope": "Delivered {delivered} pieces on a {agreed}-piece package. Offer an upgrade to {delivered} pieces for about <fee></fee> a month.",
+      "meetings": "Meetings took {hours} h ({share} of this client's time). Cut back and move feedback to the approval portal.",
+      "price": "Cost <cost></cost> against income <income></income>. Raise the fee at renewal to <target></target> ({pct}) for a 40% margin.",
+      "chronic": "No improvement for 3 months in a row: consider ending the engagement."
+    },
+    "settings": {
+      "intro": "Client profitability in Marketing uses these numbers. Set them once and change them any time.",
+      "timesTitle": "Standard time per task type",
+      "types": {
+        "post": "Post",
+        "reel": "Reel",
+        "carousel": "Carousel",
+        "story": "Story",
+        "video": "Video",
+        "design": "Design",
+        "other": "Other task"
+      },
+      "hoursUnit": "h",
+      "revisionMinutes": "Each revision request adds",
+      "minutesUnit": "min",
+      "timerHint": "When a task has a timer, the timer's time counts instead of the standard time.",
+      "costsTitle": "Monthly agency costs",
+      "monthlySalaries": "Salaries (EGP)",
+      "monthlyRent": "Rent (EGP)",
+      "monthlyTools": "Tools and subscriptions (EGP)",
+      "monthlyHours": "Team working hours per month",
+      "hourlyMissing": "Enter the costs and working hours to get the hourly cost.",
+      "hourlyPreview": "Internal hourly cost = {cost} EGP",
+      "save": "Save settings",
+      "saved": "Marketing settings saved.",
+      "demoSaved": "This is the demo; nothing was saved."
     }
   }
 }

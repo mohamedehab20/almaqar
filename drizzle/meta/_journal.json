@@ -134,6 +134,34 @@
       "when": 1791917245732,
       "tag": "0018_client_contracts",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791918059101,
+      "tag": "0019_profitability",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791918087301,
+      "tag": "0020_profitability_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791919041784,
+      "tag": "0021_profitability_settings_policies",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791919132172,
+      "tag": "0022_permission_policies_split",
+      "breakpoints": true
     }
   ]
 }

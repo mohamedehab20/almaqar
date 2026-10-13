@@ -104,6 +104,7 @@ export const updateIdea = action(
       .optional(),
     ratings: z.object({ hook: criterion, clarity: criterion, fit: criterion, effort: criterion }).nullable().optional(),
     delivery: z.object({ status: z.enum(["awaiting", "approved", "changes"]), sentOn: isoDate }).nullable().optional(),
+    taskId: id.nullable().optional(),
   }),
   (input) => withUser((ctx) => svc.updateIdea(ctx, input)),
 );

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import {
   briefs,
   campaigns,
@@ -7,6 +7,7 @@ import {
   marketingIdeas,
   members,
   socialAccounts,
+  tasks,
   type ChannelMetrics,
   type IdeaDelivery,
   type IdeaRatings,
@@ -274,11 +275,24 @@ export async function updateIdea(
     versions?: IdeaVersion[];
     ratings?: IdeaRatings | null;
     delivery?: IdeaDelivery | null;
+    /** Production task of this content (its revisions count toward the client's profitability) */
+    taskId?: string | null;
   },
 ) {
   const { ideaId, ...patch } = input;
-  await requirePermission(ctx, await companyOfRow(ctx, marketingIdeas, ideaId), "ideas.manage");
+  const [current] = await ctx.tx.select().from(marketingIdeas).where(eq(marketingIdeas.id, ideaId));
+  const before = found(current);
+  await requirePermission(ctx, before.companyId, "ideas.manage");
+  if (input.taskId) {
+    const [task] = await ctx.tx.select({ companyId: tasks.companyId }).from(tasks).where(eq(tasks.id, input.taskId));
+    if (found(task).companyId !== before.companyId) throw new AppError("not_found");
+  }
   const [row] = await ctx.tx.update(marketingIdeas).set(patch).where(eq(marketingIdeas.id, ideaId)).returning();
+  // Approval portal: each new change request from the client is one revision on the production task
+  const taskId = row.taskId;
+  if (taskId && input.delivery?.status === "changes" && before.delivery?.status !== "changes") {
+    await ctx.tx.update(tasks).set({ revisions: sql`${tasks.revisions} + 1` }).where(eq(tasks.id, taskId));
+  }
   return toIdea(found(row), null, null);
 }
 

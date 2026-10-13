@@ -1,5 +1,5 @@
 import { and, desc, eq, gte } from "drizzle-orm";
-import { members, notes, tasks, workflowRuns, type NoteAudience } from "@/db/schema";
+import { clients, members, notes, tasks, workflowRuns, type NoteAudience } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
@@ -139,6 +139,12 @@ async function assertMemberOf(ctx: Ctx, companyId: string, memberId: string) {
   if (!m) throw new AppError("invalid");
 }
 
+/** A client set on a task must belong to the same company (client work counts toward its profitability). */
+async function assertClientOf(ctx: Ctx, companyId: string, clientId: string) {
+  const [c] = await ctx.tx.select({ id: clients.id }).from(clients).where(and(eq(clients.id, clientId), eq(clients.companyId, companyId)));
+  if (!c) throw new AppError("invalid");
+}
+
 /** Open tasks first by status order, then newest. With `assigneeId`, only that member's tasks. */
 export async function listTasks(ctx: Ctx, companyId: string, assigneeId?: string) {
   const rows = await ctx.tx
@@ -151,12 +157,24 @@ export async function listTasks(ctx: Ctx, companyId: string, assigneeId?: string
 
 export async function createTask(
   ctx: Ctx,
-  input: { companyId: string; title: string; assigneeId?: string | null; dueDate?: string | null; priority?: TaskPriority; operationId?: string | null },
+  input: {
+    companyId: string;
+    title: string;
+    assigneeId?: string | null;
+    dueDate?: string | null;
+    priority?: TaskPriority;
+    operationId?: string | null;
+    /** Client work: the client, the kind of work (profitability TASK_TYPES) and an optional timer */
+    clientId?: string | null;
+    taskType?: string | null;
+    trackedMinutes?: number | null;
+  },
 ) {
   const me = await requireMember(ctx, input.companyId);
   await requirePermission(ctx, input.companyId, "tasks.create");
   const assigneeId = input.assigneeId ?? me.id;
   await assertMemberOf(ctx, input.companyId, assigneeId);
+  if (input.clientId) await assertClientOf(ctx, input.companyId, input.clientId);
   const [row] = await ctx.tx
     .insert(tasks)
     .values({ ...input, assigneeId, createdById: me.id })
@@ -180,12 +198,23 @@ async function requireTaskAccess(ctx: Ctx, task: TaskRow, newAssigneeId?: string
 
 export async function updateTask(
   ctx: Ctx,
-  input: { taskId: string; title?: string; assigneeId?: string | null; dueDate?: string | null; priority?: TaskPriority; status?: TaskStatus },
+  input: {
+    taskId: string;
+    title?: string;
+    assigneeId?: string | null;
+    dueDate?: string | null;
+    priority?: TaskPriority;
+    status?: TaskStatus;
+    clientId?: string | null;
+    taskType?: string | null;
+    trackedMinutes?: number | null;
+  },
 ) {
   const [current] = await ctx.tx.select().from(tasks).where(eq(tasks.id, input.taskId));
   const task = found(current);
   await requireTaskAccess(ctx, task, input.assigneeId);
   if (input.assigneeId) await assertMemberOf(ctx, task.companyId, input.assigneeId);
+  if (input.clientId) await assertClientOf(ctx, task.companyId, input.clientId);
   const { taskId, ...patch } = input;
   const completedAt = input.status === undefined ? undefined : input.status === "done" ? new Date() : null;
   const [row] = await ctx.tx

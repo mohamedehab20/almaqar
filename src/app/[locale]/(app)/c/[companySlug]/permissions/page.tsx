@@ -6,6 +6,8 @@ import { EMPLOYEE_DEFAULTS, PERMISSION_KEYS } from "@/modules/permissions/catalo
 import { PermissionsManager, type PermissionsOverview } from "@/modules/permissions/components/permissions-manager";
 import { NoAccess } from "@/modules/permissions/components/room-guard";
 import { getPermissionsOverview } from "@/modules/permissions/queries";
+import { DEMO_SETTINGS } from "@/modules/profitability/demo";
+import { getProfitabilitySettings } from "@/modules/profitability/queries";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/c/[companySlug]/permissions">): Promise<Metadata> {
   const { locale } = await params;
@@ -42,8 +44,9 @@ export default async function PermissionsPage({ params }: PageProps<"/[locale]/c
   setRequestLocale(locale);
 
   const current = await getSignedInCompany(companySlug);
-  if (!current) return <PermissionsManager overview={demoOverview()} demo />;
+  if (!current) return <PermissionsManager overview={demoOverview()} demo profitSettings={DEMO_SETTINGS} />;
   // Managing permissions is the owner's alone
   if (current.me.role !== "owner") return <NoAccess companySlug={companySlug} />;
-  return <PermissionsManager overview={await getPermissionsOverview(current.company.id)} demo={false} />;
+  const [overview, profitSettings] = await Promise.all([getPermissionsOverview(current.company.id), getProfitabilitySettings(current.company.id)]);
+  return <PermissionsManager overview={overview} demo={false} profitSettings={profitSettings} />;
 }

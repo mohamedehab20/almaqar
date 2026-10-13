@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Pencil, Plus, RotateCcw, ShieldCheck, SlidersHorizontal, Trash2, UserRound, Users } from "lucide-react";
+import { Check, HandCoins, Pencil, Plus, RotateCcw, ShieldCheck, SlidersHorizontal, Trash2, UserRound, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import type { ActionResult } from "@/server/action";
 import { assignRole, createRole, deleteRole, renameRole, setMemberOverrides, setRolePermissions } from "../actions";
 import { AREAS, PERMISSIONS, SCOPED_KEYS, type PermissionKey } from "../catalog";
 import type { getPermissionsOverview } from "../service";
+import type { ProfitSettings } from "@/modules/profitability/calc";
+import { ProfitabilitySettingsForm } from "@/modules/profitability/components/settings-form";
 
 export type PermissionsOverview = Awaited<ReturnType<typeof getPermissionsOverview>>;
 type Localized = { ar: string; en: string };
@@ -25,14 +27,14 @@ type Scope = string[] | null;
 type Override = { key: PermissionKey; effect: "grant" | "deny"; departmentIds: Scope };
 
 /** Owner → permissions: roles (what each role may do) and members (their role and personal exceptions). */
-export function PermissionsManager({ overview, demo }: { overview: PermissionsOverview; demo: boolean }) {
+export function PermissionsManager({ overview, demo, profitSettings }: { overview: PermissionsOverview; demo: boolean; profitSettings: ProfitSettings }) {
   const t = useTranslations("permissions");
   const tErr = useTranslations("auth.errors");
   const lang = useLocale() as "ar" | "en";
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
-  const [tab, setTab] = useState<"roles" | "members">("roles");
+  const [tab, setTab] = useState<"roles" | "members" | "marketing">("roles");
 
   // Local copy: the demo edits only this; real changes are saved, then the page refreshes from the server
   const [data, setData] = useState(overview);
@@ -80,7 +82,7 @@ export function PermissionsManager({ overview, demo }: { overview: PermissionsOv
         </header>
 
         <div role="tablist" className="flex w-fit gap-1 rounded-full bg-surface-container-low p-1">
-          {(["roles", "members"] as const).map((key) => (
+          {(["roles", "members", "marketing"] as const).map((key) => (
             <button
               key={key}
               type="button"
@@ -92,7 +94,7 @@ export function PermissionsManager({ overview, demo }: { overview: PermissionsOv
                 tab === key ? "bg-surface-container-lowest text-primary shadow-ambient" : "text-on-surface-variant hover:text-on-surface",
               )}
             >
-              {key === "roles" ? <ShieldCheck className="size-4" aria-hidden /> : <Users className="size-4" aria-hidden />}
+              {key === "roles" ? <ShieldCheck className="size-4" aria-hidden /> : key === "members" ? <Users className="size-4" aria-hidden /> : <HandCoins className="size-4" aria-hidden />}
               {t(`tabs.${key}`)}
             </button>
           ))}
@@ -100,7 +102,9 @@ export function PermissionsManager({ overview, demo }: { overview: PermissionsOv
 
         <FormStatus message={message} />
 
-        {tab === "roles" ? (
+        {tab === "marketing" ? (
+          <ProfitabilitySettingsForm companyId={data.companyId} settings={profitSettings} demo={demo} />
+        ) : tab === "roles" ? (
           <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
             <aside className="flex flex-col gap-4">
               <ul className="flex flex-col gap-2">

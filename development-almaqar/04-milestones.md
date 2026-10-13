@@ -14,6 +14,39 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Client profitability (Marketing → «ربحية العملاء»)
+- **What the owner sees, per client and month:**
+  - Margin in green (above 40 %), yellow (15–40 %) or red (below 15 %).
+  - Effective income per hour.
+  - Package use, shown as «سلّمت 18 من 12».
+  - Revisions per post against the contract limit.
+  - Average days of late payment.
+  - Profit.
+  - Filters by month and sector, and sorting on every column.
+- **Clicking a client opens:**
+  - Hours split into tasks / revisions / meetings.
+  - Income, team cost, freelancers and profit.
+  - A comparison with the previous five months.
+- **Alerts:**
+  - The client is above 100 % of the package.
+  - The margin is below 15 %.
+  - Revisions are above what the contract allows.
+  - Example: «عيادات نور وصل 150% من الباقة الشهر ده، وهامش ربحه نزل لـ6%».
+- **Advice for red clients, by main cause:**
+  - Too many revisions.
+  - More work than the package (offer an upgrade at the same price per piece).
+  - Too many meetings.
+  - Price too low: the fee for a 40 % margin, with the numbers.
+  - Red three months in a row: "consider ending".
+- **Average profitability by sector**, for pricing new clients.
+- **«بيانات غير كافية»** shows instead of numbers when a month has no invoice, no recorded work, or no cost settings.
+- **Setup:** Permissions → new tab «إعدادات التسويق» (owner only). It holds the standard time per task type (post 1.5 h, reel 4 h, carousel 2 h…), the minutes one revision adds, and salaries + rent + tools ÷ monthly hours = internal hourly cost.
+- **Access:** the new permission `profitability.view` is in the Admin role, not in Employee. The screen is computed on the server and is not sent to anyone else.
+- **Demo:** 5 sample clients, one per situation: healthy, over the package, too many revisions (red for 6 months), too many meetings, and insufficient data (with an underpriced month earlier).
+
+Tests 41/41 (6 new in `tests/db/profitability.test.ts`). The smoke test passes, and the advisors are clean after splitting the overlapping policies (0021–0022). Screens were checked in a real browser.
+Files: `src/modules/profitability/{calc,service,actions,queries,demo}.ts`, `src/modules/profitability/components/{profitability-section,settings-form}.tsx`, `src/modules/marketing/components/marketing-view.tsx`, `src/app/[locale]/(app)/c/[companySlug]/{marketing,permissions}/page.tsx`, `src/modules/permissions/{catalog.ts,components/permissions-manager.tsx}`, `src/modules/operations/{service,actions}.ts`, `src/modules/marketing/{service,actions}.ts`, `src/db/schema.ts`, `drizzle/0019_profitability.sql`–`0022_permission_policies_split.sql`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — Client contracts in Marketing → Clients
 - **New «العقد» column** after the status: a red **PDF** button opens the client's contract in a new tab. A client without one shows «مفيش عقد».
 - **Demo:** four sample clients open `public/demo/contract-sample.pdf`.

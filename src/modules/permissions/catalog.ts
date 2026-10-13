@@ -41,6 +41,7 @@ export const PERMISSIONS = [
   { key: "briefs.manage", area: "marketing", label: { ar: "الرد على طلبات العملاء", en: "Handle client briefs" } },
   { key: "ideas.manage", area: "marketing", label: { ar: "إدارة الأفكار", en: "Manage ideas" } },
   { key: "campaigns.manage", area: "marketing", label: { ar: "إدارة الحملات والحسابات", en: "Manage campaigns and accounts" } },
+  { key: "profitability.view", area: "marketing", label: { ar: "عرض ربحية العملاء", en: "View client profitability" } },
 
   { key: "agents.view", area: "agents", label: { ar: "فتح الجراب", en: "Open Al Jarab" } },
   { key: "agents.use", area: "agents", label: { ar: "تكليف الوكلاء بمهام", en: "Give agents tasks" } },

@@ -210,6 +210,9 @@ export const clients = pgTable("clients", {
   inviteCode: text("invite_code").unique(),
   /** Signed contract (PDF) in the attachments bucket: "<company_id>/contracts/…" */
   contractPath: text("contract_path"),
+  /** Package in the contract: deliverables per month, and revisions allowed per deliverable */
+  packageDeliverables: integer("package_deliverables"),
+  packageRevisionsPerPost: integer("package_revisions_per_post"),
   createdAt: createdAt(),
 }, (t) => [index("clients_company_id_idx").on(t.companyId), index("clients_manager_id_idx").on(t.managerId)]);
 
@@ -331,8 +334,60 @@ export const marketingIdeas = pgTable("marketing_ideas", {
   versions: jsonb("versions").$type<IdeaVersion[]>().notNull().default([]),
   ratings: jsonb("ratings").$type<IdeaRatings>(),
   delivery: jsonb("delivery").$type<IdeaDelivery>(),
+  /** Production task of this content: a change request from the client counts as a revision on it */
+  taskId: uuid("task_id").references((): AnyPgColumn => tasks.id, { onDelete: "set null" }),
   createdAt: createdAt(),
-}, (t) => [index("marketing_ideas_company_id_idx").on(t.companyId), index("marketing_ideas_client_id_idx").on(t.clientId), index("marketing_ideas_brief_id_idx").on(t.briefId), index("marketing_ideas_owner_id_idx").on(t.ownerId)]);
+}, (t) => [index("marketing_ideas_company_id_idx").on(t.companyId), index("marketing_ideas_client_id_idx").on(t.clientId), index("marketing_ideas_brief_id_idx").on(t.briefId), index("marketing_ideas_owner_id_idx").on(t.ownerId), index("marketing_ideas_task_id_idx").on(t.taskId)]);
+
+// ---------- Client profitability (minimal calendar, invoices, freelancers, cost settings) ----------
+
+/** Meetings with a client (minimal calendar) */
+export const meetings = pgTable("meetings", {
+  id: id(),
+  companyId: companyId(),
+  clientId: uuid("client_id").references(() => clients.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  durationMinutes: integer("duration_minutes").notNull(),
+  createdAt: createdAt(),
+}, (t) => [index("meetings_company_id_idx").on(t.companyId), index("meetings_client_id_idx").on(t.clientId), check("meetings_duration_positive", sql`${t.durationMinutes} > 0`)]);
+
+/** Invoices to clients: income per month (`period` = first day of the month billed) and payment delays */
+export const invoices = pgTable("invoices", {
+  id: id(),
+  companyId: companyId(),
+  clientId: uuid("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+  period: date("period").notNull(),
+  amount: numeric("amount", { mode: "number" }).notNull(),
+  issuedOn: date("issued_on").notNull(),
+  dueOn: date("due_on").notNull(),
+  paidOn: date("paid_on"),
+  createdAt: createdAt(),
+}, (t) => [index("invoices_company_id_idx").on(t.companyId), index("invoices_client_id_idx").on(t.clientId), check("invoices_amount_positive", sql`${t.amount} >= 0`)]);
+
+/** What the agency paid freelancers for a client's work */
+export const freelancerPayments = pgTable("freelancer_payments", {
+  id: id(),
+  companyId: companyId(),
+  clientId: uuid("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+  taskId: uuid("task_id").references(() => tasks.id, { onDelete: "set null" }),
+  freelancer: text("freelancer").notNull(),
+  amount: numeric("amount", { mode: "number" }).notNull(),
+  paidOn: date("paid_on").notNull(),
+  createdAt: createdAt(),
+}, (t) => [index("freelancer_payments_company_id_idx").on(t.companyId), index("freelancer_payments_client_id_idx").on(t.clientId), index("freelancer_payments_task_id_idx").on(t.taskId), check("freelancer_payments_amount_positive", sql`${t.amount} >= 0`)]);
+
+/** One row per company: standard time per task type, minutes per revision, and monthly costs for the internal hourly cost */
+export const profitabilitySettings = pgTable("profitability_settings", {
+  companyId: uuid("company_id").primaryKey().references(() => companies.id, { onDelete: "cascade" }),
+  standardMinutes: jsonb("standard_minutes").$type<Record<string, number>>().notNull().default({}),
+  revisionMinutes: integer("revision_minutes").notNull().default(30),
+  monthlySalaries: numeric("monthly_salaries", { mode: "number" }).notNull().default(0),
+  monthlyRent: numeric("monthly_rent", { mode: "number" }).notNull().default(0),
+  monthlyTools: numeric("monthly_tools", { mode: "number" }).notNull().default(0),
+  monthlyHours: numeric("monthly_hours", { mode: "number" }).notNull().default(0),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 // ---------- Operations, automation, sales ----------
 
@@ -363,6 +418,11 @@ export const tasks = pgTable(
     status: taskStatus("status").notNull().default("todo"),
     /** Optional operation the task belongs to (workflow_runs.id) */
     operationId: uuid("operation_id").references(() => workflowRuns.id, { onDelete: "set null" }),
+    /** Client work (profitability): the client, the kind of work (TASK_TYPES), the optional timer, and revisions requested */
+    clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
+    taskType: text("task_type"),
+    trackedMinutes: integer("tracked_minutes"),
+    revisions: integer("revisions").notNull().default(0),
     completedAt: timestamp("completed_at", { withTimezone: true }),
     createdAt: createdAt(),
   },
@@ -371,6 +431,8 @@ export const tasks = pgTable(
     index("tasks_assignee_id_idx").on(t.assigneeId),
     index("tasks_created_by_id_idx").on(t.createdById),
     index("tasks_operation_id_idx").on(t.operationId),
+    index("tasks_client_id_idx").on(t.clientId),
+    check("tasks_tracked_minutes_positive", sql`${t.trackedMinutes} is null or ${t.trackedMinutes} >= 0`),
   ],
 );
 
