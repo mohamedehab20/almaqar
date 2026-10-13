@@ -14,6 +14,16 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Account self-service backend (task C4)
+New actions:
+- "Forgot password" email, which does not reveal which emails exist.
+- Change password.
+- Edit your own account name and phone.
+- Edit your own name and title in a company. The database guard now allows this; role and department stay with admins.
+
+Reset links land on `/reset-password`, a page still to be built. Migration 0012 is applied to Supabase.
+Files: `drizzle/0012_self_profile.sql`, `src/modules/auth/actions.ts`, `src/modules/hq/{service,actions}.ts`, `src/app/api/auth/confirm/route.ts`, `tests/db/{rls,services}.test.ts`.
+
 ### 2026-10-13 — Automated flows backend (task C3)
 Automated flows (trigger → condition → action) are stored, created from templates, enabled and disabled, and counted when they run. The Automation room header figures are computed.
 

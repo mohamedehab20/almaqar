@@ -51,7 +51,7 @@ Wrapped by `layout.tsx` → `AppShell` (sidebar + topbar). Only slug `demo` is v
 
 | Route | File | What it does |
 |---|---|---|
-| `/api/auth/confirm` | `src/app/api/auth/confirm/route.ts` | Target of Supabase email links (`token_hash` + `type`). Verifies the link, runs `finishSignIn()` (creates the pending company, claims invites) and redirects to `/c/<slug>`, or to `/login?error=link` on failure. |
+| `/api/auth/confirm` | `src/app/api/auth/confirm/route.ts` | Target of Supabase email links (`token_hash` + `type`). Verifies the link, runs `finishSignIn()` (creates the pending company, claims invites) and redirects to `/c/<slug>`, or to `/login?error=link` on failure. A `type=recovery` link goes to `/reset-password` (page still to build). |
 
 ## Backend per module
 
@@ -59,8 +59,8 @@ Each module has `service.ts` (logic), `queries.ts` (reads) and `actions.ts` (Ser
 
 | Module | Queries | Actions |
 |---|---|---|
-| `auth` | — | `signUp`, `signInWithCompanyCode` (company + employee login), `sendVisitorOtp` / `verifyVisitorOtp` (`channel: "email" | "sms"`), `signOut` |
-| `hq` | `getCompanyBySlug`, `listMyCompanies`, `listMembers`, `listDepartments`, `getFloorPlan`, `listActivity` (activity panel) | `updateCompany`, `setMyStatus`, `inviteMember`, `updateMember`, `removeMember`, department CRUD, `saveFloorPlan` |
+| `auth` | — | `signUp`, `signInWithCompanyCode` (company + employee login), `sendVisitorOtp` / `verifyVisitorOtp` (`channel: "email" | "sms"`), `signOut`, `requestPasswordReset`, `updatePassword`, `updateMyAccount` |
+| `hq` | `getCompanyBySlug`, `listMyCompanies`, `listMembers`, `listDepartments`, `getFloorPlan`, `listActivity` (activity panel) | `updateCompany`, `setMyStatus`, `updateMyProfile`, `inviteMember`, `updateMember`, `removeMember`, department CRUD, `saveFloorPlan` |
 | `marketing` | `listClients`, `listBriefs`, `listIdeas`, `listSocialAccounts`, `listCampaigns`, `getClientBudgets`, `getChannelStats`; portal: `getMyClients`, `listClientBriefs`, `listClientCampaigns`, `listClientAccounts` | `createClient`, `updateClient`, `regenerateInviteCode`, `sendBrief`, `setBriefStatus`, `replyToBrief`, `createIdea`, `updateIdea`, `deleteIdea`, `create/update/deleteSocialAccount`, `create/update/deleteCampaign` |
 | `operations` | `listOperations`, `getOperationsStats(companyId, days?)` (KPI cards, category counts), `listNotes(companyId, departmentId?)` | `startOperation` (OP-####), `createNote`, `setNotePinned`, `deleteNote` |
 | `automation` | `listWorkflows`, `listRuns`, `listFlows`, `getAutomationStats` | `createWorkflow`, `createWorkflowFromTemplate`, `updateWorkflow`, `deleteWorkflow`, `startRun`, `actOnRun` (only the current step's assignee; reuses `applyRunAction`), `createFlow`, `createFlowFromTemplate`, `updateFlow` (enable/disable), `deleteFlow` |

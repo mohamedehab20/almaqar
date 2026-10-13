@@ -20,6 +20,9 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
   if (error) return fail;
 
+  // Password reset link: the user is now signed in and chooses a new password there
+  if (type === "recovery") return NextResponse.redirect(new URL("/reset-password", origin));
+
   const slug = await finishSignIn(supabase).catch(() => null);
   return NextResponse.redirect(new URL(slug ? `/c/${slug}` : "/", origin));
 }

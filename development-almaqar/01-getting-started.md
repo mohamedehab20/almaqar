@@ -62,7 +62,7 @@ Everything below is needed only to run against a real database. Without it every
 4. **Run `npm run db:seed -- --owner you@example.com`** to get the demo company. Sign up with that email and you are its owner (company code `DEMO01`).
 5. **Set up Auth in the dashboard:**
    - Email provider: on. Email OTP length: 6.
-   - Change the email templates (Confirm signup, Invite, Magic link) to link to `{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=<signup|invite|magiclink>`.
+   - Change the email templates (Confirm signup, Invite, Magic link, Reset password) to link to `{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=<signup|invite|magiclink|recovery>`.
    - Site URL: the Vercel URL. Add `http://localhost:3000` to the redirect URLs.
    - **SMS (visitor OTP by phone):** enable the Phone provider with an SMS provider such as Twilio. Until then visitors use the email channel.
 6. **On Vercel**, add the same environment variables (Production + Preview), then redeploy.

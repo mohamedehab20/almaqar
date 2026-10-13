@@ -105,3 +105,13 @@ test("advisor rules: no SECURITY DEFINER in public, fixed search_path, briefs st
   await assert.rejects(t.sqlAs(A.sub, brief, [c1, betaClient, j(L("x"))]));
   assert.equal((await t.sqlAs(B.sub, brief, [c2, betaClient, j(L("x"))])).length, 1);
 });
+
+test("self-service profile: own name/title yes; department, email, others' names no", async () => {
+  const renamed = await t.sqlAs(E.sub, "UPDATE members SET name = $1, title = $2 WHERE user_id = $3 RETURNING name->>'en' AS n", [j(L("Eman Ali")), j(L("Designer")), E.sub]);
+  assert.equal(renamed[0].n, "Eman Ali");
+  const dept = (await t.sqlAs(A.sub, "INSERT INTO departments (company_id,name) VALUES ($1,$2) RETURNING id", [c1, j(L("Design"))]))[0].id;
+  await assert.rejects(t.sqlAs(E.sub, "UPDATE members SET department_id = $1 WHERE user_id = $2", [dept, E.sub]), /owners and admins/);
+  await assert.rejects(t.sqlAs(E.sub, "UPDATE members SET email = 'me@x.test' WHERE user_id = $1", [E.sub]), /owners and admins/);
+  assert.equal((await t.sqlAs(E.sub, "UPDATE members SET name = $1 WHERE user_id = $2 RETURNING id", [j(L("Hacked")), A.sub])).length, 0, "RLS hides other rows from employees");
+  assert.equal((await t.sqlAs(A.sub, "UPDATE members SET department_id = $1 WHERE user_id = $2 RETURNING id", [dept, E.sub])).length, 1, "owners still assign departments");
+});

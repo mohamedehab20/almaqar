@@ -110,3 +110,46 @@ export const signOut = action(z.object({}), async () => {
   await client.auth.signOut();
   return { signedOut: true };
 });
+
+// ---------- Account self-service ----------
+
+/**
+ * "Forgot password": emails a reset link. Always reports success, so the form does not reveal which
+ * emails have accounts. The email template must link to /api/auth/confirm?token_hash=…&type=recovery,
+ * which signs the user in and opens /reset-password, where updatePassword sets the new one.
+ */
+export const requestPasswordReset = action(z.object({ email: z.email() }), async ({ email }) => {
+  const client = await supabase();
+  const { error } = await client.auth.resetPasswordForEmail(email);
+  if (error && error.status === 429) throw new AppError("server_error", error.message); // rate limited: worth telling the user to retry later
+  return { sent: true };
+});
+
+/** New password for the signed-in user (after the reset link, or from account settings). */
+export const updatePassword = action(z.object({ password }), async ({ password: newPassword }) => {
+  const client = await supabase();
+  const { data } = await client.auth.getUser();
+  if (!data.user) throw new AppError("unauthorized");
+  const { error } = await client.auth.updateUser({ password: newPassword });
+  if (error) throw new AppError(error.code === "same_password" ? "invalid" : "auth_failed", error.message);
+  return { updated: true };
+});
+
+/** Account details kept on the auth user (not per company): full name and phone. */
+export const updateMyAccount = action(
+  z.object({ fullName: z.string().trim().min(1).max(120).optional(), phone: phone.nullable().optional() }),
+  async (input) => {
+    const client = await supabase();
+    const { data } = await client.auth.getUser();
+    if (!data.user) throw new AppError("unauthorized");
+    const { error } = await client.auth.updateUser({
+      data: {
+        ...(input.fullName !== undefined && { full_name: input.fullName }),
+        ...(input.phone !== undefined && { phone: input.phone }),
+      },
+    });
+    if (error) throw new AppError("auth_failed", error.message);
+    return { updated: true };
+  },
+);
+

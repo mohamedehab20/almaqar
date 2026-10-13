@@ -35,7 +35,7 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 | C1 | Activity feed (main hall) and operations KPIs, computed from `events` and `workflow_runs`. No new tables. | B | — | ✅ | Queries return the shapes the screens use; covered by tests |
 | C2 | Marketing sections: tables for social accounts and campaigns (with per-channel metrics); budgets and channel stats computed from them | A | — | ✅ | Migration applied to Supabase, RLS, service + actions, tests, advisors clean |
 | C3 | Automated flows (trigger → condition → action): table, CRUD, enable/disable, templates, run counter for the future engine | A | — | ✅ | Same as C2 |
-| C4 | Account self-service: password reset (email link), change password, edit own name/title/phone | B | — | ⬜ | Actions + DB guard allow self-edit of name/title only; tests |
+| C4 | Account self-service: password reset (email link), change password, edit own name/title/phone | B | — | ✅ | Actions + DB guard allow self-edit of name/title only; tests |
 
 ## ## Notes per task
 
@@ -239,4 +239,21 @@ Note on the imported events: `brief.received` is recreated by the trigger at imp
 - **Tests:** a new service test (`npm run test:db` 25/25) covers create, from template (including an unknown template), run counting, a disabled flow refusing to run, other companies seeing and changing nothing, and the stats.
 - **On Supabase:** the security advisor is clean and there are no performance warnings.
 - **Still to build:** the engine itself, a worker that listens to events and runs actions. It belongs to the future Python / automation service.
+
+### C4 — Account self-service (2026-10-13) ✅
+- **Database** (`0012_self_profile`, applied to Supabase): `private.guard_member_update` now lets a member change their **own** `name` and `title`.
+  - `role`, `department_id`, `email` and `company_id` stay owner/admin-only.
+  - `user_id` still changes only once, when an invite is claimed.
+  - RLS already hides other members' rows from employees.
+- **Actions:**
+  - `hq/actions.ts` `updateMyProfile({ companyId, name?, title? })`: per-company name and title.
+  - `auth/actions.ts` `requestPasswordReset({ email })`: always reports `sent`, so the form never reveals which emails have accounts. Only a rate limit is surfaced.
+  - `auth/actions.ts` `updatePassword({ password })`: for the signed-in user; the same password → `invalid`.
+  - `auth/actions.ts` `updateMyAccount({ fullName?, phone? })`: kept on the auth user, across companies.
+- **`/api/auth/confirm`:** a `type=recovery` link signs the user in and redirects to **`/reset-password`**. That page (a form calling `updatePassword`) is UI work and does not exist yet.
+- **Supabase setting:** the "Reset password" email template must link to `{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=recovery` (added to 01-getting-started).
+- **Tests:** 26/26.
+  - New RLS test: own name and title are allowed. Own department or email → refused. Another member's name → 0 rows. Owners still assign departments.
+  - Service test: `updateMyProfile` changes only the given fields, and outsiders get `forbidden`.
+- **On Supabase:** the smoke test passes again (member guard) and the security advisor is clean.
 

@@ -74,6 +74,17 @@ export async function setMyStatus(ctx: Ctx, input: { companyId: string; status: 
   return toMember(found(row));
 }
 
+/** Your own name and job title in this company (role, department and email stay with owners/admins). */
+export async function updateMyProfile(ctx: Ctx, input: { companyId: string; name?: Localized; title?: Localized }) {
+  const me = await requireMember(ctx, input.companyId);
+  const [row] = await ctx.tx
+    .update(members)
+    .set({ name: input.name, title: input.title })
+    .where(eq(members.id, me.id))
+    .returning();
+  return toMember(found(row));
+}
+
 /** Adds a member by email. They are linked to their account when they first sign in (claim_invites). */
 export async function inviteMember(
   ctx: Ctx,

@@ -64,6 +64,10 @@ test("company, invite and presence", async () => {
   await failsWith("forbidden", t.as(employee, (ctx) => hq.inviteMember(ctx, { companyId, email: "x@y.z", name: L("X") })));
   await failsWith("forbidden", t.as(employee, (ctx) => hq.removeMember(ctx, { companyId, memberId: ownerMemberId })));
 
+  const renamed = await t.as(employee, (ctx) => hq.updateMyProfile(ctx, { companyId, title: { ar: "مصممة", en: "Designer" } }));
+  assert.deepEqual([renamed.id, renamed.title.en, renamed.name.en], [employeeMemberId, "Designer", "Eman"], "only the given fields change, on your own row");
+  await failsWith("forbidden", t.as(outsider, (ctx) => hq.updateMyProfile(ctx, { companyId, name: L("x") })));
+
   const list = await t.as(owner, (ctx) => hq.listMembers(ctx, companyId));
   assert.equal(list.length, 2);
   assert.equal(list.find((m) => m.id === employeeMemberId)?.departmentId, dept.id);

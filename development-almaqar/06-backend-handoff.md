@@ -39,7 +39,7 @@ grep -rn "TODO(backend)" src
 
 - **Billing provider** and switching plans.
 - **Agent runtime** (Python).
-- **Account self-service:** profile, password reset, and choosing a company when a user belongs to several (`listMyCompanies` exists).
+- **Account pages (UI only):** `/reset-password` (calls `updatePassword`), "forgot password" (calls `requestPasswordReset`), profile/settings (`updateMyProfile`, `updateMyAccount`, `updatePassword`), and a company picker when a user belongs to several (`listMyCompanies`).
 - **HR room:** no tables yet.
 - **Automation engine:** a worker that listens to events and runs the flows' actions. The flows are stored; `recordFlowRun` is ready for the engine to call.
 

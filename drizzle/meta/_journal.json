@@ -85,6 +85,13 @@
       "when": 1791882519306,
       "tag": "0011_automation_flows_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791882695709,
+      "tag": "0012_self_profile",
+      "breakpoints": true
     }
   ]
 }

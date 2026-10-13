@@ -21,6 +21,11 @@ export const setMyStatus = action(
   (input) => withUser((ctx) => svc.setMyStatus(ctx, input)),
 );
 
+/** Your own name and title in this company. */
+export const updateMyProfile = action(companyInput.extend({ name: localized(80).optional(), title: optionalLocalized(80).optional() }), (input) =>
+  withUser((ctx) => svc.updateMyProfile(ctx, input)),
+);
+
 /** Adds the member, then emails them an invite when SUPABASE_SECRET_KEY is set (otherwise they just sign up with that email). */
 export const inviteMember = action(
   companyInput.extend({
