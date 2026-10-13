@@ -1,6 +1,7 @@
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 import { clerkEnabled } from "@/lib/clerk";
+import { safeNext } from "@/lib/guest";
 import { claimInvitesAndListCompanies, createOwnCompany, redeemClientInvite, type PendingCompany } from "@/modules/auth/session";
 
 /**
@@ -8,7 +9,8 @@ import { claimInvitesAndListCompanies, createOwnCompany, redeemClientInvite, typ
  * 1. a new owner's company (from the sign-up form, kept in unsafeMetadata.pending_company) is created;
  * 2. invites sent to this email are linked;
  * 3. a client-portal invite code (?invite=) is redeemed → /client-portal;
- * 4. the user's company opens, or /join explains that nobody has invited this email yet.
+ * 4. ?next= (a company link that asked to sign in) opens again;
+ * 5. otherwise the user's company opens, or /join explains that nobody has invited this email yet.
  * ?locale=en keeps English pages in English.
  */
 export async function GET(request: NextRequest) {
@@ -39,6 +41,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // A shared company link that asked to sign in: back to that page
+  const next = safeNext(searchParams.get("next"));
+  if (next) return NextResponse.redirect(new URL(next, origin));
   if (companies.length > 0) return go(`/c/${companies[0].slug}`);
   return go("/join?status=no-invite");
 }

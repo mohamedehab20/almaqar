@@ -14,6 +14,13 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Shared company links ask to sign in
+- **The problem:** a company link copied to another browser (not signed in) opened the guest demo instead of asking to sign in. The demo company is also the product owner's real company.
+- **Now:** every company page (`/c/<slug>/…`) without a sign-in goes to `/login?next=<that page>`, and after signing in it opens that same page again.
+- **Guest mode** opens only from the «ادخل كضيف» button. It sets a session cookie (`almaqr_guest`) that dies when the browser closes.
+- **Checked:** route checks (new: 4 shared-link cases) and a real browser (shared link → login; guest button → demo; same browser → demo stays open).
+Files: `src/proxy.ts`, `src/lib/guest.ts`, `src/modules/auth/components/{guest-button,company-login-form}.tsx`, `src/app/[locale]/(auth)/login/page.tsx`, `src/app/api/auth/after-sign-in/route.ts`, `src/app/[locale]/(app)/c/[companySlug]/layout.tsx`, `scripts/check-routes.mjs`.
+
 ### 2026-10-13 — Client profitability (Marketing → «ربحية العملاء»)
 - **What the owner sees, per client and month:**
   - Margin in green (above 40 %), yellow (15–40 %) or red (below 15 %).

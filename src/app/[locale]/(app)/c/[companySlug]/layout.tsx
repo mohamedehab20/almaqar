@@ -25,7 +25,7 @@ export default async function CompanyLayout({ children, params }: LayoutProps<"/
   // Otherwise only the public demo is open (its screens still use mock data)
   if (companySlug !== demoCompany.slug) {
     if (current === null) notFound(); // signed in, but not a member of this company
-    redirect({ href: "/login", locale });
+    redirect({ href: { pathname: "/login", query: { next: `${locale === "en" ? "/en" : ""}/c/${companySlug}` } }, locale });
   }
   const user = members.find((m) => m.id === currentUserId)!;
   return (

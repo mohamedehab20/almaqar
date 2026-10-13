@@ -33,6 +33,8 @@ Wrapped by `layout.tsx` → `AppShell` (sidebar + topbar). The layout calls `get
 
 The rooms' screens still show mock data. Only the layout and HR → Employees read the real company so far.
 
+**Access:** every `/c/<slug>` page needs a sign-in (proxy → `/login?next=`). The demo opens without one only after the «ادخل كضيف» button (session cookie `almaqr_guest`).
+
 **Sidebar** (`app-sidebar.tsx`): logo → `/`; groups «نظرة عامة» (voice, camera, recording, calendar, chat — coming soon) and «إدارة الأقسام». Enabled items: HR, operations, automation, marketing, and permissions (owner only; open in the demo). A signed-in member does not see rooms they have no `.view` permission for. Sales, Al Jarab, accounts, archive, meetings and tasks are dimmed and show a "coming soon" toast. «الترقية إلى الذهبية» → `/pricing`.
 
 **Topbar** (`app-topbar.tsx`): menu button and logo on small screens, page title from `sectionTitles`, main-hall tabs (placeholders), notifications, avatar.
@@ -58,7 +60,7 @@ The rooms' screens still show mock data. Only the layout and HR → Employees re
 
 | Route | File | What it does |
 |---|---|---|
-| `/api/auth/after-sign-in` | `src/app/api/auth/after-sign-in/route.ts` | Every Clerk sign-in/up lands here (`?locale=`, `?invite=`). It creates the pending company, claims invites, redeems a client invite and redirects. Signed out → `/login`. |
+| `/api/auth/after-sign-in` | `src/app/api/auth/after-sign-in/route.ts` | Every Clerk sign-in/up lands here (`?locale=`, `?invite=`, `?next=` = the company page a shared link asked to sign in for). It creates the pending company, claims invites, redeems a client invite and redirects. Signed out → `/login`. |
 | `/sign-in`, `/sign-up` | `src/app/[locale]/sign-in`, `sign-up` | Clerk's default paths; they redirect to `/login` and `/signup`. |
 
 ## Backend per module

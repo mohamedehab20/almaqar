@@ -16,8 +16,9 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/login">)
   return { title: t("metaTitle") };
 }
 
-export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
+export default function LoginPage({ params, searchParams }: PageProps<"/[locale]/login">) {
   const { locale } = use(params);
+  const { next } = use(searchParams);
   setRequestLocale(locale);
   const t = useTranslations("auth.login");
 
@@ -35,7 +36,7 @@ export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
             <AuthTabs active="login" />
           </div>
 
-          <CompanyLoginForm />
+          <CompanyLoginForm next={typeof next === "string" ? next : undefined} />
 
           <p className="flex items-center gap-3 rounded-lg bg-secondary-fixed px-6 py-5 text-sm text-on-secondary-container ring-1 ring-secondary-container/30">
             <CircleAlert className="size-6 shrink-0 fill-on-secondary-container text-secondary-fixed" aria-hidden />

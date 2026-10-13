@@ -4,6 +4,13 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-13 — Guest mode only from the guest button; links always ask to sign in
+**Chosen by the product owner,** to protect company data when a link is shared or moved between browsers.
+
+- **The check runs in the proxy:** no Clerk session and no guest cookie → `/login?next=`.
+- **`next` is accepted only for company paths** (`safeNext` in `src/lib/guest.ts`), so it cannot send anyone to another site.
+- **Updates** «Continue as a guest»: the demo is no longer open to a bare link.
+
 ### 2026-10-13 — Client profitability on minimal tables, computed on the server
 **Chosen by the product owner:** minimal tables, not full Calendar/Invoices/Freelancers modules.
 
