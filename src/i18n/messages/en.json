@@ -130,7 +130,8 @@
       "contact": "Contact us",
       "notConnected": "The form is ready. It will be connected to the sign-in service in the backend phase.",
       "guest": "Continue as a guest",
-      "guestHint": "Explore the platform with a demo company, no account needed"
+      "guestHint": "Explore the platform with a demo company, no account needed",
+      "loadingForm": "Loading the sign-in form…"
     },
     "employee": {
       "metaTitle": "Employee login",

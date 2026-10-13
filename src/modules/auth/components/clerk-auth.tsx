@@ -1,6 +1,6 @@
 "use client";
 
-import { SignIn, SignUp } from "@clerk/nextjs";
+import { ClerkLoaded, ClerkLoading, SignIn, SignUp } from "@clerk/nextjs";
 import { useLocale, useTranslations } from "next-intl";
 import { AFTER_AUTH_URL } from "@/lib/clerk";
 
@@ -21,6 +21,28 @@ export function useAfterAuthUrl(params: Record<string, string> = {}) {
   return `${AFTER_AUTH_URL}?${new URLSearchParams({ locale, ...params })}`;
 }
 
+/**
+ * Placeholder with the shape of Clerk's form while its script loads (a few seconds on a cold visit),
+ * so the page never shows only the guest button where the email field belongs.
+ */
+function FormSkeleton({ fields }: { fields: number }) {
+  const t = useTranslations("auth.common");
+  return (
+    <div role="status" aria-busy="true" aria-label={t("loadingForm")} className="flex w-full animate-pulse flex-col gap-5">
+      <div className="mx-auto h-6 w-40 rounded-sm bg-surface-container" />
+      <div className="mx-auto h-4 w-56 rounded-sm bg-surface-container-low" />
+      {Array.from({ length: fields }, (_, i) => (
+        <div key={i} className="flex flex-col gap-2">
+          <div className="h-3.5 w-24 rounded-sm bg-surface-container" />
+          <div className="h-11 rounded-md bg-surface-container-low ring-1 ring-outline-variant/30" />
+        </div>
+      ))}
+      <div className="h-11 rounded-md bg-primary/25" />
+      <span className="sr-only">{t("loadingForm")}</span>
+    </div>
+  );
+}
+
 /** Shown instead of the forms when the server has no Clerk keys (nothing would be saved). */
 export function AuthNotConfigured() {
   const t = useTranslations("auth.errors");
@@ -32,14 +54,21 @@ export function ClerkSignIn({ signUpPath = "/signup", params, withSignUp }: { si
   const locale = useLocale();
   const after = useAfterAuthUrl(params);
   return (
-    <SignIn
-      routing="hash"
-      forceRedirectUrl={after}
-      signUpForceRedirectUrl={after}
-      signUpUrl={withLocale(signUpPath, locale)}
-      withSignUp={withSignUp}
-      appearance={appearance}
-    />
+    <>
+      <ClerkLoading>
+        <FormSkeleton fields={2} />
+      </ClerkLoading>
+      <ClerkLoaded>
+        <SignIn
+          routing="hash"
+          forceRedirectUrl={after}
+          signUpForceRedirectUrl={after}
+          signUpUrl={withLocale(signUpPath, locale)}
+          withSignUp={withSignUp}
+          appearance={appearance}
+        />
+      </ClerkLoaded>
+    </>
   );
 }
 
@@ -56,14 +85,21 @@ export function ClerkSignUp({
   const locale = useLocale();
   const after = useAfterAuthUrl();
   return (
-    <SignUp
-      routing="hash"
-      forceRedirectUrl={after}
-      signInForceRedirectUrl={after}
-      signInUrl={withLocale(signInPath, locale)}
-      unsafeMetadata={unsafeMetadata}
-      initialValues={initialValues}
-      appearance={appearance}
-    />
+    <>
+      <ClerkLoading>
+        <FormSkeleton fields={3} />
+      </ClerkLoading>
+      <ClerkLoaded>
+        <SignUp
+          routing="hash"
+          forceRedirectUrl={after}
+          signInForceRedirectUrl={after}
+          signInUrl={withLocale(signInPath, locale)}
+          unsafeMetadata={unsafeMetadata}
+          initialValues={initialValues}
+          appearance={appearance}
+        />
+      </ClerkLoaded>
+    </>
   );
 }

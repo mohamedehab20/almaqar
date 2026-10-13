@@ -14,6 +14,12 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Login: no more "guest only" flash while Clerk loads
+- **The problem:** for a few seconds on the sign-in and sign-up pages only the «ادخل كضيف» button showed, because Clerk's form loads in the browser after the page.
+- **Now:** a skeleton of the form (title, fields, button) holds its place (`ClerkLoading`) and is swapped for the real form when Clerk is ready (`ClerkLoaded`). This covers every page that uses `ClerkSignIn` / `ClerkSignUp`.
+- **Checked:** in a real browser, at 0.4 s and after loading.
+Files: `src/modules/auth/components/clerk-auth.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — Company schedule in the Operations room («الجدولة»)
 - **Button** next to «إدارة المهام».
 - **Kinds:** company meetings, appointments, trips outside the office (client visits, suppliers, government offices) and interviews.
