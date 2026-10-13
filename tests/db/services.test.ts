@@ -360,3 +360,35 @@ test("automated flows: create, from template, enable/disable, runs and stats", a
   assert.equal(typeof stats.automationRate, "number");
   await failsWith("forbidden", t.as(outsider, (ctx) => automation.getAutomationStats(ctx, companyId)));
 });
+
+test("tasks: create, assign inside the company only, move to done, delete rules", async () => {
+  const mine = await t.as(employee, (ctx) => operations.createTask(ctx, { companyId, title: "Count the stock", dueDate: "2026-10-20", priority: "high" }));
+  assert.deepEqual([mine.assigneeId, mine.status, mine.priority], [employeeMemberId, "todo", "high"], "defaults to the creator, to do");
+
+  const forOwner = await t.as(employee, (ctx) => operations.createTask(ctx, { companyId, title: "Sign the contract", assigneeId: ownerMemberId }));
+  assert.equal(forOwner.assigneeId, ownerMemberId);
+
+  // A member of another company cannot be the assignee
+  const otherBoss = user("boss@other-tasks.test");
+  await t.as(otherBoss, ({ tx }) =>
+    tx.execute(sql`select public.create_company('other-tasks', 'OTASK1', ${JSON.stringify(L("Other"))}::jsonb, ${JSON.stringify(L("Other boss"))}::jsonb)`),
+  );
+  const otherOwnerId = (await t.as(otherBoss, (ctx) => hq.getCompanyBySlug(ctx, "other-tasks")))!.me.id;
+  await failsWith("invalid", t.as(employee, (ctx) => operations.createTask(ctx, { companyId, title: "x", assigneeId: otherOwnerId })));
+
+  const done = await t.as(employee, (ctx) => operations.updateTask(ctx, { taskId: mine.id, status: "done" }));
+  assert.equal(done.status, "done");
+  const log = await t.as(owner, (ctx) => events.listEvents(ctx, companyId, { type: ["task.created", "task.completed"] }));
+  assert.deepEqual(log.map((e) => e.type).sort(), ["task.completed", "task.created", "task.created"]);
+
+  assert.equal((await t.as(owner, (ctx) => operations.listTasks(ctx, companyId))).length, 2);
+  assert.deepEqual((await t.as(owner, (ctx) => operations.listTasks(ctx, companyId, ownerMemberId))).map((x) => x.title), ["Sign the contract"]);
+  assert.deepEqual(await t.as(outsider, (ctx) => operations.listTasks(ctx, companyId)), [], "other companies see no tasks");
+
+  // An employee who neither created nor owns a task cannot delete it; the owner (admin) can
+  const ownersOwn = await t.as(owner, (ctx) => operations.createTask(ctx, { companyId, title: "Owner only" }));
+  await failsWith("forbidden", t.as(employee, (ctx) => operations.deleteTask(ctx, { taskId: ownersOwn.id })));
+  await t.as(owner, (ctx) => operations.deleteTask(ctx, { taskId: ownersOwn.id }));
+  await t.as(employee, (ctx) => operations.deleteTask(ctx, { taskId: mine.id }));
+  assert.equal((await t.as(owner, (ctx) => operations.listTasks(ctx, companyId))).length, 1);
+});

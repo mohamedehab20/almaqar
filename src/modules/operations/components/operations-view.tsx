@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartColumn, ChevronDown, Plus, ScrollText, StickyNote } from "lucide-react";
+import { ChartColumn, ChevronDown, ListTodo, Plus, ScrollText, StickyNote } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,8 @@ import { AddOperationDialog, type NewOperation } from "./add-operation-dialog";
 import { KpiCards } from "./kpi-cards";
 import { notes as demoNotes, type Note } from "../notes";
 import { NotesSection } from "./notes-section";
+import { tasks as demoTasks, type Task } from "../tasks";
+import { TasksSection } from "./tasks-section";
 import { WorkflowsTable } from "./workflows-table";
 
 const categories = Object.keys(categoryCounts) as OpsCategory[];
@@ -23,6 +25,9 @@ export function OperationsView() {
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [notes, setNotes] = useState<Note[]>(demoNotes);
+  const [tasksOpen, setTasksOpen] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>(demoTasks);
+  const openTasks = tasks.filter((task) => task.status !== "done").length;
   const locale = useLocale() as "ar" | "en";
 
   useEffect(() => {
@@ -118,6 +123,21 @@ export function OperationsView() {
               <span className="rounded-sm bg-surface-container px-1.5 text-xs">{notes.length}</span>
               <ChevronDown className={cn("size-4 transition-transform", notesOpen && "rotate-180")} aria-hidden />
             </button>
+            <button
+              type="button"
+              onClick={() => setTasksOpen((open) => !open)}
+              aria-expanded={tasksOpen}
+              aria-controls="ops-tasks"
+              className={cn(
+                "flex h-11 items-center gap-2 rounded-sm px-4 text-sm font-semibold ghost-border transition-colors",
+                tasksOpen ? "bg-primary-fixed text-primary" : "bg-surface-container-lowest hover:bg-surface-container-low",
+              )}
+            >
+              <ListTodo className="size-4" aria-hidden />
+              {t("tasks.title")}
+              <span className="rounded-sm bg-surface-container px-1.5 text-xs">{openTasks}</span>
+              <ChevronDown className={cn("size-4 transition-transform", tasksOpen && "rotate-180")} aria-hidden />
+            </button>
           </div>
         </header>
 
@@ -130,6 +150,12 @@ export function OperationsView() {
         {notesOpen && (
           <div id="ops-notes">
             <NotesSection notes={notes} setNotes={setNotes} operations={allRows} onNotice={setNotice} />
+          </div>
+        )}
+
+        {tasksOpen && (
+          <div id="ops-tasks">
+            <TasksSection tasks={tasks} setTasks={setTasks} operations={allRows} onNotice={setNotice} />
           </div>
         )}
 

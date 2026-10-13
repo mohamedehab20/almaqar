@@ -50,6 +50,8 @@ export const eventSeverity = pgEnum("event_severity", ["info", "warning", "criti
 export const socialPlatform = pgEnum("social_platform", ["Instagram", "TikTok", "Snapchat", "X", "Google Ads", "LinkedIn", "Facebook", "Email"]);
 export const accountStatus = pgEnum("account_status", ["connected", "attention", "disconnected"]);
 export const campaignStage = pgEnum("campaign_stage", ["planning", "running", "review", "done"]);
+export const taskStatus = pgEnum("task_status", ["todo", "in_progress", "done"]);
+export const taskPriority = pgEnum("task_priority", ["low", "medium", "high"]);
 export const ideaStage = pgEnum("idea_stage", ["bank", "lab", "delivery"]);
 export const agentKind = pgEnum("agent_kind", ["general", "specialist"]);
 export const agentStatus = pgEnum("agent_status", ["active", "busy", "paused"]);
@@ -288,6 +290,31 @@ export const notes = pgTable("notes", {
   pinned: boolean("pinned").notNull().default(false),
   createdAt: createdAt(),
 }, (t) => [index("notes_company_id_idx").on(t.companyId), index("notes_author_id_idx").on(t.authorId)]);
+
+/** Team tasks (Operations room → task management) */
+export const tasks = pgTable(
+  "tasks",
+  {
+    id: id(),
+    companyId: companyId(),
+    title: text("title").notNull(),
+    assigneeId: uuid("assignee_id").references(() => members.id, { onDelete: "set null" }),
+    createdById: uuid("created_by_id").references(() => members.id, { onDelete: "set null" }),
+    dueDate: date("due_date"),
+    priority: taskPriority("priority").notNull().default("medium"),
+    status: taskStatus("status").notNull().default("todo"),
+    /** Optional operation the task belongs to (workflow_runs.id) */
+    operationId: uuid("operation_id").references(() => workflowRuns.id, { onDelete: "set null" }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("tasks_company_id_idx").on(t.companyId),
+    index("tasks_assignee_id_idx").on(t.assigneeId),
+    index("tasks_created_by_id_idx").on(t.createdById),
+    index("tasks_operation_id_idx").on(t.operationId),
+  ],
+);
 
 export type WorkflowStep = { id: string; title: Localized; assigneeId: string };
 export type WorkflowAttachment = { id: string; name: string; size: number; type: string; path: string };

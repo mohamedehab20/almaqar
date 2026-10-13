@@ -18,6 +18,7 @@ grep -rn "TODO(backend)" src
 | Briefs | `modules/marketing/briefs-store.ts`, `client-portal.tsx` | `listBriefs` / `listClientBriefs`, plus `sendBrief`, `setBriefStatus`, `replyToBrief`. Realtime: subscribe to `briefs` with the browser client. A `brief.received` event is logged automatically. |
 | Marketing ideas | `marketing-view.tsx` | `listIdeas`, `createIdea` (from a brief: pass `briefId`), `updateIdea` (stage, ratings, versions, delivery) |
 | Operations | `operations-view.tsx` | `operations/queries.ts` `listOperations`, and the `startOperation` action (returns OP-####). The UI row shape (`WorkflowRow`) is built from the run plus its members. |
+| Operations tasks | `tasks-section.tsx` (demo tasks in `operations/tasks.ts`) | `listTasks`, `createTask`, `updateTask`, `deleteTask` |
 | Operations notes | `notes-section.tsx` | `listNotes(companyId, departmentId?)`, `createNote`, `setNotePinned`, `deleteNote`. Notify the audience from `note.created` events (realtime). |
 | Automation flows | `automation-view.tsx` | `automation/actions.ts`: `createWorkflow`, `createWorkflowFromTemplate`, `startRun`, `actOnRun` |
 | Workflow attachments | `workflow-builder-dialog.tsx` | `files/actions.ts` `uploadAttachment` (folder `workflows`) → pass the result in `attachments`; open with `getAttachmentUrl` |

@@ -1,10 +1,11 @@
 import { and, desc, eq, gte } from "drizzle-orm";
-import { members, notes, workflowRuns, type NoteAudience } from "@/db/schema";
+import { members, notes, tasks, workflowRuns, type NoteAudience } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
 import { emitEvent } from "@/modules/events/service";
 import { noteConcernsDepartment, type Note } from "./notes";
+import type { Task, TaskPriority, TaskStatus } from "./tasks";
 
 type NoteRow = typeof notes.$inferSelect;
 
@@ -102,4 +103,82 @@ export async function getOperationsStats(ctx: Ctx, companyId: string, days = 30)
     avgCycleHours: cycleHours.length ? Math.round((cycleHours.reduce((a, b) => a + b, 0) / cycleHours.length) * 10) / 10 : null,
     byCategory,
   };
+}
+
+// ---------- Tasks (Operations room → task management) ----------
+
+type TaskRow = typeof tasks.$inferSelect;
+
+function toTask(r: TaskRow): Task {
+  return {
+    id: r.id,
+    title: r.title,
+    assigneeId: r.assigneeId ?? "",
+    createdById: r.createdById ?? "",
+    dueDate: r.dueDate ?? undefined,
+    priority: r.priority,
+    status: r.status,
+    operationId: r.operationId ?? undefined,
+    createdAt: r.createdAt.toISOString(),
+  };
+}
+
+/** The assignee must be a member of the same company. */
+async function assertMemberOf(ctx: Ctx, companyId: string, memberId: string) {
+  const [m] = await ctx.tx.select({ id: members.id }).from(members).where(and(eq(members.id, memberId), eq(members.companyId, companyId)));
+  if (!m) throw new AppError("invalid");
+}
+
+/** Open tasks first by status order, then newest. With `assigneeId`, only that member's tasks. */
+export async function listTasks(ctx: Ctx, companyId: string, assigneeId?: string) {
+  const rows = await ctx.tx
+    .select()
+    .from(tasks)
+    .where(assigneeId ? and(eq(tasks.companyId, companyId), eq(tasks.assigneeId, assigneeId)) : eq(tasks.companyId, companyId))
+    .orderBy(desc(tasks.createdAt));
+  return rows.map(toTask);
+}
+
+export async function createTask(
+  ctx: Ctx,
+  input: { companyId: string; title: string; assigneeId?: string | null; dueDate?: string | null; priority?: TaskPriority; operationId?: string | null },
+) {
+  const me = await requireMember(ctx, input.companyId);
+  const assigneeId = input.assigneeId ?? me.id;
+  await assertMemberOf(ctx, input.companyId, assigneeId);
+  const [row] = await ctx.tx
+    .insert(tasks)
+    .values({ ...input, assigneeId, createdById: me.id })
+    .returning();
+  await emitEvent(ctx, input.companyId, { type: "task.created", payload: { taskId: row.id, assigneeId } });
+  return toTask(row);
+}
+
+export async function updateTask(
+  ctx: Ctx,
+  input: { taskId: string; title?: string; assigneeId?: string | null; dueDate?: string | null; priority?: TaskPriority; status?: TaskStatus },
+) {
+  const [current] = await ctx.tx.select().from(tasks).where(eq(tasks.id, input.taskId));
+  const task = found(current);
+  if (input.assigneeId) await assertMemberOf(ctx, task.companyId, input.assigneeId);
+  const { taskId, ...patch } = input;
+  const completedAt = input.status === undefined ? undefined : input.status === "done" ? new Date() : null;
+  const [row] = await ctx.tx
+    .update(tasks)
+    .set({ ...patch, completedAt })
+    .where(eq(tasks.id, taskId))
+    .returning();
+  if (input.status === "done" && task.status !== "done") {
+    await emitEvent(ctx, task.companyId, { type: "task.completed", payload: { taskId } });
+  }
+  return toTask(found(row));
+}
+
+/** The creator, the assignee or an owner/admin may delete a task. */
+export async function deleteTask(ctx: Ctx, input: { taskId: string }) {
+  const [row] = await ctx.tx.select().from(tasks).where(eq(tasks.id, input.taskId));
+  const task = found(row);
+  const me = await requireMember(ctx, task.companyId);
+  if (me.role === "employee" && task.createdById !== me.id && task.assigneeId !== me.id) throw new AppError("forbidden");
+  await ctx.tx.delete(tasks).where(eq(tasks.id, task.id));
 }

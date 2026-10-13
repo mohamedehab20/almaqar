@@ -14,6 +14,22 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Task management in the Operations room
+- **Button:** "إدارة المهام" sits next to Notes and shows the number of open tasks.
+- **Board:** opens with three columns (to do / in progress / done).
+- **Add form:** title, owner, due date, priority, and an optional linked operation.
+- **"Mine / all" filter.**
+- **Task cards:** buttons to move a task, overdue tasks first and in red, priority colors, and delete.
+- **Backend:**
+  - `tasks` table (migrations 0014–0015, applied to Supabase).
+  - RLS: members of the company.
+  - The assignee must be in the same company. Done sets `completed_at` and logs `task.completed`.
+  - Delete: creator, assignee or owner/admin.
+- **Screen:** uses demo tasks until it is wired, like the rest of the room.
+
+Tests 28/28, smoke test OK, advisors clean.
+Files: `src/modules/operations/{tasks.ts,components/tasks-section.tsx,components/operations-view.tsx,service.ts,actions.ts,queries.ts}`, `src/db/schema.ts`, `drizzle/0014_tasks.sql`, `drizzle/0015_tasks_rls.sql`, `tests/db/services.test.ts`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — Continue as a guest
 - **"ادخل كضيف" button:** on `/signup`, `/login` and `/employee-login`. It opens the public demo company (`/c/demo`, mock data) without an account.
 - **Guest banner:** while not signed in, every company page shows "you are browsing as a guest, nothing is saved", with buttons to create an account or sign in.

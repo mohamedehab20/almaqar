@@ -532,6 +532,46 @@
         "employees": "Employees",
         "filtered": "{count} in the selected departments"
       }
+    },
+    "tasks": {
+      "title": "Task management",
+      "add": "Add task",
+      "placeholder": "Write the task…",
+      "assignee": "Owner",
+      "due": "Due date",
+      "priority": "Priority",
+      "linkTo": "Link to an operation",
+      "noLink": "No linked operation",
+      "mine": "My tasks",
+      "all": "All tasks",
+      "empty": "No tasks here.",
+      "overdue": "Overdue",
+      "noDue": "No due date",
+      "by": "From {name}",
+      "delete": "Delete task",
+      "statuses": {
+        "todo": "To do",
+        "in_progress": "In progress",
+        "done": "Done"
+      },
+      "priorities": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "move": {
+        "start": "Start",
+        "finish": "Done",
+        "reopen": "Reopen",
+        "back": "Back"
+      },
+      "notices": {
+        "added": "Task added.",
+        "empty": "Write the task first.",
+        "done": "Nice! Task done.",
+        "deleted": "Task deleted."
+      },
+      "dueLabel": "Due"
     }
   },
   "hr": {
