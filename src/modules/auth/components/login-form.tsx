@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { clerkEnabled } from "@/lib/clerk";
 import { cn } from "@/lib/utils";
 import { AuthNotConfigured, ClerkSignIn } from "./clerk-auth";
+import { GuestButton } from "./guest-button";
 
 /** Employee portal login: Clerk sign-in; new employees activate their account from "Join your company". */
 export function LoginForm() {
@@ -33,6 +34,7 @@ export function LoginForm() {
             </span>
             {e("visitorLogin")}
           </Link>
+          <GuestButton />
         </div>
       </div>
 

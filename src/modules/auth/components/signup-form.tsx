@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Link } from "@/i18n/navigation";
 import { clerkEnabled } from "@/lib/clerk";
 import { AuthNotConfigured, ClerkSignUp } from "./clerk-auth";
+import { GuestButton } from "./guest-button";
 
 const businessTypes = ["startup", "agency", "training", "consulting", "services", "other"] as const;
 const sizes = ["1-10", "11-50", "51-200", "200+"] as const;
@@ -119,6 +120,9 @@ export function SignupForm() {
           </div>
         </form>
       )}
+      <div className="mt-6">
+        <GuestButton />
+      </div>
     </section>
   );
 }

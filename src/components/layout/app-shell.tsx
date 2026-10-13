@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AppSidebar } from "./app-sidebar";
 import { AppTopbar } from "./app-topbar";
+import { GuestBanner } from "./guest-banner";
 
 type AppShellProps = {
   companySlug: string;
@@ -38,6 +39,8 @@ export function AppShell({ companySlug, userName, signedIn = false, children }: 
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* The public demo (not signed in): make clear nothing is saved */}
+        {!signedIn && <GuestBanner />}
         <AppTopbar userName={userName} signedIn={signedIn} onMenu={() => setMenuOpen(true)} />
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </div>

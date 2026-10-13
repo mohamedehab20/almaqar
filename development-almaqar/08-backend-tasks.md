@@ -37,7 +37,7 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 | C3 | Automated flows (trigger → condition → action): table, CRUD, enable/disable, templates, run counter for the future engine | A | — | ✅ | Same as C2 |
 | C4 | Account self-service: password reset (email link), change password, edit own name/title/phone | B | — | ✅ | Actions + DB guard allow self-edit of name/title only; tests |
 
-## ## Notes per task
+## Notes per task
 
 (Filled in as tasks land: what was done, anything surprising, follow-ups.)
 

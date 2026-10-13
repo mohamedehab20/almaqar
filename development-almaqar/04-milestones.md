@@ -14,6 +14,12 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Continue as a guest
+- **"ادخل كضيف" button:** on `/signup`, `/login` and `/employee-login`. It opens the public demo company (`/c/demo`, mock data) without an account.
+- **Guest banner:** while not signed in, every company page shows "you are browsing as a guest, nothing is saved", with buttons to create an account or sign in.
+
+Files: `src/modules/auth/components/guest-button.tsx`, `src/components/layout/guest-banner.tsx`, `src/components/layout/app-shell.tsx`, `src/modules/auth/components/{signup-form,company-login-form,login-form}.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — Employee invites on WhatsApp
 - **After adding an employee:** HR → Employees shows "Send the invite on WhatsApp". It opens a `wa.me` link with a ready message (name, company, the email to sign up with, the `/join` link in the current language).
 - **Optional phone field:** opens that chat directly. Local Egyptian numbers `01…` get the country code 20.

@@ -29,7 +29,7 @@ Every auth page shows the logo linking to `/`.
 Wrapped by `layout.tsx` → `AppShell` (sidebar + topbar). The layout calls `getSignedInCompany(slug)`:
 - **Signed in and a member:** the real company. The topbar shows your name and a sign-out button.
 - **Signed in but not a member:** 404.
-- **Signed out:** `/c/demo` stays the public demo, on mock data. Any other slug redirects to `/login`.
+- **Signed out:** `/c/demo` stays the public demo, on mock data, reached from the "continue as a guest" button on the auth pages. A guest banner says nothing is saved and links to sign-up and sign-in. Any other slug redirects to `/login`.
 
 The rooms' screens still show mock data. Only the layout and HR → Employees read the real company so far.
 

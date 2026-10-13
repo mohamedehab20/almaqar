@@ -128,7 +128,9 @@
       "privacy": "Privacy policy",
       "terms": "Terms & conditions",
       "contact": "Contact us",
-      "notConnected": "The form is ready. It will be connected to the sign-in service in the backend phase."
+      "notConnected": "The form is ready. It will be connected to the sign-in service in the backend phase.",
+      "guest": "Continue as a guest",
+      "guestHint": "Explore the platform with a demo company, no account needed"
     },
     "employee": {
       "metaTitle": "Employee login",
@@ -354,7 +356,10 @@
     "collapseGroup": "Hide {name} items",
     "comingSoonItem": "{name} — coming soon",
     "backHome": "Back to the home page",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "guestBanner": "You are browsing as a guest: this is a demo company and nothing is saved.",
+    "guestCta": "Create your free account",
+    "guestLogin": "Sign in"
   },
   "hq": {
     "title": "Main hall",
