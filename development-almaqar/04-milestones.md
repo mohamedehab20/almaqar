@@ -14,6 +14,15 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Full test run: frontend, backend, live database
+Everything passed:
+- **Backend:** 22/22 tests, lint, types and build.
+- **Live database:** migrations, advisors, the RLS smoke test, data integrity for both companies, and the anonymous API probe (0 rows from all 18 tables).
+- **Frontend:** 30 pages in both languages, headless rendering with 0 console errors, and screenshots reviewed.
+
+Open points: a mobile clipping point in the main hall, and the direct app → database path (needs `DATABASE_URL`).
+Files: `development-almaqar/09-test-report.md`, `scripts/check-routes.mjs`, `package.json`.
+
 ### 2026-10-12 — Demo data and a simulated day live on Supabase (tasks A4, A6)
 - **`demo` company:** loaded from the real seed and owned by the product owner's email.
 - **`simulation` company:** produced by a full working day run through the real services as real users. Covers invites, an approval workflow that approves PO-1001, the client portal brief with a clarification, an idea, a note, an agent task and an operation.

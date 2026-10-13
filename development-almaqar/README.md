@@ -16,6 +16,7 @@ This folder is the running engineering record of **Al Maqr (المقر)**, a "di
 | [06-backend-handoff.md](06-backend-handoff.md) | What is mocked today, and what must the backend replace? |
 | [07-conventions.md](07-conventions.md) | Coding rules, verification steps and known gotchas |
 | [08-backend-tasks.md](08-backend-tasks.md) | What is left of the backend plan, as tasks for two engineers |
+| [09-test-report.md](09-test-report.md) | Full test runs across frontend, backend and the live database, with findings |
 
 ## Keeping this folder current
 

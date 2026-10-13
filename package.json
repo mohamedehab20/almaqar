@@ -13,7 +13,8 @@
     "db:seed": "tsx scripts/seed.ts",
     "test:db": "tsx --test \"tests/**/*.test.ts\"",
     "db:simulate": "tsx scripts/simulate-day.mts",
-    "db:seed-sql": "tsx scripts/seed-to-sql.mts"
+    "db:seed-sql": "tsx scripts/seed-to-sql.mts",
+    "check:routes": "node scripts/check-routes.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
