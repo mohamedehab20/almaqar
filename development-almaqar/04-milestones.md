@@ -14,6 +14,16 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Production is live with Clerk + Supabase
+- **Database password:** reset via the Supabase Management API and written to `DATABASE_URL`, without printing it.
+- **Vercel:** the CLI linked the project, all env vars were added (secrets as Secret), and production was redeployed.
+- **Verified on https://almaqar-theta.vercel.app:**
+  - An owner signs in and their company is created and opened.
+  - An invited employee signs in and lands in that company.
+  - The test data was removed afterwards.
+
+Files: docs only (`development-almaqar/08-backend-tasks.md`, `01-getting-started.md`).
+
 ### 2026-10-13 — Clerk replaces Supabase Auth
 - **Sign-in and sign-up:** Clerk's components, in Arabic and English, sit inside our pages:
   - `/login` and `/employee-login`: sign in.

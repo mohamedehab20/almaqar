@@ -24,9 +24,9 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 |---|---|---|---|---|---|
 | A4 | Demo data on Supabase (`demo` company, owner = product owner's email) | A | — | ✅ | `demo` company is visible in the dashboard |
 | A6 | Simulated working day through the real services, saved to Supabase as company `simulation` | A | A4 | ✅ | Every step's data is on Supabase and checked |
-| A5 | Check `withUser` over the transaction pooler (port 6543): role switch and RLS inside a pooled transaction | A | `DATABASE_URL` | ⏳ | A real query as a test user returns only that user's rows |
-| B3 | End-to-end check with Clerk: owner sign-up creates the company, an invited employee joins, a visitor redeems an invite code | B | `DATABASE_URL` | ⏳ | Each flow reaches its page and the rows exist in Supabase |
-| B4 | Vercel: add the env vars (Supabase URL + publishable key, `DATABASE_URL`, `SUPABASE_SECRET_KEY`, Clerk publishable + secret key) and redeploy. Rename the Clerk app and create its production instance. | B | A5, Vercel access | ⏳ | Production can sign in |
+| A5 | Check `withUser` over the transaction pooler (port 6543): role switch and RLS inside a pooled transaction | A | `DATABASE_URL` | ✅ | A real query as a test user returns only that user's rows |
+| B3 | End-to-end check with Clerk: owner sign-up creates the company, an invited employee joins, a visitor redeems an invite code | B | `DATABASE_URL` | ✅ (owner + employee on production; visitor still to try by hand) | Each flow reaches its page and the rows exist in Supabase |
+| B4 | Vercel: env vars + redeploy. Still to do: rename the Clerk app; create its production instance before launch. | B | — | ✅ (env + deploy) | Production can sign in |
 
 ## Phase 3 — Backend for the screens that still have no data source
 
@@ -256,4 +256,20 @@ Note on the imported events: `brief.received` is recreated by the trigger at imp
   - New RLS test: own name and title are allowed. Own department or email → refused. Another member's name → 0 rows. Owners still assign departments.
   - Service test: `updateMyProfile` changes only the given fields, and outsiders get `forbidden`.
 - **On Supabase:** the smoke test passes again (member guard) and the security advisor is clean.
+
+### A5, B3, B4 — Live on Vercel with Clerk and the database (2026-10-13) ✅
+- **Database password:**
+  - It was unknown. It was **reset through the Supabase Management API** (`PATCH /v1/projects/{ref}/database/password`), using the access token saved for the Supabase MCP. The new 32-character password was generated and written straight into `DATABASE_URL` in `.env.local` (transaction pooler `aws-0-us-east-1.pooler.supabase.com:6543`); it was never printed.
+  - If you need the password, take it from `.env.local`, or reset it again in the dashboard.
+- **A5:** `withUser` over the pooler works. The connection uses role `authenticated` and `private.uid()` returns the Clerk id. A signed-in stranger sees 0 companies.
+- **Vercel** (CLI logged in as mohamedehab20, project `mehab1/almaqar`, folder linked; `.vercel/` is git-ignored):
+  - Env vars for Production + Preview: the Supabase URL and publishable key, the Clerk publishable key, the Clerk sign-in/up URL vars, `CLERK_SECRET_KEY` (Secret) and `DATABASE_URL` (Secret).
+  - Production redeployed on https://almaqar-theta.vercel.app.
+  - Note: `vercel link` adds `VERCEL_OIDC_TOKEN` to `.env.local`; the other keys were untouched.
+- **B3, end to end on production:**
+  - **Owner:** a test Clerk user with a pending company got a real Clerk session. `/api/auth/after-sign-in` → 307 `/c/e2e-test-co-qw58`, and the company page rendered the owner's name from the database.
+  - **Employee:** the owner's company invited `almaqr-e2e-staff+clerk_test@example.com`. A second Clerk user with that email signed in. after-sign-in → `/en/c/e2e-test-co-qw58`, and the member row was linked.
+  - The test company and both Clerk users were deleted afterwards.
+  - A headless-browser sign-in with a Clerk ticket signed in at Clerk but never reached our redirect. The route was therefore tested with session tokens, as above. The real browser flow is for the product owner to try.
+- **Still open:** `SUPABASE_SECRET_KEY` (needed for file uploads); renaming the Clerk app ("My Application"); a Clerk production instance before launch.
 

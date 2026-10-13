@@ -46,7 +46,7 @@ All forms use `noValidate` and skip real checks, so you can click through every 
 ## Repository and deployment
 
 - **GitHub:** https://github.com/mohamedehab20/almaqar (branch `main`, public).
-- **Vercel** deploys automatically on every push to `main`. Deployment Protection is on, so preview URLs ask for a Vercel login. Note that `almaqar.vercel.app` is **not** this project.
+- **Vercel** deploys automatically on every push to `main`. Project `mehab1/almaqar`, production https://almaqar-theta.vercel.app. Env vars are managed with the Vercel CLI (`vercel env ls`), with this folder linked through `vercel link`. Deployment Protection is on, so preview URLs ask for a Vercel login. Note that `almaqar.vercel.app` is **not** this project.
 - Environment variables: see "Backend setup" below. Without them the site runs on mock data, as before.
 
 ## Backend setup (Supabase)

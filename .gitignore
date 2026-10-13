@@ -43,3 +43,6 @@ next-env.d.ts
 
 # skill symlinks (absolute paths; recreate with npx skills add)
 /.claude/skills/
+
+.vercel
+.env*
