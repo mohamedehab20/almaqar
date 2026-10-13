@@ -70,3 +70,44 @@ export const updateTask = action(
 
 export const deleteTask = action(z.object({ taskId: id }), (input) => withUser((ctx) => svc.deleteTask(ctx, input)));
 
+
+// ---------- Schedule ----------
+
+const scheduleFields = {
+  location: z.string().trim().max(300).nullable().optional(),
+  attendeeIds: z.array(id).max(100).optional(),
+  clientId: id.nullable().optional(),
+  contactName: z.string().trim().max(120).nullable().optional(),
+  contactPhone: z.string().trim().max(30).nullable().optional(),
+  contactRole: z.string().trim().max(120).nullable().optional(),
+  purpose: z.string().trim().max(300).nullable().optional(),
+  transport: z.enum(["companyCar", "ownCar", "taxi", "online", "none"]).nullable().optional(),
+  notes: z.string().trim().max(1000).nullable().optional(),
+};
+const scheduleKind = z.enum(["meeting", "appointment", "trip", "interview"]);
+
+export const createScheduleItem = action(
+  companyInput.extend({
+    kind: scheduleKind,
+    title: z.string().trim().min(1).max(200),
+    startsAt: z.iso.datetime({ offset: true }),
+    durationMinutes: z.number().int().min(5).max(24 * 60),
+    ...scheduleFields,
+  }),
+  (input) => withUser((ctx) => svc.createScheduleItem(ctx, input)),
+);
+
+export const updateScheduleItem = action(
+  z.object({
+    itemId: id,
+    kind: scheduleKind.optional(),
+    status: z.enum(["scheduled", "done", "cancelled"]).optional(),
+    title: z.string().trim().min(1).max(200).optional(),
+    startsAt: z.iso.datetime({ offset: true }).optional(),
+    durationMinutes: z.number().int().min(5).max(24 * 60).optional(),
+    ...scheduleFields,
+  }),
+  (input) => withUser((ctx) => svc.updateScheduleItem(ctx, input)),
+);
+
+export const deleteScheduleItem = action(z.object({ itemId: id }), (input) => withUser((ctx) => svc.deleteScheduleItem(ctx, input)));

@@ -409,3 +409,48 @@ test("tasks: create, assign inside the company only, move to done, delete rules"
   await t.as(employee, (ctx) => operations.deleteTask(ctx, { taskId: mine.id }));
   assert.equal((await t.as(owner, (ctx) => operations.listTasks(ctx, companyId))).length, 1);
 });
+
+test("schedule: meetings, trips and interviews with their details; organizer rules", async () => {
+  const day = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  const [bakery] = await t.as(owner, (ctx) => marketing.listClients(ctx, companyId));
+  const trip = await t.as(employee, (ctx) =>
+    operations.createScheduleItem(ctx, {
+      companyId,
+      kind: "trip",
+      title: "Client visit — filming",
+      startsAt: `${day}T13:00:00+02:00`,
+      durationMinutes: 180,
+      location: "25 Ninety St, New Cairo",
+      attendeeIds: [ownerMemberId, employeeMemberId],
+      clientId: bakery.id,
+      contactName: "Dr. Hala",
+      contactPhone: "01001234567",
+      contactRole: "Medical director",
+      purpose: "Film the clinic",
+      transport: "companyCar",
+    }),
+  );
+  assert.equal(trip.organizerId, employeeMemberId);
+  assert.deepEqual(trip.attendeeIds, [ownerMemberId], "the organizer is not listed twice");
+  assert.deepEqual(trip.contact, { name: "Dr. Hala", phone: "01001234567", role: "Medical director" });
+  assert.equal(trip.status, "scheduled");
+
+  const interview = await t.as(owner, (ctx) =>
+    operations.createScheduleItem(ctx, { companyId, kind: "interview", title: "Designer interview", startsAt: `${day}T11:00:00+02:00`, durationMinutes: 45, contactName: "Youssef" }),
+  );
+  // Strangers and other companies' people cannot be attendees
+  await failsWith("invalid", t.as(owner, (ctx) => operations.createScheduleItem(ctx, { companyId, kind: "meeting", title: "x", startsAt: `${day}T09:00:00Z`, durationMinutes: 30, attendeeIds: [crypto.randomUUID()] })));
+  await failsWith("forbidden", t.as(outsider, (ctx) => operations.createScheduleItem(ctx, { companyId, kind: "meeting", title: "x", startsAt: `${day}T09:00:00Z`, durationMinutes: 30 })));
+
+  const list = await t.as(employee, (ctx) => operations.listSchedule(ctx, companyId, { from: `${day}T00:00:00Z`, to: `${day}T23:59:59Z` }));
+  assert.deepEqual(list.map((i) => i.title), ["Designer interview", "Client visit — filming"], "earliest first");
+  const mine = await t.as(employee, (ctx) => operations.listSchedule(ctx, companyId, { from: `${day}T00:00:00Z`, to: `${day}T23:59:59Z`, memberId: employeeMemberId }));
+  assert.deepEqual(mine.map((i) => i.id), [trip.id]);
+
+  // The employee may not change the owner's interview; the organizer may change their own trip
+  await failsWith("forbidden", t.as(employee, (ctx) => operations.updateScheduleItem(ctx, { itemId: interview.id, status: "cancelled" })));
+  const done = await t.as(employee, (ctx) => operations.updateScheduleItem(ctx, { itemId: trip.id, status: "done", notes: "Filmed 40 clips" }));
+  assert.deepEqual([done.status, done.notes], ["done", "Filmed 40 clips"]);
+  await t.as(owner, (ctx) => operations.deleteScheduleItem(ctx, { itemId: interview.id }));
+  assert.equal((await t.as(owner, (ctx) => operations.listSchedule(ctx, companyId, { from: `${day}T00:00:00Z`, to: `${day}T23:59:59Z` }))).length, 1);
+});

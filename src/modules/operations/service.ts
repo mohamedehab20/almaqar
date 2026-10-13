@@ -1,5 +1,5 @@
-import { and, desc, eq, gte } from "drizzle-orm";
-import { clients, members, notes, tasks, workflowRuns, type NoteAudience } from "@/db/schema";
+import { and, asc, desc, eq, gte, inArray, lt } from "drizzle-orm";
+import { clients, meetings, members, notes, tasks, workflowRuns, type NoteAudience } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
@@ -234,4 +234,112 @@ export async function deleteTask(ctx: Ctx, input: { taskId: string }) {
   const task = found(row);
   await requireTaskAccess(ctx, task);
   await ctx.tx.delete(tasks).where(eq(tasks.id, task.id));
+}
+
+// ---------- Schedule (Operations room → «الجدولة») ----------
+
+type ScheduleRow = typeof meetings.$inferSelect;
+export type ScheduleKind = ScheduleRow["kind"];
+export type ScheduleStatus = ScheduleRow["status"];
+
+type ScheduleFields = {
+  kind?: ScheduleKind;
+  title?: string;
+  /** ISO date-time with offset */
+  startsAt?: string;
+  durationMinutes?: number;
+  location?: string | null;
+  attendeeIds?: string[];
+  clientId?: string | null;
+  contactName?: string | null;
+  contactPhone?: string | null;
+  contactRole?: string | null;
+  purpose?: string | null;
+  transport?: string | null;
+  notes?: string | null;
+};
+
+function toScheduleItem(r: ScheduleRow) {
+  return {
+    id: r.id,
+    kind: r.kind,
+    status: r.status,
+    title: r.title,
+    startsAt: r.startsAt.toISOString(),
+    durationMinutes: r.durationMinutes,
+    location: r.location,
+    organizerId: r.organizerId,
+    attendeeIds: r.attendeeIds,
+    clientId: r.clientId,
+    contact: r.contactName ? { name: r.contactName, phone: r.contactPhone, role: r.contactRole } : null,
+    purpose: r.purpose,
+    transport: r.transport,
+    notes: r.notes,
+  };
+}
+
+/** Attendees must be members of the company, and a client must be one of its clients. */
+async function assertScheduleRefs(ctx: Ctx, companyId: string, input: ScheduleFields) {
+  const ids = [...new Set(input.attendeeIds ?? [])];
+  if (ids.length) {
+    const rows = await ctx.tx.select({ id: members.id }).from(members).where(and(eq(members.companyId, companyId), inArray(members.id, ids)));
+    if (rows.length !== ids.length) throw new AppError("invalid");
+  }
+  if (input.clientId) await assertClientOf(ctx, companyId, input.clientId);
+}
+
+/** Everything scheduled between `from` and `to` (ISO), earliest first. Optionally only one member's (organizer or attendee). */
+export async function listSchedule(ctx: Ctx, companyId: string, range: { from: string; to: string; memberId?: string }) {
+  await requireMember(ctx, companyId);
+  const rows = await ctx.tx
+    .select()
+    .from(meetings)
+    .where(and(eq(meetings.companyId, companyId), gte(meetings.startsAt, new Date(range.from)), lt(meetings.startsAt, new Date(range.to))))
+    .orderBy(asc(meetings.startsAt));
+  const list = rows.map(toScheduleItem);
+  return range.memberId ? list.filter((i) => i.organizerId === range.memberId || i.attendeeIds.includes(range.memberId!)) : list;
+}
+
+/** Any member adds to the company schedule; they become its organizer. */
+export async function createScheduleItem(ctx: Ctx, input: { companyId: string; kind: ScheduleKind; title: string; startsAt: string; durationMinutes: number } & ScheduleFields) {
+  const me = await requireMember(ctx, input.companyId);
+  await requirePermission(ctx, input.companyId, "operations.view");
+  await assertScheduleRefs(ctx, input.companyId, input);
+  const { companyId, startsAt, attendeeIds, ...rest } = input;
+  const [row] = await ctx.tx
+    .insert(meetings)
+    .values({ ...rest, companyId, startsAt: new Date(startsAt), attendeeIds: [...new Set(attendeeIds ?? [])].filter((id) => id !== me.id), organizerId: me.id })
+    .returning();
+  await emitEvent(ctx, companyId, { type: "schedule.created", payload: { itemId: row.id, kind: row.kind, startsAt: row.startsAt.toISOString() } });
+  return toScheduleItem(row);
+}
+
+/** The organizer changes their own items; anyone else needs tasks.manage for the organizer's department. */
+async function requireScheduleAccess(ctx: Ctx, item: ScheduleRow) {
+  const me = await requireMember(ctx, item.companyId);
+  if (item.organizerId !== me.id) await requirePermission(ctx, item.companyId, "tasks.manage", await departmentOf(ctx, item.organizerId));
+}
+
+export async function updateScheduleItem(ctx: Ctx, input: { itemId: string; status?: ScheduleStatus } & ScheduleFields) {
+  const [current] = await ctx.tx.select().from(meetings).where(eq(meetings.id, input.itemId));
+  const item = found(current);
+  await requireScheduleAccess(ctx, item);
+  await assertScheduleRefs(ctx, item.companyId, input);
+  const { itemId, startsAt, ...rest } = input;
+  const [row] = await ctx.tx
+    .update(meetings)
+    .set({ ...rest, ...(startsAt !== undefined && { startsAt: new Date(startsAt) }) })
+    .where(eq(meetings.id, itemId))
+    .returning();
+  if (input.status && input.status !== item.status) {
+    await emitEvent(ctx, item.companyId, { type: `schedule.${input.status}`, payload: { itemId } });
+  }
+  return toScheduleItem(found(row));
+}
+
+export async function deleteScheduleItem(ctx: Ctx, input: { itemId: string }) {
+  const [current] = await ctx.tx.select().from(meetings).where(eq(meetings.id, input.itemId));
+  const item = found(current);
+  await requireScheduleAccess(ctx, item);
+  await ctx.tx.delete(meetings).where(eq(meetings.id, item.id));
 }

@@ -1,4 +1,4 @@
-import { and, eq, gte, isNotNull, lte } from "drizzle-orm";
+import { and, eq, gte, isNotNull, lte, ne } from "drizzle-orm";
 import { clients, freelancerPayments, invoices, meetings, profitabilitySettings, tasks } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
@@ -155,7 +155,7 @@ export async function getProfitabilityReport(ctx: Ctx, companyId: string, option
     ctx.tx
       .select()
       .from(meetings)
-      .where(and(eq(meetings.companyId, companyId), isNotNull(meetings.clientId), gte(meetings.startsAt, new Date(`${from}T00:00:00Z`)), lte(meetings.startsAt, new Date(`${to}T23:59:59Z`)))),
+      .where(and(eq(meetings.companyId, companyId), isNotNull(meetings.clientId), ne(meetings.status, "cancelled"), gte(meetings.startsAt, new Date(`${from}T00:00:00Z`)), lte(meetings.startsAt, new Date(`${to}T23:59:59Z`)))),
     ctx.tx.select().from(invoices).where(and(eq(invoices.companyId, companyId), gte(invoices.period, invoicesFrom), lte(invoices.period, to))),
     ctx.tx.select().from(freelancerPayments).where(and(eq(freelancerPayments.companyId, companyId), gte(freelancerPayments.paidOn, from), lte(freelancerPayments.paidOn, to))),
   ]);

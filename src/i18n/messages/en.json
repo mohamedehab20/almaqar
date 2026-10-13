@@ -572,6 +572,81 @@
         "deleted": "Task deleted."
       },
       "dueLabel": "Due"
+    },
+    "schedule": {
+      "title": "Schedule",
+      "range": "Period",
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "mine": "Only mine",
+      "add": "Add to schedule",
+      "allKinds": "All",
+      "kinds": {
+        "meeting": "Meeting",
+        "appointment": "Appointment",
+        "trip": "Trip outside",
+        "interview": "Interview"
+      },
+      "statuses": {
+        "scheduled": "Scheduled",
+        "done": "Done",
+        "cancelled": "Cancelled"
+      },
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "empty": "Nothing scheduled here.",
+      "conflict": "Clash",
+      "kind": "Type",
+      "when": "When",
+      "duration": "{minutes} min",
+      "location": "Place",
+      "transport": "Transport",
+      "transports": {
+        "companyCar": "Company car",
+        "ownCar": "Own car",
+        "taxi": "Taxi / Uber",
+        "online": "Online",
+        "none": "Not needed"
+      },
+      "purpose": "Purpose",
+      "notes": "Notes",
+      "notesPlaceholder": "Papers to bring, things to take…",
+      "organizer": "Organizer",
+      "attendees": "Attendees",
+      "noAttendees": "Organizer only",
+      "client": "Client",
+      "noClient": "No client",
+      "contact": "Who we meet",
+      "contactRole": "Their role",
+      "candidate": "Candidate",
+      "position": "Position",
+      "phone": "Phone",
+      "markDone": "Mark done",
+      "cancel": "Cancel",
+      "reopen": "Back to scheduled",
+      "delete": "Delete",
+      "titleField": "Title",
+      "placeholders": {
+        "meeting": "e.g. Weekly management meeting",
+        "appointment": "e.g. Meeting the supplier",
+        "trip": "e.g. Client visit to film the video",
+        "interview": "e.g. Graphic designer interview"
+      },
+      "date": "Date",
+      "time": "Time",
+      "durationField": "Duration (min)",
+      "locationTrip": "Full address",
+      "locationOffice": "Meeting room, or a meeting link",
+      "required": "Enter the title, date, time and place.",
+      "save": "Save",
+      "close": "Close",
+      "notices": {
+        "added": "“{title}” added to the schedule.",
+        "done": "“{title}” marked done.",
+        "cancelled": "“{title}” cancelled.",
+        "scheduled": "“{title}” is scheduled again.",
+        "deleted": "Removed from the schedule."
+      }
     }
   },
   "hr": {

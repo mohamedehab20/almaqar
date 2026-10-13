@@ -53,6 +53,8 @@ export const accountStatus = pgEnum("account_status", ["connected", "attention",
 export const campaignStage = pgEnum("campaign_stage", ["planning", "running", "review", "done"]);
 export const taskStatus = pgEnum("task_status", ["todo", "in_progress", "done"]);
 export const taskPriority = pgEnum("task_priority", ["low", "medium", "high"]);
+export const scheduleKind = pgEnum("schedule_kind", ["meeting", "appointment", "trip", "interview"]);
+export const scheduleStatus = pgEnum("schedule_status", ["scheduled", "done", "cancelled"]);
 export const ideaStage = pgEnum("idea_stage", ["bank", "lab", "delivery"]);
 export const agentKind = pgEnum("agent_kind", ["general", "specialist"]);
 export const agentStatus = pgEnum("agent_status", ["active", "busy", "paused"]);
@@ -341,7 +343,10 @@ export const marketingIdeas = pgTable("marketing_ideas", {
 
 // ---------- Client profitability (minimal calendar, invoices, freelancers, cost settings) ----------
 
-/** Meetings with a client (minimal calendar) */
+/**
+ * The company schedule (Operations room → «الجدولة»): meetings, appointments, trips outside the office and
+ * interviews. Items linked to a client also count toward that client's profitability (unless cancelled).
+ */
 export const meetings = pgTable("meetings", {
   id: id(),
   companyId: companyId(),
@@ -349,8 +354,28 @@ export const meetings = pgTable("meetings", {
   title: text("title").notNull(),
   startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
   durationMinutes: integer("duration_minutes").notNull(),
+  kind: scheduleKind("kind").notNull().default("meeting"),
+  status: scheduleStatus("status").notNull().default("scheduled"),
+  /** A room, an address outside, or a meeting link */
+  location: text("location"),
+  organizerId: uuid("organizer_id").references(() => members.id, { onDelete: "set null" }),
+  attendeeIds: uuid("attendee_ids").array().notNull().default([]),
+  /** Who we meet outside the company (or the candidate) */
+  contactName: text("contact_name"),
+  contactPhone: text("contact_phone"),
+  contactRole: text("contact_role"),
+  purpose: text("purpose"),
+  /** companyCar | ownCar | taxi | online | none */
+  transport: text("transport"),
+  notes: text("notes"),
   createdAt: createdAt(),
-}, (t) => [index("meetings_company_id_idx").on(t.companyId), index("meetings_client_id_idx").on(t.clientId), check("meetings_duration_positive", sql`${t.durationMinutes} > 0`)]);
+}, (t) => [
+  index("meetings_company_id_idx").on(t.companyId),
+  index("meetings_client_id_idx").on(t.clientId),
+  index("meetings_organizer_id_idx").on(t.organizerId),
+  index("meetings_company_starts_at_idx").on(t.companyId, t.startsAt),
+  check("meetings_duration_positive", sql`${t.durationMinutes} > 0`),
+]);
 
 /** Invoices to clients: income per month (`period` = first day of the month billed) and payment delays */
 export const invoices = pgTable("invoices", {

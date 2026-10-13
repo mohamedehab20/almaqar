@@ -572,6 +572,81 @@
         "deleted": "اتحذفت المهمة."
       },
       "dueLabel": "تسليم"
+    },
+    "schedule": {
+      "title": "الجدولة",
+      "range": "الفترة",
+      "upcoming": "الجاي",
+      "past": "اللي فات",
+      "mine": "مواعيدي بس",
+      "add": "إضافة موعد",
+      "allKinds": "الكل",
+      "kinds": {
+        "meeting": "اجتماع",
+        "appointment": "موعد",
+        "trip": "مشوار خارجي",
+        "interview": "مقابلة"
+      },
+      "statuses": {
+        "scheduled": "متجدول",
+        "done": "اتعمل",
+        "cancelled": "اتلغى"
+      },
+      "today": "النهارده",
+      "tomorrow": "بكرة",
+      "empty": "مفيش مواعيد هنا.",
+      "conflict": "تعارض",
+      "kind": "النوع",
+      "when": "الميعاد",
+      "duration": "{minutes} دقيقة",
+      "location": "المكان",
+      "transport": "المواصلات",
+      "transports": {
+        "companyCar": "عربية الشركة",
+        "ownCar": "عربية خاصة",
+        "taxi": "تاكسي / أوبر",
+        "online": "أونلاين",
+        "none": "مش محتاج"
+      },
+      "purpose": "الهدف",
+      "notes": "ملاحظات",
+      "notesPlaceholder": "أوراق مطلوبة، حاجات تتاخد…",
+      "organizer": "المسؤول",
+      "attendees": "الحاضرين",
+      "noAttendees": "المسؤول بس",
+      "client": "العميل",
+      "noClient": "مش مرتبط بعميل",
+      "contact": "الشخص اللي هنقابله",
+      "contactRole": "صفته",
+      "candidate": "المرشح",
+      "position": "الوظيفة",
+      "phone": "التليفون",
+      "markDone": "اتعمل",
+      "cancel": "إلغاء الموعد",
+      "reopen": "رجّعه متجدول",
+      "delete": "مسح",
+      "titleField": "العنوان",
+      "placeholders": {
+        "meeting": "مثلاً: اجتماع الإدارة الأسبوعي",
+        "appointment": "مثلاً: موعد مع المورد",
+        "trip": "مثلاً: زيارة العميل لتصوير الفيديو",
+        "interview": "مثلاً: مقابلة مصمم جرافيك"
+      },
+      "date": "اليوم",
+      "time": "الساعة",
+      "durationField": "المدة (دقيقة)",
+      "locationTrip": "العنوان بالتفصيل",
+      "locationOffice": "غرفة الاجتماعات، أو لينك الاجتماع",
+      "required": "اكتب العنوان واليوم والساعة والمكان.",
+      "save": "حفظ الموعد",
+      "close": "إغلاق",
+      "notices": {
+        "added": "اتضاف «{title}» للجدول.",
+        "done": "«{title}» اتعمل.",
+        "cancelled": "«{title}» اتلغى.",
+        "scheduled": "«{title}» رجع متجدول.",
+        "deleted": "الموعد اتمسح."
+      }
     }
   },
   "hr": {

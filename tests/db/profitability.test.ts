@@ -177,6 +177,9 @@ test("the report adds up tasks, approval-portal revisions, meetings, invoices an
   for (const task of [post, reel]) await t.as(staff, (ctx) => operations.updateTask(ctx, { taskId: task.id, status: "done" }));
 
   await t.as(staff, (ctx) => profit.createMeeting(ctx, { companyId, clientId: client.id, title: "Kick-off", startsAt: `${month}-05T10:00:00Z`, durationMinutes: 60 }));
+  // A cancelled visit in the schedule does not count
+  const visit = await t.as(staff, (ctx) => operations.createScheduleItem(ctx, { companyId, kind: "trip", clientId: client.id, title: "Visit", startsAt: `${month}-06T10:00:00Z`, durationMinutes: 120 }));
+  await t.as(staff, (ctx) => operations.updateScheduleItem(ctx, { itemId: visit.id, status: "cancelled" }));
   await failsWith("forbidden", t.as(staff, (ctx) => profit.createInvoice(ctx, { clientId: client.id, period: month, amount: 5000, issuedOn: `${month}-01`, dueOn: `${month}-15` })));
   await t.as(admin, (ctx) => profit.createInvoice(ctx, { clientId: client.id, period: month, amount: 5000, issuedOn: `${month}-01`, dueOn: `${month}-15` }));
   await t.as(admin, (ctx) => profit.createFreelancerPayment(ctx, { clientId: client.id, taskId: reel.id, freelancer: "Editor", amount: 500, paidOn: `${month}-06` }));

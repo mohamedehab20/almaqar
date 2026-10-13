@@ -8,3 +8,6 @@ export const listOperations = cache((companyId: string) => withUser((ctx) => lis
 export const getOperationsStats = cache((companyId: string, days?: number) => withUser((ctx) => svc.getOperationsStats(ctx, companyId, days)));
 export const listNotes = cache((companyId: string, departmentId?: string) => withUser((ctx) => svc.listNotes(ctx, companyId, departmentId)));
 export const listTasks = cache((companyId: string, assigneeId?: string) => withUser((ctx) => svc.listTasks(ctx, companyId, assigneeId)));
+export const listSchedule = cache((companyId: string, from: string, to: string, memberId?: string) =>
+  withUser((ctx) => svc.listSchedule(ctx, companyId, { from, to, memberId })),
+);

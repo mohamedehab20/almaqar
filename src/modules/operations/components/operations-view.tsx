@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartColumn, ChevronDown, ListTodo, Plus, ScrollText, StickyNote } from "lucide-react";
+import { CalendarClock, ChartColumn, ChevronDown, ListTodo, Plus, ScrollText, StickyNote } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,8 @@ import { notes as demoNotes, type Note } from "../notes";
 import { NotesSection } from "./notes-section";
 import { tasks as demoTasks, type Task } from "../tasks";
 import { TasksSection } from "./tasks-section";
+import { demoSchedule, type ScheduleItem } from "../schedule";
+import { ScheduleSection } from "./schedule-section";
 import { WorkflowsTable } from "./workflows-table";
 
 const categories = Object.keys(categoryCounts) as OpsCategory[];
@@ -28,6 +30,13 @@ export function OperationsView() {
   const [tasksOpen, setTasksOpen] = useState(false);
   const [tasks, setTasks] = useState<Task[]>(demoTasks);
   const openTasks = tasks.filter((task) => task.status !== "done").length;
+  // Built on first open (in the browser), so dates follow the viewer's own clock
+  const [schedule, setSchedule] = useState<ScheduleItem[] | null>(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const toggleSchedule = () => {
+    if (!schedule) setSchedule(demoSchedule());
+    setScheduleOpen((open) => !open);
+  };
   const locale = useLocale() as "ar" | "en";
 
   useEffect(() => {
@@ -138,6 +147,20 @@ export function OperationsView() {
               <span className="rounded-sm bg-surface-container px-1.5 text-xs">{openTasks}</span>
               <ChevronDown className={cn("size-4 transition-transform", tasksOpen && "rotate-180")} aria-hidden />
             </button>
+            <button
+              type="button"
+              onClick={toggleSchedule}
+              aria-expanded={scheduleOpen}
+              aria-controls="ops-schedule"
+              className={cn(
+                "flex h-11 items-center gap-2 rounded-sm px-4 text-sm font-semibold ghost-border transition-colors",
+                scheduleOpen ? "bg-primary-fixed text-primary" : "bg-surface-container-lowest hover:bg-surface-container-low",
+              )}
+            >
+              <CalendarClock className="size-4" aria-hidden />
+              {t("schedule.title")}
+              <ChevronDown className={cn("size-4 transition-transform", scheduleOpen && "rotate-180")} aria-hidden />
+            </button>
           </div>
         </header>
 
@@ -156,6 +179,12 @@ export function OperationsView() {
         {tasksOpen && (
           <div id="ops-tasks">
             <TasksSection tasks={tasks} setTasks={setTasks} operations={allRows} onNotice={setNotice} />
+          </div>
+        )}
+
+        {scheduleOpen && schedule && (
+          <div id="ops-schedule">
+            <ScheduleSection items={schedule} setItems={setSchedule as React.Dispatch<React.SetStateAction<ScheduleItem[]>>} onNotice={setNotice} />
           </div>
         )}
 

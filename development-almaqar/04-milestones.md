@@ -14,6 +14,21 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Company schedule in the Operations room («الجدولة»)
+- **Button** next to «إدارة المهام».
+- **Kinds:** company meetings, appointments, trips outside the office (client visits, suppliers, government offices) and interviews.
+- **List:** grouped by day (today / tomorrow / dates), upcoming or past, filter by kind with counts, "only mine", and a «تعارض» badge when someone is booked twice.
+- **Each item opens its details:** type, time and duration, place / full address / meeting link, transport (company car, own car, taxi, online), purpose, notes, organizer, attendees, client, and the outside contact (name, role, phone you can tap; the candidate for interviews). Actions: mark done, cancel, reopen, delete.
+- **Add form:** the fields change with the kind (contact and phone for trips, appointments and interviews; transport for trips; position for interviews). Attendees are picked from the team.
+- **Backend:**
+  - The `meetings` table (from client profitability) became the schedule: kind, status, location, organizer, attendees, contact, purpose, transport and notes (migration 0023, applied to Supabase).
+  - `listSchedule`, `createScheduleItem`, `updateScheduleItem`, `deleteScheduleItem`.
+  - Rules: attendees and the client must belong to the company. The organizer edits their own items; others need `tasks.manage`.
+  - Items linked to a client count toward its profitability unless cancelled.
+- **Screen:** demo data, like the rest of the room.
+- **Checks:** tests 42/42 (new schedule test, plus "cancelled visits do not count" in profitability), smoke test OK, advisors clean, checked in a real browser.
+Files: `src/modules/operations/{schedule.ts,components/schedule-section.tsx,components/operations-view.tsx,service.ts,actions.ts,queries.ts}`, `src/modules/profitability/service.ts`, `src/db/schema.ts`, `drizzle/0023_schedule.sql`, `tests/db/{services,profitability}.test.ts`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — Client portal: «الفيديوهات المرسلة»
 - **New tab** in the team's client portal (Marketing → «بوابة العميل») listing everything sent to clients for approval, newest first.
 - **Each delivery shows:** the client, format, title, sent date, the owner, revision rounds, the hook, and the client's feedback when changes were requested. Its files list name, duration, aspect, size and version, plus the best lab-test result (views, completion, engagement) when it came from the lab.
