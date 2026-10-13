@@ -14,6 +14,10 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — First real account on production
+The product owner signed up on production: company `kira-glass-7c2n` was created, and they also became the owner of `demo` through the email invite. A full retest passed (see 09-test-report).
+Files: `development-almaqar/09-test-report.md`.
+
 ### 2026-10-13 — Production is live with Clerk + Supabase
 - **Database password:** reset via the Supabase Management API and written to `DATABASE_URL`, without printing it.
 - **Vercel:** the CLI linked the project, all env vars were added (secrets as Secret), and production was redeployed.

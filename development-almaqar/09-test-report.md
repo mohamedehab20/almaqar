@@ -2,6 +2,23 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-13 — Retest after the product owner's first real sign-up (production, Clerk + Supabase)
+
+**Result: passed.** The product owner signed up on https://almaqar-theta.vercel.app as mohamed.ehab8999@gmail.com.
+
+| Check | Result |
+|---|---|
+| Company created by after-sign-in | ✅ `kira-glass-7c2n` (code `RFSQPU`, plan free); the owner is the Clerk user `user_3KdX1WSP…` |
+| Invite claimed by email | ✅ the same user is now owner of `demo` (the seed had waited for this email) |
+| Through the app's services with RLS, as this user | ✅ exactly 2 companies (both owner); `simulation` hidden; demo data readable (7 members, 6 orders, 5 campaigns); kira-glass has only this member |
+| A signed-in stranger (another Clerk id) | ✅ sees 0 companies |
+| Integrity | ✅ every company has exactly one owner; no duplicate memberships; user ids are Clerk ids (or the simulation's fixed test ids) |
+| Clerk account | ✅ exists, email verified, `pending_company` cleared after the company was created |
+| RLS smoke test on Supabase | ✅ `SMOKE OK` |
+| Supabase advisors | ✅ no security or performance warnings |
+| `npm run test:db` | ✅ 27/27 |
+| Production runtime errors (Vercel logs, last 30 min) | ✅ 0 |
+
 ## 2026-10-13 — Full run
 
 **Result: passed.** One gap remains: the direct app → database path, which needs `DATABASE_URL` (task A5 in [08-backend-tasks.md](08-backend-tasks.md)). There is also one mobile layout point to check by hand.
