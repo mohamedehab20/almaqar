@@ -34,7 +34,7 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 |---|---|---|---|---|---|
 | C1 | Activity feed (main hall) and operations KPIs, computed from `events` and `workflow_runs`. No new tables. | B | — | ✅ | Queries return the shapes the screens use; covered by tests |
 | C2 | Marketing sections: tables for social accounts and campaigns (with per-channel metrics); budgets and channel stats computed from them | A | — | ✅ | Migration applied to Supabase, RLS, service + actions, tests, advisors clean |
-| C3 | Automated flows (trigger → condition → action): table, CRUD, enable/disable, templates, run counter for the future engine | A | — | ⬜ | Same as C2 |
+| C3 | Automated flows (trigger → condition → action): table, CRUD, enable/disable, templates, run counter for the future engine | A | — | ✅ | Same as C2 |
 | C4 | Account self-service: password reset (email link), change password, edit own name/title/phone | B | — | ⬜ | Actions + DB guard allow self-edit of name/title only; tests |
 
 ## ## Notes per task
@@ -220,4 +220,23 @@ Note on the imported events: `brief.received` is recreated by the trigger at imp
   - done → progress 1, and the events
 - **Test helper:** `tests/db/services.test.ts` now maps errors with `toErrorCode`, exactly like `action()`. Database errors such as a unique violation are checked as their app code.
 - **On Supabase:** RLS is on, there are 8 policies, the security advisor is clean, and there are no performance warnings.
+
+### C3 — Automated flows (2026-10-13) ✅
+- **Table `automation_flows`** (`0010_automation_flows` + `0011_automation_flows_rls`, applied to Supabase):
+  - Bilingual name, trigger, optional condition and action.
+  - `trigger_event`: the machine-readable event the engine listens to, e.g. `member.invited`.
+  - `template_id`, `enabled`, `runs`, `last_run_at`.
+  - RLS: any member manages their company's flows, the same rule as workflows. The `company_id` index is in place.
+- **Service** (`automation/service.ts`, `actions.ts`, `queries.ts`):
+  - `listFlows`: returns the `AutomationFlow` shape, with `lastRun` as short relative text such as "من ٣ ساعة" or "لسه ما اشتغلش", plus `lastRunAt` in ISO.
+  - Actions: `createFlow`, `createFlowFromTemplate` (templates stay in `automation/mock.ts`; `t1` maps to `member.invited`), `updateFlow` (also enable/disable) and `deleteFlow`.
+  - **`recordFlowRun`** (service only, not an action): for the future automation engine. It counts the run, stamps the time and logs `automation.flow_ran` with source `automation`. A disabled flow is refused (`invalid`).
+  - **`getAutomationStats`** replaces `automationStats`:
+    - `automationRate`: share of the last 30 days' operations that are not `human`.
+    - `perWeek`: automation events in the last 7 days.
+    - `hoursSaved`: all runs × `MINUTES_SAVED_PER_RUN` (5). **This is an estimate**; change the constant when real timing exists.
+- **Seed:** the 5 demo flows go in through `seedDemo`. The live `demo` company has them too: 5 flows, 4 enabled, 631 runs.
+- **Tests:** a new service test (`npm run test:db` 25/25) covers create, from template (including an unknown template), run counting, a disabled flow refusing to run, other companies seeing and changing nothing, and the stats.
+- **On Supabase:** the security advisor is clean and there are no performance warnings.
+- **Still to build:** the engine itself, a worker that listens to events and runs actions. It belongs to the future Python / automation service.
 

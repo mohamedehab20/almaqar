@@ -14,6 +14,7 @@ import { suppliers as mockSuppliers, orders as mockOrders } from "@/modules/sale
 import { workflows as mockWorkflows, runs as mockRuns } from "@/modules/automation/workflows";
 import { notes as mockNotes } from "@/modules/operations/notes";
 import { agents as mockAgents } from "@/modules/agents/mock";
+import { flows as mockFlows } from "@/modules/automation/mock";
 
 export type SeedOptions = {
   /** Email of the person who should own the demo company; they are linked when they sign in with it. */
@@ -229,6 +230,22 @@ export async function seedDemo(database: Db, options: SeedOptions = {}) {
             ? n.audience
             : { type: "custom", departmentIds: n.audience.departmentIds.map(need), memberIds: n.audience.memberIds.map(need) },
       });
+    }
+
+    if (mockFlows.length) {
+      await tx.insert(s.automationFlows).values(
+        mockFlows.map((f) => ({
+          companyId,
+          name: f.name,
+          trigger: f.trigger,
+          condition: f.condition,
+          action: f.action,
+          runs: f.runs,
+          enabled: f.enabled,
+          // The demo's "last run" is free text; keep a plausible timestamp so the card shows a time
+          lastRunAt: f.runs ? new Date(Date.now() - 3_600_000) : null,
+        })),
+      );
     }
 
     if (mockAgents.length) {

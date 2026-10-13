@@ -36,3 +36,39 @@ export const actOnRun = action(
   z.object({ runId: id, action: z.enum(["approve", "reject", "request_changes"]), note: z.string().trim().max(1000).optional() }),
   (input) => withUser((ctx) => svc.actOnRun(ctx, input)),
 );
+
+// ---------- Automated flows ----------
+
+const eventType = z.string().regex(/^[a-z_]+\.[a-z_]+$/).max(60);
+
+export const createFlow = action(
+  companyInput.extend({
+    name: localized(120),
+    trigger: localized(200),
+    condition: localized(200).nullable().optional(),
+    action: localized(300),
+    triggerEvent: eventType.nullable().optional(),
+    enabled: z.boolean().optional(),
+  }),
+  (input) => withUser((ctx) => svc.createFlow(ctx, input)),
+);
+
+export const createFlowFromTemplate = action(companyInput.extend({ templateId: z.string().max(40) }), (input) =>
+  withUser((ctx) => svc.createFlowFromTemplate(ctx, input)),
+);
+
+export const updateFlow = action(
+  z.object({
+    flowId: id,
+    name: localized(120).optional(),
+    trigger: localized(200).optional(),
+    condition: localized(200).nullable().optional(),
+    action: localized(300).optional(),
+    triggerEvent: eventType.nullable().optional(),
+    enabled: z.boolean().optional(),
+  }),
+  (input) => withUser((ctx) => svc.updateFlow(ctx, input)),
+);
+
+export const deleteFlow = action(z.object({ flowId: id }), (input) => withUser((ctx) => svc.deleteFlow(ctx, input)));
+

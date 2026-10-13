@@ -1,11 +1,12 @@
-import { and, asc, desc, eq, isNotNull } from "drizzle-orm";
-import { workflowRuns, workflows, type Localized, type WorkflowAttachment } from "@/db/schema";
+import { and, asc, count, desc, eq, gte, isNotNull, sql, sum } from "drizzle-orm";
+import { automationFlows, events, workflowRuns, workflows, type Localized, type WorkflowAttachment } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
 import { assertWithinPlan } from "@/server/plans";
 import { emitEvent } from "@/modules/events/service";
 import { applyRunAction, workflowTemplates, type Workflow, type WorkflowRun } from "./workflows";
+import { templates as flowTemplates, type AutomationFlow } from "./mock";
 
 type WorkflowRow = typeof workflows.$inferSelect;
 type RunRow = typeof workflowRuns.$inferSelect;
@@ -194,3 +195,129 @@ export async function actOnRun(ctx: Ctx, input: { runId: string; action: "approv
   });
   return toRun(found(updated));
 }
+
+// ---------- Automated flows ----------
+
+type FlowRow = typeof automationFlows.$inferSelect;
+
+const DAY = 86_400_000;
+
+/** "من ٣ ساعات" / "3 hours ago": the short relative time the flow cards show. */
+function relativeTime(at: Date | null, now = Date.now()): Localized {
+  if (!at) return { ar: "لسه ما اشتغلش", en: "Not run yet" };
+  const minutes = Math.max(0, Math.round((now - at.getTime()) / 60_000));
+  if (minutes < 1) return { ar: "الآن", en: "Just now" };
+  if (minutes < 60) return { ar: `من ${minutes} دقيقة`, en: `${minutes} min ago` };
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return { ar: `من ${hours} ساعة`, en: `${hours} h ago` };
+  if (now - at.getTime() < 2 * DAY) return { ar: "أمس", en: "Yesterday" };
+  const days = Math.round((now - at.getTime()) / DAY);
+  return { ar: `من ${days} يوم`, en: `${days} days ago` };
+}
+
+export function toFlow(r: FlowRow): AutomationFlow & { triggerEvent: string | null; templateId: string | null; lastRunAt: string | null } {
+  return {
+    id: r.id,
+    name: r.name,
+    trigger: r.trigger,
+    condition: r.condition ?? undefined,
+    action: r.action,
+    runs: r.runs,
+    lastRun: relativeTime(r.lastRunAt),
+    enabled: r.enabled,
+    triggerEvent: r.triggerEvent,
+    templateId: r.templateId,
+    lastRunAt: r.lastRunAt?.toISOString() ?? null,
+  };
+}
+
+export async function listFlows(ctx: Ctx, companyId: string) {
+  const rows = await ctx.tx.select().from(automationFlows).where(eq(automationFlows.companyId, companyId)).orderBy(desc(automationFlows.createdAt));
+  return rows.map(toFlow);
+}
+
+export async function createFlow(
+  ctx: Ctx,
+  input: { companyId: string; name: Localized; trigger: Localized; condition?: Localized | null; action: Localized; triggerEvent?: string | null; enabled?: boolean },
+) {
+  await requireMember(ctx, input.companyId);
+  const [row] = await ctx.tx.insert(automationFlows).values(input).returning();
+  await emitEvent(ctx, input.companyId, { type: "automation.flow_created", payload: { flowId: row.id } });
+  return toFlow(row);
+}
+
+/** Template trigger → event the engine listens to, where one exists today. */
+const TEMPLATE_EVENTS: Record<string, string> = { t1: "member.invited" };
+
+export async function createFlowFromTemplate(ctx: Ctx, input: { companyId: string; templateId: string }) {
+  const template = flowTemplates.find((t) => t.id === input.templateId);
+  if (!template) throw new AppError("not_found");
+  const flow = await createFlow(ctx, {
+    companyId: input.companyId,
+    name: template.name,
+    trigger: template.trigger,
+    action: template.action,
+    triggerEvent: TEMPLATE_EVENTS[template.id] ?? null,
+  });
+  const [row] = await ctx.tx.update(automationFlows).set({ templateId: template.id }).where(eq(automationFlows.id, flow.id)).returning();
+  return toFlow(row);
+}
+
+export async function updateFlow(
+  ctx: Ctx,
+  input: { flowId: string; name?: Localized; trigger?: Localized; condition?: Localized | null; action?: Localized; triggerEvent?: string | null; enabled?: boolean },
+) {
+  const { flowId, ...patch } = input;
+  const [row] = await ctx.tx.update(automationFlows).set(patch).where(eq(automationFlows.id, flowId)).returning();
+  return toFlow(found(row));
+}
+
+export async function deleteFlow(ctx: Ctx, input: { flowId: string }) {
+  const deleted = await ctx.tx.delete(automationFlows).where(eq(automationFlows.id, input.flowId)).returning({ id: automationFlows.id });
+  found(deleted[0]);
+}
+
+/**
+ * Called by the automation engine each time a flow runs: counts the run, stamps the time and logs
+ * `automation.flow_ran` (source automation). A disabled flow does not run.
+ */
+export async function recordFlowRun(ctx: Ctx, input: { flowId: string; result?: string }) {
+  const [current] = await ctx.tx.select().from(automationFlows).where(eq(automationFlows.id, input.flowId));
+  if (!found(current).enabled) throw new AppError("invalid");
+  const [row] = await ctx.tx
+    .update(automationFlows)
+    .set({ runs: current.runs + 1, lastRunAt: new Date() })
+    .where(eq(automationFlows.id, input.flowId))
+    .returning();
+  await emitEvent(ctx, row.companyId, { type: "automation.flow_ran", source: "automation", payload: { flowId: row.id, result: input.result } });
+  return toFlow(row);
+}
+
+/** Minutes a person would have spent on one run by hand; an estimate used for "hours saved". */
+export const MINUTES_SAVED_PER_RUN = 5;
+
+/**
+ * Header figures of the Automation room (replaces `automationStats` in mock.ts):
+ * automationRate = share of the last 30 days' operations that ran without a person (0–100);
+ * perWeek = automation events in the last 7 days; hoursSaved = all flow runs × MINUTES_SAVED_PER_RUN.
+ */
+export async function getAutomationStats(ctx: Ctx, companyId: string) {
+  await requireMember(ctx, companyId);
+  const now = Date.now();
+  const [ops] = await ctx.tx
+    .select({ total: count(), automated: sum(sql`case when ${workflowRuns.nature} <> 'human' then 1 else 0 end`) })
+    .from(workflowRuns)
+    .where(and(eq(workflowRuns.companyId, companyId), gte(workflowRuns.createdAt, new Date(now - 30 * DAY))));
+  const [week] = await ctx.tx
+    .select({ n: count() })
+    .from(events)
+    .where(and(eq(events.companyId, companyId), eq(events.source, "automation"), gte(events.createdAt, new Date(now - 7 * DAY))));
+  const [runs] = await ctx.tx.select({ n: sum(automationFlows.runs) }).from(automationFlows).where(eq(automationFlows.companyId, companyId));
+  const total = Number(ops?.total ?? 0);
+  return {
+    automationRate: total ? Math.round((Number(ops.automated ?? 0) / total) * 1000) / 10 : 0,
+    perWeek: Number(week?.n ?? 0),
+    hoursSaved: Math.round((Number(runs?.n ?? 0) * MINUTES_SAVED_PER_RUN) / 60),
+  };
+}
+

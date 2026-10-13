@@ -71,6 +71,20 @@
       "when": 1791881921238,
       "tag": "0009_marketing_sections_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791882516397,
+      "tag": "0010_automation_flows",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791882519306,
+      "tag": "0011_automation_flows_rls",
+      "breakpoints": true
     }
   ]
 }

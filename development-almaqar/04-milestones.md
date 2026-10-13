@@ -14,6 +14,12 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Automated flows backend (task C3)
+Automated flows (trigger → condition → action) are stored, created from templates, enabled and disabled, and counted when they run. The Automation room header figures are computed.
+
+Migrations 0010–0011 are applied to Supabase, the demo flows are added there, and a new test covers it.
+Files: `src/db/schema.ts`, `drizzle/0010_automation_flows.sql`, `drizzle/0011_automation_flows_rls.sql`, `src/modules/automation/{service,actions,queries}.ts`, `src/db/seed.ts`, `tests/db/services.test.ts`.
+
 ### 2026-10-13 — Marketing sections backend (task C2)
 New tables: social accounts and campaigns, with per-channel metrics. Client budgets and channel stats are computed from them. The client portal can read its own campaigns.
 

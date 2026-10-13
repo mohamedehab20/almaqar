@@ -326,6 +326,31 @@ export const workflowRuns = pgTable("workflow_runs", {
   createdAt: createdAt(),
 }, (t) => [index("workflow_runs_company_id_idx").on(t.companyId), index("workflow_runs_workflow_id_idx").on(t.workflowId), index("workflow_runs_owner_id_idx").on(t.ownerId)]);
 
+/**
+ * Automated flow: trigger → optional condition → action (Automation room → automated flows).
+ * The texts describe the flow for people; `triggerEvent` is the machine-readable event type the
+ * automation engine (future service) listens to, e.g. "order.created".
+ */
+export const automationFlows = pgTable(
+  "automation_flows",
+  {
+    id: id(),
+    companyId: companyId(),
+    name: jsonb("name").$type<Localized>().notNull(),
+    trigger: jsonb("trigger").$type<Localized>().notNull(),
+    condition: jsonb("condition").$type<Localized>(),
+    action: jsonb("action").$type<Localized>().notNull(),
+    triggerEvent: text("trigger_event"),
+    /** Template it was created from (templates live in src/modules/automation/mock.ts) */
+    templateId: text("template_id"),
+    enabled: boolean("enabled").notNull().default(true),
+    runs: integer("runs").notNull().default(0),
+    lastRunAt: timestamp("last_run_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("automation_flows_company_id_idx").on(t.companyId)],
+);
+
 export const suppliers = pgTable("suppliers", {
   id: id(),
   companyId: companyId(),

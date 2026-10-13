@@ -320,3 +320,39 @@ test("marketing sections: accounts, campaigns, budgets and channel stats; the cl
   const log = await t.as(owner, (ctx) => events.listEvents(ctx, companyId, { type: ["campaign.created", "campaign.running", "campaign.done"] }));
   assert.equal(log.length, 4);
 });
+
+test("automated flows: create, from template, enable/disable, runs and stats", async () => {
+  const flow = await t.as(employee, (ctx) =>
+    automation.createFlow(ctx, {
+      companyId,
+      name: L("Escalate late approvals"),
+      trigger: L("An approval waits 24 hours"),
+      condition: L("Priority is high"),
+      action: L("Remind and escalate"),
+      triggerEvent: "operation.started",
+    }),
+  );
+  assert.deepEqual([flow.enabled, flow.runs, flow.lastRun.ar], [true, 0, "لسه ما اشتغلش"]);
+
+  const fromTemplate = await t.as(owner, (ctx) => automation.createFlowFromTemplate(ctx, { companyId, templateId: "t1" }));
+  assert.deepEqual([fromTemplate.templateId, fromTemplate.triggerEvent, fromTemplate.name.en], ["t1", "member.invited", "New employee onboarding"]);
+  await failsWith("not_found", t.as(owner, (ctx) => automation.createFlowFromTemplate(ctx, { companyId, templateId: "nope" })));
+
+  const ran = await t.as(employee, (ctx) => automation.recordFlowRun(ctx, { flowId: flow.id, result: "2 reminders sent" }));
+  assert.deepEqual([ran.runs, ran.lastRun.en], [1, "Just now"]);
+  await t.as(employee, (ctx) => automation.updateFlow(ctx, { flowId: flow.id, enabled: false }));
+  await failsWith("invalid", t.as(employee, (ctx) => automation.recordFlowRun(ctx, { flowId: flow.id })));
+
+  const listed = await t.as(owner, (ctx) => automation.listFlows(ctx, companyId));
+  assert.equal(listed.length, 2);
+  assert.deepEqual(await t.as(outsider, (ctx) => automation.listFlows(ctx, companyId)), [], "other companies see no flows");
+  await failsWith("not_found", t.as(outsider, (ctx) => automation.updateFlow(ctx, { flowId: flow.id, enabled: true })));
+
+  const stats = await t.as(owner, (ctx) => automation.getAutomationStats(ctx, companyId));
+  const automationEvents = await t.as(owner, (ctx) => events.listEvents(ctx, companyId, { source: "automation" }));
+  assert.ok(automationEvents.some((e) => e.type === "automation.flow_ran"), "the recorded run is logged as an automation event");
+  assert.equal(stats.perWeek, automationEvents.length, "perWeek counts this week's automation events (flow runs, agent results)");
+  assert.equal(stats.hoursSaved, 0, "1 run × 5 min rounds to 0 hours");
+  assert.equal(typeof stats.automationRate, "number");
+  await failsWith("forbidden", t.as(outsider, (ctx) => automation.getAutomationStats(ctx, companyId)));
+});
