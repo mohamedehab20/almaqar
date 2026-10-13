@@ -171,7 +171,12 @@
       "submit": "Enter as visitor",
       "secure": "Secure, encrypted access",
       "rights": "© {year} Al Maqr",
-      "help": "Having trouble signing in? Contact support"
+      "help": "Having trouble signing in? Contact support",
+      "next": "Next",
+      "codeOk": "Code accepted ✓ Sign in, or create an account with your email, to reach your portal.",
+      "badInvite": "This invite code is wrong or no longer active. Ask the company for a new one.",
+      "changeCode": "Change code",
+      "checking": "Checking…"
     },
     "signup": {
       "metaTitle": "Create account",
@@ -223,7 +228,11 @@
       "benefitGrowthText": "Manage everything in one unified system",
       "rights": "© {year} Al Maqr. All rights reserved.",
       "checkEmail": "Done! We sent a confirmation link to {email}. Open it and your company will be ready.",
-      "working": "Creating your HQ…"
+      "working": "Creating your HQ…",
+      "continue": "Next: create your account",
+      "step2": "Last step: create your account",
+      "step2Intro": "The email and password you will sign in with. Then \"{company}\" will be ready.",
+      "back": "Back to company details"
     },
     "login": {
       "metaTitle": "Log in",

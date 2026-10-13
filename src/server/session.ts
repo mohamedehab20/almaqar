@@ -1,20 +1,26 @@
 import "server-only";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { cache } from "react";
 import { db } from "@/db";
-import { createClient } from "@/lib/supabase/server";
-import { supabaseEnv } from "@/lib/supabase/env";
+import { clerkEnabled } from "@/lib/clerk";
 import { runAsUser, type Claims, type Ctx } from "./context";
 import { AppError } from "./errors";
 
-/** Verified claims of the signed-in user, or null. */
-export async function getClaims(): Promise<Claims | null> {
-  if (!supabaseEnv()) return null;
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  return (data?.claims as Claims | undefined) ?? null;
-}
+/**
+ * The signed-in Clerk user as JWT-style claims (sub = Clerk user id, email = primary email), or null.
+ * The email is what links invites (claim_invites). Cached per request.
+ */
+export const getClaims = cache(async (): Promise<Claims | null> => {
+  if (!clerkEnabled()) return null;
+  const { userId } = await auth();
+  if (!userId) return null;
+  const user = await currentUser();
+  const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase() ?? "";
+  return { sub: userId, email, role: "authenticated" };
+});
 
 export async function requireClaims(): Promise<Claims> {
-  if (!supabaseEnv()) throw new AppError("not_configured");
+  if (!clerkEnabled()) throw new AppError("not_configured");
   const claims = await getClaims();
   if (!claims) throw new AppError("unauthorized");
   return claims;

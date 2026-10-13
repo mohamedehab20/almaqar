@@ -4,6 +4,16 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-13 — Clerk for accounts and sign-in; Supabase only for data
+**Chosen by the product owner.** This reverses the Supabase Auth decision.
+
+- **Clerk** owns accounts, sign-in/up, verification, password reset and sign-out.
+- **The database** still enforces everything with RLS. `withUser()` sets the JWT claims from Clerk (`sub`, `email`), and the rules read `private.uid()` (text, Clerk ids are not uuids). `user_id` columns are text (migration 0013).
+- **Supabase Storage and Realtime** do not know Clerk users. File access is checked on the server and done with the secret key. Realtime would need Clerk as a Supabase third-party auth provider.
+- **Dropped:** the company code at sign-in. People sign in with their account, and after-sign-in opens their company.
+
+Alternatives: keep Supabase Auth (the earlier recommendation), or use Clerk + Supabase third-party auth for everything.
+
 ### 2026-10-13 — Never fake success in auth forms
 When the server has no Supabase keys, the forms report it. They do not open the demo instead. Why: the silent fallback made a real sign-up look successful while nothing was saved. This reverses the earlier "keep the demo reachable" fallback. The demo is still open at `/c/demo` and from the landing page.
 

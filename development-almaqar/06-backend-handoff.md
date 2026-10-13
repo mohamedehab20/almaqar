@@ -13,7 +13,7 @@ grep -rn "TODO(backend)" src
 | Area | Where (UI) | Backend ready |
 |---|---|---|
 | Rooms' data | every room view | The layout already loads the real company (`getSignedInCompany`). Each room still needs its own queries/actions wired (see the rows below). |
-| Visitor login | `modules/auth/components/visitor-login-form.tsx` | `sendVisitorOtp` then `verifyVisitorOtp`, with `channel: "email"` or `"sms"` (SMS needs a provider; see 01). The form currently asks for a phone number only. |
+| Visitor login | `visitor-login-form.tsx` | Done: invite code → Clerk → after-sign-in redeems it. Still to do: `client-home.tsx` must read the visitor's client (`getMyClients`) instead of `DEMO_CLIENT_ID`. |
 | Signed-in client | `modules/marketing/components/client-home.tsx` (`DEMO_CLIENT_ID`) | `marketing/queries.ts` `getMyClients()` |
 | Briefs | `modules/marketing/briefs-store.ts`, `client-portal.tsx` | `listBriefs` / `listClientBriefs`, plus `sendBrief`, `setBriefStatus`, `replyToBrief`. Realtime: subscribe to `briefs` with the browser client. A `brief.received` event is logged automatically. |
 | Marketing ideas | `marketing-view.tsx` | `listIdeas`, `createIdea` (from a brief: pass `briefId`), `updateIdea` (stage, ratings, versions, delivery) |
@@ -36,7 +36,10 @@ grep -rn "TODO(backend)" src
 
 - **Billing provider** and switching plans.
 - **Agent runtime** (Python).
-- **Account pages (UI only):** profile/settings (`updateMyProfile`, `updateMyAccount`, `updatePassword`), and a company picker when a user belongs to several (`listMyCompanies`). Sign-in, sign-up, join, forgot and reset are done.
+- **Account pages:**
+  - Profile/settings: Clerk `<UserProfile>` for the account, plus `updateMyProfile` for the per-company name and title.
+  - A company picker when a user belongs to several companies (`listMyCompanies`). after-sign-in opens the first one today.
+  - **Realtime with Clerk** needs Clerk added as a Supabase third-party auth provider.
 - **HR room:** no tables yet.
 - **Automation engine:** a worker that listens to events and runs the flows' actions. The flows are stored; `recordFlowRun` is ready for the engine to call.
 

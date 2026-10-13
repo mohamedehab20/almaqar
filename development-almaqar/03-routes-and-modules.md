@@ -16,13 +16,11 @@ All routes also exist under `/en`. Every page below still runs on mock data. The
 
 | Route | Form component | On submit |
 |---|---|---|
-| `/login` | `modules/auth/components/company-login-form.tsx` (company code, email, password; tabs to signup) | **Real sign-in** (`signInWithCompanyCode`) → `/c/<slug>`. Errors are shown under the form. Without Supabase configured, it says so (nothing is saved) instead of opening the demo. "Forgot password" → `/forgot-password`. |
-| `/employee-login` | `login-form.tsx` inside `auth-split-layout.tsx` | **Real sign-in** with company code + email + password → `/c/<slug>`. "Join your company" → `/join`. |
-| `/visitor-login` | `visitor-login-form.tsx` (QR box, invite code, phone, OTP) | → `/client-portal` |
-| `/signup` | `signup-form.tsx` | **Real sign-up** (`signUp`): creates the owner and the company. With email confirmation on, it shows "check your email"; otherwise it opens `/c/<slug>`. |
-| `/join` | `account-forms.tsx` `JoinForm` | Invited employee: name + the email they were added with + password (`signUpEmployee`). The invite is claimed and their company opens. |
-| `/forgot-password` | `account-forms.tsx` `ForgotPasswordForm` | `requestPasswordReset`. Always the same answer, so it never reveals which emails have accounts. |
-| `/reset-password` | `account-forms.tsx` `ResetPasswordForm` | Reached from the reset email via `/api/auth/confirm`; `updatePassword` → `/login`. |
+| `/login` | `company-login-form.tsx` → `clerk-auth.tsx` `ClerkSignIn` | Clerk sign-in inside our card → `/api/auth/after-sign-in` → your company. Without Clerk keys it shows a "not enabled" note. |
+| `/employee-login` | `login-form.tsx` | Clerk sign-in; "Join your company" → `/join`; visitor login link. |
+| `/visitor-login` | `visitor-login-form.tsx` | Step 1: invite code (QR or typed), checked with `checkInviteCode`. Step 2: Clerk sign-in or sign-up → after-sign-in redeems the code → `/client-portal`. |
+| `/signup` | `signup-form.tsx` | Step 1: your name and the company (type, size). Step 2: Clerk `<SignUp>` with the company in `unsafeMetadata`. after-sign-in creates it and opens it. |
+| `/join` | `account-forms.tsx` `JoinForm` | Invited employee: Clerk `<SignUp>` with the email they were added with. `?status=no-invite` explains that no company has invited that email yet. |
 
 Every auth page shows the logo linking to `/`.
 
@@ -59,7 +57,8 @@ The rooms' screens still show mock data. Only the layout and HR → Employees re
 
 | Route | File | What it does |
 |---|---|---|
-| `/api/auth/confirm` | `src/app/api/auth/confirm/route.ts` | Target of Supabase email links (`token_hash` + `type`). Verifies the link, runs `finishSignIn()` (creates the pending company, claims invites) and redirects to `/c/<slug>`, or to `/login?error=link` on failure. A `type=recovery` link goes to `/reset-password` (page still to build). |
+| `/api/auth/after-sign-in` | `src/app/api/auth/after-sign-in/route.ts` | Every Clerk sign-in/up lands here (`?locale=`, `?invite=`). It creates the pending company, claims invites, redeems a client invite and redirects. Signed out → `/login`. |
+| `/sign-in`, `/sign-up` | `src/app/[locale]/sign-in`, `sign-up` | Clerk's default paths; they redirect to `/login` and `/signup`. |
 
 ## Backend per module
 
@@ -67,7 +66,7 @@ Each module has `service.ts` (logic), `queries.ts` (reads) and `actions.ts` (Ser
 
 | Module | Queries | Actions |
 |---|---|---|
-| `auth` | — | `signUp`, `signInWithCompanyCode` (company + employee login), `sendVisitorOtp` / `verifyVisitorOtp` (`channel: "email" | "sms"`), `signOut`, `requestPasswordReset`, `updatePassword`, `updateMyAccount` |
+| `auth` | — | `checkInviteCode` (visitor step 1, anon). Everything else (sign-in/up, verification, password, sign-out) is Clerk. |
 | `hq` | `getCompanyBySlug`, `listMyCompanies`, `listMembers`, `listDepartments`, `getFloorPlan`, `listActivity` (activity panel) | `updateCompany`, `setMyStatus`, `updateMyProfile`, `inviteMember`, `updateMember`, `removeMember`, department CRUD, `saveFloorPlan` |
 | `marketing` | `listClients`, `listBriefs`, `listIdeas`, `listSocialAccounts`, `listCampaigns`, `getClientBudgets`, `getChannelStats`; portal: `getMyClients`, `listClientBriefs`, `listClientCampaigns`, `listClientAccounts` | `createClient`, `updateClient`, `regenerateInviteCode`, `sendBrief`, `setBriefStatus`, `replyToBrief`, `createIdea`, `updateIdea`, `deleteIdea`, `create/update/deleteSocialAccount`, `create/update/deleteCampaign` |
 | `operations` | `listOperations`, `getOperationsStats(companyId, days?)` (KPI cards, category counts), `listNotes(companyId, departmentId?)` | `startOperation` (OP-####), `createNote`, `setNotePinned`, `deleteNote` |

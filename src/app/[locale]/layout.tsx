@@ -1,9 +1,12 @@
+import { ClerkProvider } from "@clerk/nextjs";
+import { arSA, enUS } from "@clerk/localizations";
 import type { Metadata } from "next";
 import { Cairo, Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { localeDirection, routing } from "@/i18n/routing";
+import { clerkEnabled } from "@/lib/clerk";
 import "@/styles/globals.css";
 
 const cairo = Cairo({ subsets: ["arabic", "latin"], variable: "--font-cairo" });
@@ -34,7 +37,21 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       className={`${cairo.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full font-sans">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          {clerkEnabled() ? (
+            // Inside <body>, as Clerk requires. Sign-in/up live on our own pages (/login, /signup).
+            <ClerkProvider
+              localization={locale === "ar" ? arSA : enUS}
+              signInUrl={locale === "ar" ? "/login" : "/en/login"}
+              signUpUrl={locale === "ar" ? "/signup" : "/en/signup"}
+              appearance={{ variables: { colorPrimary: "#004ac6", fontFamily: "var(--font-cairo), var(--font-inter), sans-serif", borderRadius: "12px" } }}
+            >
+              {children}
+            </ClerkProvider>
+          ) : (
+            children
+          )}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

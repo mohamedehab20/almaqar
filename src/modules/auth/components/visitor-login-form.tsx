@@ -1,23 +1,44 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Link2, Smartphone } from "lucide-react";
+import { ArrowLeft, ArrowRight, Link2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import { Field } from "@/components/ui/field";
 import { FormStatus } from "@/components/ui/form-status";
 import { Input } from "@/components/ui/input";
-import { OtpInput } from "@/components/ui/otp-input";
-import { useRouter } from "@/i18n/navigation";
+import { clerkEnabled } from "@/lib/clerk";
+import { checkInviteCode } from "@/modules/auth/actions";
+import { AuthNotConfigured, ClerkSignIn } from "./clerk-auth";
 import { QrScanBox } from "./qr-scan-box";
 
-export function VisitorLoginForm() {
+/**
+ * Client visitor: 1) the invite code the company gave them (checked against the database),
+ * 2) sign in or sign up with Clerk (email code or password). after-sign-in then links them to that
+ * client and opens /client-portal.
+ */
+export function VisitorLoginForm({ badInvite = false }: { badInvite?: boolean }) {
   const t = useTranslations("auth");
   const v = (key: string, values?: Record<string, string | number>) => t(`visitor.${key}`, values);
   const Arrow = useLocale() === "ar" ? ArrowLeft : ArrowRight;
-  const [status, setStatus] = useState<string | null>(null);
-  const router = useRouter();
+  const [status, setStatus] = useState<string | null>(badInvite ? v("badInvite") : null);
+  const [code, setCode] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  if (!clerkEnabled()) return <AuthNotConfigured />;
+
+  if (code) {
+    return (
+      <div className="flex flex-col gap-4">
+        <p className="rounded-md bg-success-container px-4 py-3 text-sm text-success">{v("codeOk")}</p>
+        <ClerkSignIn withSignUp signUpPath="/visitor-login" params={{ invite: code }} />
+        <button type="button" onClick={() => setCode(null)} className="text-sm font-semibold text-primary hover:underline">
+          {v("changeCode")}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,46 +46,22 @@ export function VisitorLoginForm() {
       <Divider label={t("common.or")} />
 
       <form
-        // Frontend-only phase: skip browser validation so the next page can be previewed with empty fields
-        noValidate
         className="flex flex-col gap-5"
         onSubmit={(event) => {
           event.preventDefault();
-          // TODO(backend): verify invite code + OTP, then open this client's portal
-          router.push("/client-portal");
+          const inviteCode = String(new FormData(event.currentTarget).get("invite") ?? "").trim();
+          startTransition(async () => {
+            const result = await checkInviteCode({ inviteCode });
+            if (result.ok) return setCode(result.data.inviteCode);
+            setStatus(result.error === "not_found" || result.error === "invalid" ? v("badInvite") : t(`errors.${result.error}`));
+          });
         }}
       >
         <Field label={v("invite")} htmlFor="invite">
-          <Input id="invite" name="invite" icon={Link2} placeholder={v("invitePlaceholder")} autoComplete="off" />
+          <Input id="invite" name="invite" icon={Link2} placeholder={v("invitePlaceholder")} autoComplete="off" required minLength={4} />
         </Field>
-        <Field label={v("phone")} htmlFor="phone">
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            icon={Smartphone}
-            placeholder={v("phonePlaceholder")}
-            autoComplete="tel"
-          />
-        </Field>
-
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-semibold">{v("otp")}</span>
-            <button
-              type="button"
-              onClick={() => setStatus(v("resendNotConnected"))}
-              className="font-semibold text-primary hover:underline"
-            >
-              {v("resend")}
-            </button>
-          </div>
-          <OtpInput name="otp" label={v("otp")} digitLabel={(index) => v("otpDigit", { index })} />
-        </div>
-
-        <Button type="submit" size="lg" className="mt-2 h-14 text-base">
-          {v("submit")}
+        <Button type="submit" size="lg" className="mt-2 h-14 text-base" disabled={pending}>
+          {pending ? v("checking") : v("next")}
           <Arrow className="size-5" aria-hidden />
         </Button>
         <FormStatus message={status} />

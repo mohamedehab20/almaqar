@@ -25,3 +25,8 @@ export async function runAsUser<T>(database: Db, claims: Claims, fn: (ctx: Ctx) 
     return fn({ tx, userId: claims.sub });
   });
 }
+
+/** Rows of a raw `tx.execute(sql…)` result: postgres-js returns an array, PGlite returns `{ rows }`. */
+export function rowsOf<T>(result: unknown): T[] {
+  return Array.isArray(result) ? (result as T[]) : ((result as { rows?: T[] }).rows ?? []);
+}

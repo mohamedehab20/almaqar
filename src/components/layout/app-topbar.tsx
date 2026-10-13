@@ -1,12 +1,11 @@
 "use client";
 
+import { SignOutButton } from "@clerk/nextjs";
 import { Bell, Grip, LogOut, Menu } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/shared/avatar";
-import { useTransition } from "react";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { signOut } from "@/modules/auth/actions";
+import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 type AppTopbarProps = {
@@ -19,8 +18,6 @@ const tabs = ["dashboard", "office", "resources", "settings"] as const;
 
 export function AppTopbar({ userName, signedIn = false, onMenu }: AppTopbarProps) {
   const t = useTranslations("app");
-  const router = useRouter();
-  const [signingOut, startSignOut] = useTransition();
   const tPage = useTranslations();
   // "/c/<slug>" is the main hall; "/c/<slug>/<section>" are the other pages
   const section = usePathname().split("/")[3];
@@ -83,22 +80,17 @@ export function AppTopbar({ userName, signedIn = false, onMenu }: AppTopbarProps
           <Avatar name={userName} status="available" />
         </span>
         {signedIn && (
-          <button
-            type="button"
-            disabled={signingOut}
-            onClick={() =>
-              startSignOut(async () => {
-                await signOut({});
-                router.push("/login");
-                router.refresh();
-              })
-            }
-            aria-label={t("signOut")}
-            title={t("signOut")}
-            className="grid size-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50"
-          >
-            <LogOut className="size-5 rtl:-scale-x-100" aria-hidden />
-          </button>
+          // Only rendered with a real Clerk session (signedIn), so ClerkProvider is present
+          <SignOutButton redirectUrl="/login">
+            <button
+              type="button"
+              aria-label={t("signOut")}
+              title={t("signOut")}
+              className="grid size-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface-container-low"
+            >
+              <LogOut className="size-5 rtl:-scale-x-100" aria-hidden />
+            </button>
+          </SignOutButton>
         )}
       </div>
     </header>

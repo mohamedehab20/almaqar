@@ -1,8 +1,9 @@
 import "server-only";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { AppError } from "@/server/errors";
+import { sql } from "drizzle-orm";
+import { withUser } from "@/server/session";
+import { listMyCompanies } from "@/modules/hq/service";
 
-/** Company details stored on the auth user at sign-up, until the company is created (after email confirmation). */
+/** Company details a new owner enters before creating their Clerk account (kept in Clerk unsafeMetadata). */
 export type PendingCompany = { name: string; businessType?: string; size?: string; ownerName: string };
 
 const LATIN = /[^a-z0-9]+/g;
@@ -20,40 +21,32 @@ export function makeSlug(name: string) {
 /** Code employees type on the company login page. */
 export const makeCompanyCode = () => randomChars(6);
 
-/**
- * Runs after every successful sign-in (password, OTP or email link):
- * links pending member invites, and creates the company the user registered at sign-up if it does not exist yet.
- * Returns the slug to open, if any.
- */
-export async function finishSignIn(supabase: SupabaseClient): Promise<string | null> {
-  const { data: userData, error } = await supabase.auth.getUser();
-  if (error || !userData.user) throw new AppError("unauthorized");
-  const user = userData.user;
+const isUniqueViolation = (e: unknown) => /23505|duplicate key/.test(String((e as { cause?: unknown })?.cause ?? e));
 
-  await supabase.rpc("claim_invites");
-
-  const pending = user.user_metadata?.pending_company as PendingCompany | undefined;
-  if (pending) {
-    // A unique-violation on slug/code is very unlikely; retry once with fresh values.
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const { error: createError } = await supabase.rpc("create_company", {
-        p_slug: makeSlug(pending.name),
-        p_code: makeCompanyCode(),
-        p_name: { ar: pending.name, en: pending.name },
-        p_owner_name: { ar: pending.ownerName, en: pending.ownerName },
-      });
-      if (!createError) break;
-      if (createError.code !== "23505" || attempt === 1) throw new AppError("server_error", createError.message);
+/** Creates the owner's company (the caller becomes its owner). Retries once if the random slug/code collides. */
+export async function createOwnCompany(pending: PendingCompany) {
+  const name = JSON.stringify({ ar: pending.name, en: pending.name });
+  const owner = JSON.stringify({ ar: pending.ownerName, en: pending.ownerName });
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await withUser(({ tx }) =>
+        tx.execute(sql`select public.create_company(${makeSlug(pending.name)}, ${makeCompanyCode()}, ${name}::jsonb, ${owner}::jsonb)`),
+      );
+    } catch (error) {
+      if (attempt > 0 || !isUniqueViolation(error)) throw error;
     }
-    await supabase.auth.updateUser({ data: { pending_company: null } });
   }
+}
 
-  const { data: memberships } = await supabase
-    .from("members")
-    .select("companies(slug)")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true })
-    .limit(1);
-  const company = memberships?.[0]?.companies as unknown as { slug: string } | null | undefined;
-  return company?.slug ?? null;
+/** Links pending member invites to this user (by email) and returns the companies they belong to. */
+export async function claimInvitesAndListCompanies() {
+  return withUser(async (ctx) => {
+    await ctx.tx.execute(sql`select public.claim_invites()`);
+    return listMyCompanies(ctx);
+  });
+}
+
+/** Client portal: gives this user access to the client with that invite code. */
+export async function redeemClientInvite(code: string) {
+  return withUser(({ tx }) => tx.execute(sql`select public.redeem_client_invite(${code})`));
 }

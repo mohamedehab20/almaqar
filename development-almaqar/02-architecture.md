@@ -10,7 +10,8 @@
 | i18n | **next-intl 4** | Arabic default (RTL) at `/`, English (LTR) at `/en`. |
 | Icons | **lucide-react** | |
 | Class helpers | `clsx` + `tailwind-merge` via `cn()` in `src/lib/utils.ts`; `class-variance-authority` for button variants | |
-| Data | **Supabase** (Postgres + Auth + Realtime + Storage), **Drizzle ORM** for schema, migrations and queries | Backend layer is complete (see below); screens still render mock data until they are wired to it. |
+| Auth | **Clerk** (`@clerk/nextjs` 7) | Accounts, sign-in/up, verification, password reset. See "Backend" below. |
+| Data | **Supabase** (Postgres + Realtime + Storage), **Drizzle ORM** for schema, migrations and queries | Backend layer is complete (see below); screens still render mock data until they are wired to it. |
 | Validation | **Zod 4** | Every Server Action input. |
 | Tests | **node:test + tsx + PGlite** | `npm run test:db` runs migrations and services on an in-memory Postgres. |
 
@@ -33,7 +34,7 @@ src/
       (auth)/                  login, employee-login, visitor-login, signup
       (app)/c/[companySlug]/   the company app (main hall + rooms), wrapped in AppShell
       (client)/client-portal/  the client's portal
-    api/auth/confirm/route.ts  target of Supabase email links (confirm signup, invites)
+    api/auth/after-sign-in/    where every Clerk sign-in/up lands: creates a new owner's company, claims invites, redeems a client invite, opens the company
   db/
     schema.ts                  all tables (Drizzle); shapes follow the frontend types
     index.ts                   db(): owner connection — bypasses RLS, trusted code only
@@ -44,7 +45,8 @@ src/
     action.ts                  action(schema, handler): Zod-validated Server Action → ActionResult
     errors.ts                  AppError + stable error codes (forbidden, plan_limit, ...)
     membership.ts, plans.ts, validation.ts
-  lib/supabase/                client.ts (browser), server.ts (RSC/actions), proxy.ts, admin.ts (secret key), env.ts
+  lib/clerk.ts                 clerkEnabled(), AFTER_AUTH_URL
+  lib/supabase/                admin.ts (secret key: Storage), env.ts (URL + publishable key)
   components/
     layout/                    AppShell, AppSidebar, AppTopbar, Logo, LocaleSwitcher
     marketing/                 MarketingHeader, ExploreMenu (side drawer), RoleCards, WhySection, PricingPlans, MarketingFooter
@@ -67,7 +69,7 @@ public/
   brand/logo.png               trimmed logo
   landing/*.jpg, auth/diwan.png  page imagery
 drizzle/                       SQL migrations: 0000 tables (generated), 0001 RLS, 0002 numbering/storage/realtime, 0003 auth functions,
-                               0004 FK indexes, 0005 advisor fixes, 0006 order approval, 0007 event actor, 0008–0009 marketing sections, 0010–0011 automated flows, 0012 self-profile guard
+                               0004 FK indexes, 0005 advisor fixes, 0006 order approval, 0007 event actor, 0008–0009 marketing sections, 0010–0011 automated flows, 0012 self-profile guard, 0013 Clerk user ids
 scripts/seed.ts                npm run db:seed
 tests/db/                      PGlite setup, RLS tests, service tests, smoke-supabase.sql (live check)
 tests/server/                  action layer unit tests (no database)
@@ -107,14 +109,15 @@ Client form      → modules/<f>/actions.ts ─┴→ withUser(ctx → service.f
 
 - **Security lives in the database.** RLS on every table scopes rows to companies the user is a member of (`private.is_member`). Client-portal users see only their client and its briefs. Services add business rules on top: admin-only actions, step assignee, plan limits.
 - **`db()` bypasses RLS.** Use it only for migrations, the seed and future background jobs.
-- **Auth:**
-  - Sign-up keeps the company on the auth user (`pending_company`). `finishSignIn()` in `modules/auth/session.ts` creates it on first sign-in, through the `create_company` RPC, and links pending member invites (`claim_invites`).
-  - Company login checks the company code with `company_slug_for_code`.
-  - Visitors: invite code + OTP (email or SMS), then `redeem_client_invite`.
+- **Auth: Clerk.** Clerk's `<SignIn>` / `<SignUp>` sit inside our pages, in Arabic or English (`@clerk/localizations`). They cover verification, forgot password and Google.
+  - `withUser()` builds the claims from Clerk (`auth()` + `currentUser()`): `sub` = Clerk user id, `email` = primary email.
+  - The database reads the user with `private.uid()` (text). `auth.uid()` is not used, because Clerk ids are not uuids.
+  - Every sign-in or sign-up lands on `/api/auth/after-sign-in`. A new owner's company comes from the sign-up form through Clerk `unsafeMetadata.pending_company`. Invites are claimed by email. A visitor's `?invite=` code is redeemed.
+  - Without Clerk keys there is no `clerkMiddleware` and no `ClerkProvider`: the site is the public demo.
 - **Numbers** (SO-/PO-/OP-####) come from database triggers, per company, and never change.
 - **Events:** services call `emitEvent()`. A trigger logs `brief.received`, because portal users cannot write events.
 - **Realtime** publication: members, briefs, notes, events, workflow_runs, orders, marketing_ideas.
-- **Storage:** private bucket `attachments`, paths `<company_id>/<folder>/...`, 10 MB. Brief files go under `<company_id>/briefs/<client_id>/`.
+- **Storage:** private bucket `attachments`, paths `<company_id>/<folder>/...`, 10 MB. Brief files go under `<company_id>/briefs/<client_id>/`. The server checks access in the database (as the user) and then uses the secret key, because Supabase Storage does not know Clerk users.
 
 ## Data and state
 

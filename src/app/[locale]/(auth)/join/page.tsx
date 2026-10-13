@@ -11,14 +11,15 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/join">):
   return { title: t("metaTitle") };
 }
 
-export default function JoinPage({ params }: PageProps<"/[locale]/join">) {
+export default function JoinPage({ params, searchParams }: PageProps<"/[locale]/join">) {
   const { locale } = use(params);
+  const { status } = use(searchParams);
   setRequestLocale(locale);
   const t = useTranslations("auth.employee");
 
   return (
     <AuthSplitLayout image="/landing/employee.jpg" panelTitle={t("panelTitle")} panelText={t("panelText")}>
-      <JoinForm />
+      <JoinForm noInvite={status === "no-invite"} />
     </AuthSplitLayout>
   );
 }

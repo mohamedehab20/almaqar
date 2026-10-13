@@ -14,6 +14,20 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Clerk replaces Supabase Auth
+- **Sign-in and sign-up:** Clerk's components, in Arabic and English, sit inside our pages:
+  - `/login` and `/employee-login`: sign in.
+  - `/signup`: our company step, then Clerk sign-up.
+  - `/join`: an invited employee creates their account.
+  - `/visitor-login`: invite code, then Clerk.
+- **New route `/api/auth/after-sign-in`:** creates a new owner's company, claims invites, redeems client invites and opens the company.
+- **Database (migration 0013, applied to Supabase):** `user_id` is text, and the rules use `private.uid()`.
+- **Server side:** `withUser` takes the user from Clerk. File access is checked in the database before using the Storage secret key.
+- **Removed:** the Supabase Auth pages, the email-link route and the auth actions.
+
+Tests 27/27, the smoke test on Supabase passes and the security advisor is clean. Without Clerk keys the site stays the public demo.
+Files: `drizzle/0013_clerk_user_ids.sql`, `src/db/schema.ts`, `src/proxy.ts`, `src/app/[locale]/layout.tsx`, `src/lib/clerk.ts`, `src/server/{session,context}.ts`, `src/app/api/auth/after-sign-in/route.ts`, `src/modules/auth/*`, `src/modules/files/actions.ts`, `src/components/layout/app-topbar.tsx`, `tests/db/{rls.test.ts,smoke-supabase.sql}`, `scripts/check-routes.mjs`.
+
 ### 2026-10-13 — Auth forms no longer fall back to the demo silently
 The product owner signed up on a server without Supabase keys (Vercel). The form opened `/c/demo`, so the account looked created while nothing was saved; the Supabase auth logs had no sign-up request. Sign-up and both logins now show a clear "real sign-in isn't enabled on this server, nothing was saved" message.
 Files: `src/modules/auth/components/{company-login-form,login-form,signup-form}.tsx`, `src/i18n/messages/{ar,en}.json`.

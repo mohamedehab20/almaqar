@@ -115,3 +115,19 @@ test("self-service profile: own name/title yes; department, email, others' names
   assert.equal((await t.sqlAs(E.sub, "UPDATE members SET name = $1 WHERE user_id = $2 RETURNING id", [j(L("Hacked")), A.sub])).length, 0, "RLS hides other rows from employees");
   assert.equal((await t.sqlAs(A.sub, "UPDATE members SET department_id = $1 WHERE user_id = $2 RETURNING id", [dept, E.sub])).length, 1, "owners still assign departments");
 });
+
+test("Clerk user ids (text, not uuid) work everywhere: company, invites, portal, own rows", async () => {
+  const owner = "user_2pQ8kZ3vXyOwnerClerkId";
+  const staff = "user_2pQ8kZ3vXyStaffClerkId";
+  const sql1 = (uid: string, q: string, p: unknown[] = [], email = "") => t.sqlAs(uid, q, p, email);
+  const cid = (await sql1(owner, "SELECT public.create_company('clerk-co','CLERK1',$1,$2) AS id", [j(L("Clerk Co")), j(L("Boss"))], "boss@clerk.test"))[0].id;
+  assert.deepEqual(await sql1(owner, "SELECT role, user_id, email FROM members WHERE company_id = $1", [cid]), [{ role: "owner", user_id: owner, email: "boss@clerk.test" }]);
+
+  await sql1(owner, "INSERT INTO members (company_id,email,name) VALUES ($1,'staff@clerk.test',$2)", [cid, j(L("Staff"))]);
+  assert.equal((await sql1(staff, "SELECT public.claim_invites() AS n", [], "Staff@Clerk.test"))[0].n, 1);
+  assert.equal((await sql1(staff, "SELECT public.company_slug_for_code('clerk1') AS s"))[0].s, "clerk-co");
+  await assert.rejects(sql1(staff, "UPDATE members SET role='admin' WHERE user_id = $1", [staff]), /owners and admins/);
+  await sql1(staff, "INSERT INTO lesson_progress (user_id, lesson_id) VALUES ($1, 'l9')", [staff]);
+  await assert.rejects(sql1(staff, "INSERT INTO lesson_progress (user_id, lesson_id) VALUES ($1, 'l9')", [owner]));
+  assert.equal((await sql1("user_2outsider", "SELECT id FROM companies WHERE id = $1", [cid])).length, 0);
+});

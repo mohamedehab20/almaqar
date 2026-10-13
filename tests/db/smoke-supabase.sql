@@ -3,23 +3,25 @@
 -- role + JWT-claims mechanism PostgREST and withUser() use, checks the RLS rules, and then ALWAYS aborts with
 -- an exception, so nothing it created is kept. Success: the error message starts with "SMOKE OK".
 
-CREATE FUNCTION pg_temp.act_as(uid uuid, email text DEFAULT '') RETURNS void LANGUAGE plpgsql AS $$
+CREATE FUNCTION pg_temp.act_as(uid text, email text DEFAULT '') RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
   EXECUTE 'RESET ROLE';
   PERFORM set_config('request.jwt.claims', json_build_object('sub', uid, 'email', email, 'role', 'authenticated')::text, true);
-  PERFORM set_config('request.jwt.claim.sub', uid::text, true);
+  PERFORM set_config('request.jwt.claim.sub', uid, true);
   EXECUTE 'SET LOCAL ROLE authenticated';
 END $$;
 
 DO $$
 DECLARE
-  a uuid := gen_random_uuid(); b uuid := gen_random_uuid(); e uuid := gen_random_uuid(); v uuid := gen_random_uuid();
+  -- Clerk-style user ids (text)
+  a text := 'user_smoke_a_' || left(md5(random()::text), 10); b text := 'user_smoke_b_' || left(md5(random()::text), 10);
+  e text := 'user_smoke_e_' || left(md5(random()::text), 10); v text := 'user_smoke_v_' || left(md5(random()::text), 10);
   c1 uuid; c2 uuid; cl uuid; n int; txt text; failed boolean;
   log text[] := '{}';
 BEGIN
   -- Two companies, each owned by its creator
-  PERFORM pg_temp.act_as(a); c1 := public.create_company('smoke-a-' || left(a::text, 8), 'SMA' || left(a::text, 5), '{"ar":"A","en":"A"}', '{"ar":"Owner A","en":"Owner A"}');
-  PERFORM pg_temp.act_as(b); c2 := public.create_company('smoke-b-' || left(b::text, 8), 'SMB' || left(b::text, 5), '{"ar":"B","en":"B"}', '{"ar":"Owner B","en":"Owner B"}');
+  PERFORM pg_temp.act_as(a); c1 := public.create_company('smoke-a-' || right(a, 8), 'SMA' || right(a, 5), '{"ar":"A","en":"A"}', '{"ar":"Owner A","en":"Owner A"}');
+  PERFORM pg_temp.act_as(b); c2 := public.create_company('smoke-b-' || right(b, 8), 'SMB' || right(b, 5), '{"ar":"B","en":"B"}', '{"ar":"Owner B","en":"Owner B"}');
   log := array_append(log, 'create_company x2');
 
   PERFORM pg_temp.act_as(a);
@@ -50,9 +52,9 @@ BEGIN
 
   -- Client portal: invite code → access to that client only; brief logs an event
   PERFORM pg_temp.act_as(a);
-  INSERT INTO public.clients (company_id, name, invite_code) VALUES (c1, '{"ar":"C","en":"C"}', upper('SMK' || left(v::text, 6))) RETURNING id INTO cl;
+  INSERT INTO public.clients (company_id, name, invite_code) VALUES (c1, '{"ar":"C","en":"C"}', upper('SMK' || right(v, 6))) RETURNING id INTO cl;
   PERFORM pg_temp.act_as(v);
-  PERFORM public.redeem_client_invite('SMK' || left(v::text, 6));
+  PERFORM public.redeem_client_invite('SMK' || right(v, 6));
   SELECT count(*) INTO n FROM public.clients;
   IF n <> 1 THEN RAISE EXCEPTION 'FAIL: portal user sees % clients', n; END IF;
   INSERT INTO public.briefs (company_id, client_id, type, objective, audience, details) VALUES (c1, cl, 'paidAds', '{"ar":"o","en":"o"}', '{"ar":"o","en":"o"}', '{"ar":"o","en":"o"}');

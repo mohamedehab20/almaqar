@@ -1,18 +1,26 @@
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import createMiddleware from "next-intl/middleware";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
-import { refreshSession } from "./lib/supabase/proxy";
 
 const handleI18n = createMiddleware(routing);
 
-// Next.js 16: "proxy" replaces "middleware". Handles locale routing, then refreshes the
-// Supabase session cookies. Auth redirects for the (app) routes will be added here later.
-export default async function proxy(request: NextRequest) {
-  const response = handleI18n(request);
-  return refreshSession(request, response);
+/** Locale routing for pages only; API routes and Clerk's proxy path are left alone. */
+function route(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/api") || pathname.startsWith("/trpc") || pathname.startsWith("/__clerk")) return NextResponse.next();
+  return handleI18n(request);
 }
 
+// Next.js 16: "proxy" replaces "middleware". With Clerk keys set, clerkMiddleware makes the session
+// available to auth() in pages, layouts and Server Actions; without them the site runs as the demo.
+export default process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? clerkMiddleware((_auth, request) => route(request)) : route;
+
 export const config = {
-  // Skip API routes, Next internals and files with an extension (images, favicon, ...)
-  matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+  matcher: [
+    // Pages: everything except Next internals and static files
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+    "/__clerk/:path*",
+  ],
 };

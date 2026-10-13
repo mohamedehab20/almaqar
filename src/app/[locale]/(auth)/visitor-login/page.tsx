@@ -14,8 +14,9 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/visitor-
   return { title: t("metaTitle") };
 }
 
-export default function VisitorLoginPage({ params }: PageProps<"/[locale]/visitor-login">) {
+export default function VisitorLoginPage({ params, searchParams }: PageProps<"/[locale]/visitor-login">) {
   const { locale } = use(params);
+  const { error } = use(searchParams);
   setRequestLocale(locale);
   const t = useTranslations("auth.visitor");
   const c = useTranslations("common");
@@ -42,7 +43,7 @@ export default function VisitorLoginPage({ params }: PageProps<"/[locale]/visito
             <h1 className="mt-5 text-3xl font-extrabold">{t("title")}</h1>
             <p className="mt-1 text-on-surface-variant">{t("subtitle")}</p>
           </header>
-          <VisitorLoginForm />
+          <VisitorLoginForm badInvite={error === "invite"} />
         </div>
         <footer className="flex items-center justify-between bg-surface-container-low px-6 py-4 text-xs text-muted sm:px-10">
           <span>{t("rights", { year: new Date().getFullYear() })}</span>

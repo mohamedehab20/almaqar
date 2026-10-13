@@ -81,8 +81,8 @@ export const members = pgTable(
   {
     id: id(),
     companyId: companyId(),
-    /** auth.users.id — null for an invited member who has not signed in yet */
-    userId: uuid("user_id"),
+    /** Clerk user id (e.g. "user_2abc…") — null for an invited member who has not signed in yet */
+    userId: text("user_id"),
     /** Invite address: an invited member is linked to the auth user with this email on first sign-in */
     email: text("email"),
     role: memberRole("role").notNull().default("employee"),
@@ -160,7 +160,7 @@ export const clientUsers = pgTable(
     clientId: uuid("client_id")
       .notNull()
       .references(() => clients.id, { onDelete: "cascade" }),
-    userId: uuid("user_id").notNull(),
+    userId: text("user_id").notNull(),
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.clientId, t.userId] })],
@@ -426,7 +426,7 @@ export const agents = pgTable("agents", {
 export const lessonProgress = pgTable(
   "lesson_progress",
   {
-    userId: uuid("user_id").notNull(),
+    userId: text("user_id").notNull(),
     lessonId: text("lesson_id").notNull(),
     completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
   },

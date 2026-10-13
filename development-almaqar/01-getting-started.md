@@ -57,16 +57,14 @@ Everything below is needed only to run against a real database. Without it every
 2. **Copy `.env.example` to `.env.local`** and fill in the values from the dashboard:
    - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Project Settings → API).
    - `DATABASE_URL`: the *Transaction pooler* string, port 6543 (Connect → ORMs).
-   - Optional: `SUPABASE_SECRET_KEY`, so invited members get an email.
+   - `SUPABASE_SECRET_KEY` (server-only): needed for file uploads. Clerk users are unknown to Supabase Storage, so the server checks access and then uses this key.
 3. **Run `npm run db:migrate`.** This creates the tables, RLS policies, functions, the `attachments` storage bucket and the realtime publication. On the project in `.mcp.json` this is already done (task A1 in [08-backend-tasks.md](08-backend-tasks.md)), so the command only applies newer migrations.
 4. **Run `npm run db:seed -- --owner you@example.com`** to get the demo company. Sign up with that email and you are its owner (company code `DEMO01`).
-5. **Set up Auth in the dashboard:**
-   - Email provider: on. Email OTP length: 6.
-   - **Emails reach only your Supabase team** until a custom SMTP is set (Authentication → Emails → SMTP). The built-in sender also allows only a few messages an hour. To test with real employees before that, turn off **Confirm email** (Authentication → Sign In / Providers → Email): sign-up then signs in straight away.
-   - Change the email templates (Confirm signup, Invite, Magic link, Reset password) to link to `{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=<signup|invite|magiclink|recovery>`.
-   - Site URL: the Vercel URL. Add `http://localhost:3000` to the redirect URLs.
-   - **SMS (visitor OTP by phone):** enable the Phone provider with an SMS provider such as Twilio. Until then visitors use the email channel.
-6. **On Vercel**, add the same environment variables (Production + Preview), then redeploy.
+5. **Clerk (accounts and sign-in):**
+   - `clerk auth login`, then `clerk init --app app_3KdJDDqhxt1gpTlWgZpPZGkw5co`. This writes `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` to `.env.local`. Run `clerk doctor` to check.
+   - In the Clerk dashboard: rename the application ("My Application" → "المقر"); choose the sign-in options (email + password, email code for visitors, Google); create a production instance before launch.
+   - Supabase Auth is not used any more. Its email templates, SMTP and "Confirm email" settings no longer matter.
+6. **On Vercel**, add the same environment variables (Production + Preview), then redeploy: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `DATABASE_URL` (Sensitive), `SUPABASE_SECRET_KEY` (Sensitive; needed for file uploads), `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` (Sensitive). Without the Clerk keys the site runs as the public demo and the sign-in forms say real sign-in isn't enabled.
 
 ## AI tooling (Supabase MCP + skills)
 
