@@ -14,6 +14,15 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Employee invites on WhatsApp
+- **After adding an employee:** HR → Employees shows "Send the invite on WhatsApp". It opens a `wa.me` link with a ready message (name, company, the email to sign up with, the `/join` link in the current language).
+- **Optional phone field:** opens that chat directly. Local Egyptian numbers `01…` get the country code 20.
+- **Waiting employees:** each one has a WhatsApp button to resend the invite.
+- **Instruction text:** updated, since sign-in is by account now, not by company code.
+
+The phone is not stored.
+Files: `src/modules/hr/components/employees-panel.tsx`, `src/app/[locale]/(app)/c/[companySlug]/hr/page.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — First real account on production
 The product owner signed up on production: company `kira-glass-7c2n` was created, and they also became the owner of `demo` through the email invite. A full retest passed (see 09-test-report).
 Files: `development-almaqar/09-test-report.md`.

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Mail, UserPlus, UserRound, X } from "lucide-react";
+import { Check, Copy, Mail, MessageCircle, Phone, UserPlus, UserRound, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { Avatar } from "@/components/shared/avatar";
@@ -27,6 +27,7 @@ export type EmployeeRow = {
 
 type EmployeesPanelProps = {
   companyId: string;
+  companyName: Localized;
   companyCode: string;
   meId: string;
   meRole: EmployeeRow["role"];
@@ -35,7 +36,20 @@ type EmployeesPanelProps = {
 };
 
 /** HR → employees: company code to share, the team, and adding/removing employees (owner and admins). */
-export function EmployeesPanel({ companyId, companyCode, meId, meRole, employees, departments }: EmployeesPanelProps) {
+/**
+ * wa.me link with a ready invite message. With a number it opens that chat, otherwise WhatsApp asks
+ * who to send it to. Local Egyptian numbers (01xxxxxxxxx) get the country code 20.
+ */
+function whatsappLink(message: string, phone?: string) {
+  let digits = (phone ?? "").replace(/[^\d]/g, "");
+  if (/^01\d{9}$/.test(digits)) digits = "2" + digits;
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  return `https://wa.me/${digits.length >= 8 ? digits : ""}?text=${encodeURIComponent(message)}`;
+}
+
+type Invite = { name: string; email: string; phone?: string };
+
+export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRole, employees, departments }: EmployeesPanelProps) {
   const t = useTranslations("hr.employees");
   const tErr = useTranslations("auth.errors");
   const lang = useLocale() as "ar" | "en";
@@ -44,6 +58,14 @@ export function EmployeesPanel({ companyId, companyCode, meId, meRole, employees
   const [message, setMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const canManage = meRole !== "employee";
+  const [lastInvite, setLastInvite] = useState<Invite | null>(null);
+
+  /** Opens WhatsApp with the invite for this person: the join page in the current language + their email. */
+  const sendOnWhatsApp = (invite: Invite) => {
+    const link = `${window.location.origin}${lang === "en" ? "/en" : ""}/join`;
+    const message = t("whatsappMessage", { name: invite.name, company: text(companyName), email: invite.email, link });
+    window.open(whatsappLink(message, invite.phone), "_blank", "noopener,noreferrer");
+  };
   const text = (v: Localized) => v[lang] || v.ar || v.en;
   const departmentName = (id: string) => {
     const d = departments.find((x) => x.id === id);
@@ -125,6 +147,17 @@ export function EmployeesPanel({ companyId, companyCode, meId, meRole, employees
                   >
                     {m.linked ? t("linked") : t("pending")}
                   </span>
+                  {!m.linked && m.email && canManage && (
+                    <button
+                      type="button"
+                      onClick={() => sendOnWhatsApp({ name: text(m.name), email: m.email! })}
+                      title={t("resendWhatsapp")}
+                      aria-label={t("resendWhatsapp")}
+                      className="ms-2 inline-grid size-7 place-items-center rounded-full text-success hover:bg-success-container"
+                    >
+                      <MessageCircle className="size-4" aria-hidden />
+                    </button>
+                  )}
                 </td>
                 {canManage && (
                   <td className="px-3 py-3 text-end">
@@ -156,7 +189,7 @@ export function EmployeesPanel({ companyId, companyCode, meId, meRole, employees
 
       {canManage ? (
         <form
-          className="grid gap-4 rounded-lg bg-surface-container-low p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
+          className="grid gap-4 rounded-lg bg-surface-container-low p-4 sm:grid-cols-2 lg:grid-cols-3 lg:items-end"
           onSubmit={(event) => {
             event.preventDefault();
             const form = event.currentTarget;
@@ -174,7 +207,8 @@ export function EmployeesPanel({ companyId, companyCode, meId, meRole, employees
                 role: value("role") === "admin" ? "admin" : "employee",
               });
               if (!result.ok) return setMessage(tErr(result.error));
-              setMessage(result.data.emailed ? t("addedEmailed", { name }) : t("added", { name, code: companyCode }));
+              setMessage(result.data.emailed ? t("addedEmailed", { name }) : t("addedShare", { name }));
+              setLastInvite({ name, email: value("email").toLowerCase(), phone: value("phone") || undefined });
               form.reset();
               router.refresh();
             });
@@ -185,6 +219,9 @@ export function EmployeesPanel({ companyId, companyCode, meId, meRole, employees
           </Field>
           <Field label={t("email")} htmlFor="emp-email">
             <Input id="emp-email" name="email" type="email" icon={Mail} placeholder="name@company.com" required />
+          </Field>
+          <Field label={t("phone")} htmlFor="emp-phone">
+            <Input id="emp-phone" name="phone" type="tel" inputMode="tel" dir="ltr" icon={Phone} placeholder={t("phonePlaceholder")} autoComplete="off" />
           </Field>
           <Field label={t("jobTitle")} htmlFor="emp-title">
             <Input id="emp-title" name="jobTitle" placeholder={t("jobTitlePlaceholder")} />
@@ -217,6 +254,12 @@ export function EmployeesPanel({ companyId, companyCode, meId, meRole, employees
         <p className="text-sm text-on-surface-variant">{t("onlyAdmins")}</p>
       )}
       <FormStatus message={message} />
+      {lastInvite && (
+        <Button type="button" onClick={() => sendOnWhatsApp(lastInvite)} className="h-12 w-fit bg-success text-white hover:bg-success/90">
+          <MessageCircle className="size-5" aria-hidden />
+          {t("whatsapp")}
+        </Button>
+      )}
     </section>
   );
 }

@@ -30,6 +30,7 @@ export default async function HrPage({ params }: PageProps<"/[locale]/c/[company
     <HrHome>
       <EmployeesPanel
         companyId={company.id}
+        companyName={company.name}
         companyCode={company.code}
         meId={me.id}
         meRole={me.role}

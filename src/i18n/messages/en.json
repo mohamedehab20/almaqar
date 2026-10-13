@@ -559,7 +559,7 @@
       "companyCode": "Company code",
       "copy": "Copy",
       "copied": "Copied",
-      "howTo": "The employee opens Employee login → Join your company, and creates a password with the same email you added. Then they sign in with this code.",
+      "howTo": "Add the employee by email and send them the invite on WhatsApp. They open the link, sign up with that same email, and land straight in the company.",
       "colName": "Name",
       "colTitle": "Job title",
       "colDepartment": "Department",
@@ -589,7 +589,13 @@
       "added": "{name} was added. Ask them to activate their account with their email; the company code is {code}.",
       "addedEmailed": "{name} was added and an invitation email was sent.",
       "onlyAdmins": "Only the owner and admins can add or remove employees.",
-      "demoNotice": "This is the demo. Sign in with your account to manage your real company's employees."
+      "demoNotice": "This is the demo. Sign in with your account to manage your real company's employees.",
+      "phone": "WhatsApp number (optional)",
+      "phonePlaceholder": "+20 1xx xxx xxxx",
+      "whatsapp": "Send the invite on WhatsApp",
+      "resendWhatsapp": "Resend the invite on WhatsApp",
+      "whatsappMessage": "Hi {name} 👋\nYou were added to «{company}» on Al Maqr.\nActivate your account from this link and sign up with this email: {email}\n{link}",
+      "addedShare": "{name} was added. Send them the invite on WhatsApp so they can activate their account."
     }
   },
   "marketing": {
