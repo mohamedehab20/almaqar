@@ -44,8 +44,8 @@ const tools: { key: string; icon: LucideIcon }[] = [
   { key: "offboarding", icon: UserX },
 ];
 
-/** HR home: a launcher grid of HR tools. Each tool gets its own page later. */
-export function HrHome() {
+/** HR home: a launcher grid of HR tools. Each tool gets its own page later. `children` (e.g. the employees panel) go above the grid. */
+export function HrHome({ children }: { children?: React.ReactNode }) {
   const t = useTranslations("hr");
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -62,6 +62,8 @@ export function HrHome() {
           <h2 className="text-3xl font-black sm:text-4xl">{t("title")}</h2>
           <p className="mt-2 text-lg text-on-surface-variant">{t("subtitle")}</p>
         </header>
+
+        {children}
 
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-6">
           {tools.map(({ key, icon: Icon }) => (

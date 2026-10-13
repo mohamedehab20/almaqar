@@ -14,6 +14,16 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Real sign-in and employee management
+- **Sign-in and sign-up:** sign-up, company login and employee login now call the backend and open the real company. Errors are shown in Arabic and English.
+- **New pages:** `/join` (an invited employee activates their account), `/forgot-password` and `/reset-password`.
+- **Company layout:** loads the signed-in member's company. Signed out, only `/c/demo` stays public; other slugs → `/login`.
+- **Topbar:** shows a sign-out button.
+- **HR → Employees:** company code, team list, add and remove employees.
+
+Needs `DATABASE_URL` in `.env.local` to work against Supabase.
+Files: `src/modules/auth/components/{company-login-form,login-form,signup-form,account-forms}.tsx`, `src/modules/auth/use-auth-action.ts`, `src/modules/auth/actions.ts` (`signUpEmployee`), `src/app/[locale]/(auth)/{join,forgot-password,reset-password}/page.tsx`, `src/app/[locale]/(app)/c/[companySlug]/{layout,hr/page}.tsx`, `src/modules/hq/queries.ts` (`getSignedInCompany`), `src/components/layout/{app-shell,app-topbar}.tsx`, `src/modules/hr/components/{hr-home,employees-panel}.tsx`, `src/i18n/messages/{ar,en}.json`, `scripts/check-routes.mjs`.
+
 ### 2026-10-13 — Account self-service backend (task C4)
 New actions:
 - "Forgot password" email, which does not reveal which emails exist.

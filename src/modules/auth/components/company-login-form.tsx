@@ -9,7 +9,9 @@ import { Field } from "@/components/ui/field";
 import { FormStatus } from "@/components/ui/form-status";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { signInWithCompanyCode } from "@/modules/auth/actions";
+import { useAuthAction } from "@/modules/auth/use-auth-action";
 import { DEMO_COMPANY_SLUG } from "@/modules/hq/mock";
 
 const ssoProviders = ["Google", "Microsoft"] as const;
@@ -21,17 +23,23 @@ export function CompanyLoginForm() {
   const Arrow = useLocale() === "ar" ? ArrowLeft : ArrowRight;
   const [status, setStatus] = useState<string | null>(null);
   const router = useRouter();
+  const { submit, pending, message } = useAuthAction(signInWithCompanyCode, ({ slug }) => {
+    router.push(`/c/${slug}`);
+    router.refresh();
+  });
 
   return (
     <div className="rounded-xl bg-surface-container-lowest p-6 shadow-ambient sm:p-12">
       <form
-        // Frontend-only phase: skip browser validation so the next page can be previewed with empty fields
-        noValidate
         className="flex flex-col gap-6"
         onSubmit={(event) => {
           event.preventDefault();
-          // TODO(backend): resolve company by code, sign in with Supabase Auth, then open that company
-          router.push(`/c/${DEMO_COMPANY_SLUG}`);
+          const data = new FormData(event.currentTarget);
+          submit(
+            { companyCode: String(data.get("companyCode") ?? ""), email: String(data.get("email") ?? ""), password: String(data.get("password") ?? "") },
+            // No Supabase on this server (e.g. a preview deploy): keep the demo reachable
+            (code) => code === "not_configured" && (router.push(`/c/${DEMO_COMPANY_SLUG}`), true),
+          );
         }}
       >
         <Field label={l("companyCode")} htmlFor="companyCode">
@@ -59,19 +67,19 @@ export function CompanyLoginForm() {
           label={l("password")}
           htmlFor="password"
           action={
-            <a href="#" className="text-xs font-semibold text-primary hover:underline">
+            <Link href="/forgot-password" className="text-xs font-semibold text-primary hover:underline">
               {l("forgot")}
-            </a>
+            </Link>
           }
         >
           <PasswordInput id="password" name="password" placeholder="••••••••" autoComplete="current-password" required />
         </Field>
 
-        <Button type="submit" size="lg" className="mt-2 h-16 text-lg">
-          {l("submit")}
+        <Button type="submit" size="lg" className="mt-2 h-16 text-lg" disabled={pending}>
+          {pending ? l("working") : l("submit")}
           <Arrow className="size-5" aria-hidden />
         </Button>
-        <FormStatus message={status} />
+        <FormStatus message={message ?? status} />
       </form>
 
       <div className="mt-8 flex flex-col gap-8">

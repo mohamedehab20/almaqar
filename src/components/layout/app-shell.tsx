@@ -7,11 +7,13 @@ import { AppTopbar } from "./app-topbar";
 type AppShellProps = {
   companySlug: string;
   userName: string;
+  /** A real signed-in session (not the public demo): shows the sign-out button */
+  signedIn?: boolean;
   children: React.ReactNode;
 };
 
 /** Signed-in layout: dark sidebar on the start side (a drawer on small screens), top bar, page content. */
-export function AppShell({ companySlug, userName, children }: AppShellProps) {
+export function AppShell({ companySlug, userName, signedIn = false, children }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -36,7 +38,7 @@ export function AppShell({ companySlug, userName, children }: AppShellProps) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <AppTopbar userName={userName} onMenu={() => setMenuOpen(true)} />
+        <AppTopbar userName={userName} signedIn={signedIn} onMenu={() => setMenuOpen(true)} />
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </div>
     </div>

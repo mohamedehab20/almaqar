@@ -12,10 +12,7 @@ grep -rn "TODO(backend)" src
 
 | Area | Where (UI) | Backend ready |
 |---|---|---|
-| Company + membership | `src/app/[locale]/(app)/c/[companySlug]/layout.tsx` | `hq/queries.ts` `getCompanyBySlug(slug)` → `{ company, me }`, or `null` → `notFound()`. Redirect to `/login` when not signed in (catch `unauthorized`). |
-| Company login | `modules/auth/components/company-login-form.tsx` | `auth/actions.ts` `signInWithCompanyCode({ companyCode, email, password })` → `{ slug }` |
-| Employee login | `modules/auth/components/login-form.tsx` | Same action. The form's `identifier` field is the email. |
-| Signup | `modules/auth/components/signup-form.tsx` | `signUp(...)` → `{ needsEmailConfirmation, slug }`. Show "check your email" when confirmation is on. |
+| Rooms' data | every room view | The layout already loads the real company (`getSignedInCompany`). Each room still needs its own queries/actions wired (see the rows below). |
 | Visitor login | `modules/auth/components/visitor-login-form.tsx` | `sendVisitorOtp` then `verifyVisitorOtp`, with `channel: "email"` or `"sms"` (SMS needs a provider; see 01). The form currently asks for a phone number only. |
 | Signed-in client | `modules/marketing/components/client-home.tsx` (`DEMO_CLIENT_ID`) | `marketing/queries.ts` `getMyClients()` |
 | Briefs | `modules/marketing/briefs-store.ts`, `client-portal.tsx` | `listBriefs` / `listClientBriefs`, plus `sendBrief`, `setBriefStatus`, `replyToBrief`. Realtime: subscribe to `briefs` with the browser client. A `brief.received` event is logged automatically. |
@@ -39,7 +36,7 @@ grep -rn "TODO(backend)" src
 
 - **Billing provider** and switching plans.
 - **Agent runtime** (Python).
-- **Account pages (UI only):** `/reset-password` (calls `updatePassword`), "forgot password" (calls `requestPasswordReset`), profile/settings (`updateMyProfile`, `updateMyAccount`, `updatePassword`), and a company picker when a user belongs to several (`listMyCompanies`).
+- **Account pages (UI only):** profile/settings (`updateMyProfile`, `updateMyAccount`, `updatePassword`), and a company picker when a user belongs to several (`listMyCompanies`). Sign-in, sign-up, join, forgot and reset are done.
 - **HR room:** no tables yet.
 - **Automation engine:** a worker that listens to events and runs the flows' actions. The flows are stored; `recordFlowRun` is ready for the engine to call.
 

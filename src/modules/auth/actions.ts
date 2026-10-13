@@ -153,3 +153,25 @@ export const updateMyAccount = action(
   },
 );
 
+
+/**
+ * Activating an invited employee's account (employee login → "join your company"): the owner/admin
+ * added them by email first. Creates the auth user without a company; on the first session the invite
+ * with the same email is claimed (finishSignIn) and their company opens. `noInvite` means signed in
+ * but no company has invited this email yet.
+ */
+export const signUpEmployee = action(
+  z.object({ fullName: z.string().trim().min(2).max(120), email: z.email(), password }),
+  async (input) => {
+    const client = await supabase();
+    const { data, error } = await client.auth.signUp({
+      email: input.email,
+      password: input.password,
+      options: { data: { full_name: input.fullName } },
+    });
+    if (error) throw new AppError(error.code === "user_already_exists" ? "conflict" : "auth_failed", error.message);
+    if (!data.session) return { needsEmailConfirmation: true as const, slug: null, noInvite: false };
+    const slug = await finishSignIn(client);
+    return { needsEmailConfirmation: false as const, slug, noInvite: !slug };
+  },
+);

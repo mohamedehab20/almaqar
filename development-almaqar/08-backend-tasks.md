@@ -25,7 +25,7 @@ Status: ✅ done · 🔄 in progress · ⏳ waiting on something · ⬜ not star
 | A4 | Demo data on Supabase (`demo` company, owner = product owner's email) | A | — | ✅ | `demo` company is visible in the dashboard |
 | A6 | Simulated working day through the real services, saved to Supabase as company `simulation` | A | A4 | ✅ | Every step's data is on Supabase and checked |
 | A5 | Check `withUser` over the transaction pooler (port 6543): role switch and RLS inside a pooled transaction | A | `DATABASE_URL` | ⏳ | A real query as a test user returns only that user's rows |
-| B3 | Manual end-to-end auth check against Supabase: sign-up with email confirmation, company-code login, visitor email OTP | B | A4 | ⏳ | Each flow reaches its page; results recorded here |
+| B3 | Manual end-to-end auth check against Supabase: sign-up with email confirmation, company-code login, visitor email OTP. **Screens are wired now** (sign-up, logins, join, forgot/reset, HR → Employees). | B | `DATABASE_URL` | ⏳ | Each flow reaches its page; results recorded here |
 | B4 | Vercel: add env vars (`NEXT_PUBLIC_*` now; `DATABASE_URL` and `SUPABASE_SECRET_KEY` as Sensitive after A5). Set Supabase Auth Site URL and redirect URLs to the Vercel domain. | B | A5, Vercel login | ⏳ | Production can sign in |
 
 ## Phase 3 — Backend for the screens that still have no data source

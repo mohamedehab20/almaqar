@@ -4,6 +4,17 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-13 — Employees join by email + company code; no separate employee IDs
+- **Joining:** an owner or admin adds the employee's email (HR → Employees). The employee activates at `/join` with that email and a password.
+- **Signing in:** from then on, company code + email + password.
+
+Why: it reuses Supabase Auth and the `claim_invites` link. There is nothing extra to store or reset.
+
+The old "email or employee code" field now accepts email only.
+
+### 2026-10-13 — Signed out, only the demo company is public
+A signed-out visitor who opens any other `/c/<slug>` is redirected to `/login`, not shown a 404. Why: a 404 would reveal which company slugs exist.
+
 ### 2026-10-12 — An order's approval is decided by its workflow run, not by hand
 When an order has a workflow, only the run can approve it: completed → approved, closed → cancelled. Cancelling by hand is still allowed.
 

@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { withUser } from "@/server/session";
+import { getClaims, withUser } from "@/server/session";
 import * as svc from "./service";
 import { listActivity as listActivitySvc } from "@/modules/events/service";
 
@@ -12,3 +12,14 @@ export const listDepartments = cache((companyId: string) => withUser((ctx) => sv
 /** Main hall activity panel */
 export const listActivity = cache((companyId: string, limit?: number) => withUser((ctx) => listActivitySvc(ctx, companyId, limit)));
 export const getFloorPlan = cache((companyId: string) => withUser((ctx) => svc.getFloorPlan(ctx, companyId)));
+
+/**
+ * The company at /c/<slug> for the signed-in user:
+ * - undefined: nobody is signed in (or Supabase is not configured)
+ * - null: signed in, but not a member of that company
+ * - { company, me }: signed in and a member
+ */
+export const getSignedInCompany = cache(async (slug: string) => {
+  if (!(await getClaims())) return undefined;
+  return withUser((ctx) => svc.getCompanyBySlug(ctx, slug));
+});

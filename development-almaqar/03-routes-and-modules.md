@@ -16,16 +16,24 @@ All routes also exist under `/en`. Every page below still runs on mock data. The
 
 | Route | Form component | On submit |
 |---|---|---|
-| `/login` | `modules/auth/components/company-login-form.tsx` (company code, email, password; tabs to signup) | → `/c/demo` |
-| `/employee-login` | `login-form.tsx` inside `auth-split-layout.tsx` | → `/c/demo` |
+| `/login` | `modules/auth/components/company-login-form.tsx` (company code, email, password; tabs to signup) | **Real sign-in** (`signInWithCompanyCode`) → `/c/<slug>`. Errors are shown under the form. Without Supabase configured → `/c/demo`. "Forgot password" → `/forgot-password`. |
+| `/employee-login` | `login-form.tsx` inside `auth-split-layout.tsx` | **Real sign-in** with company code + email + password → `/c/<slug>`. "Join your company" → `/join`. |
 | `/visitor-login` | `visitor-login-form.tsx` (QR box, invite code, phone, OTP) | → `/client-portal` |
-| `/signup` | `signup-form.tsx` | → `/c/demo` |
+| `/signup` | `signup-form.tsx` | **Real sign-up** (`signUp`): creates the owner and the company. With email confirmation on, it shows "check your email"; otherwise it opens `/c/<slug>`. |
+| `/join` | `account-forms.tsx` `JoinForm` | Invited employee: name + the email they were added with + password (`signUpEmployee`). The invite is claimed and their company opens. |
+| `/forgot-password` | `account-forms.tsx` `ForgotPasswordForm` | `requestPasswordReset`. Always the same answer, so it never reveals which emails have accounts. |
+| `/reset-password` | `account-forms.tsx` `ResetPasswordForm` | Reached from the reset email via `/api/auth/confirm`; `updatePassword` → `/login`. |
 
 Every auth page shows the logo linking to `/`.
 
 ## Company app — `src/app/[locale]/(app)/c/[companySlug]`
 
-Wrapped by `layout.tsx` → `AppShell` (sidebar + topbar). Only slug `demo` is valid.
+Wrapped by `layout.tsx` → `AppShell` (sidebar + topbar). The layout calls `getSignedInCompany(slug)`:
+- **Signed in and a member:** the real company. The topbar shows your name and a sign-out button.
+- **Signed in but not a member:** 404.
+- **Signed out:** `/c/demo` stays the public demo, on mock data. Any other slug redirects to `/login`.
+
+The rooms' screens still show mock data. Only the layout and HR → Employees read the real company so far.
 
 **Sidebar** (`app-sidebar.tsx`): logo → `/`; groups «نظرة عامة» (voice, camera, recording, calendar, chat — coming soon) and «إدارة الأقسام». Enabled items: HR, operations, automation, sales, marketing, Al Jarab. Accounts, archive, meetings, tasks and permissions are dimmed and show a "coming soon" toast. «الترقية إلى الذهبية» → `/pricing`.
 
@@ -34,7 +42,7 @@ Wrapped by `layout.tsx` → `AppShell` (sidebar + topbar). Only slug `demo` is v
 | Route | View | Highlights |
 |---|---|---|
 | `/c/demo` | `modules/hq/components/hq-view.tsx` | Main hall. Floor plan (`floor-plan.tsx`) with rooms, furniture and an open workspace split into department zones; status chips pinned in a fixed strip; zoom controls; presence / activity side panel; control bar (status menu, mic, camera, history). «إضافة طبقة أخرى» opens the Premium dialog (`premium-layer-dialog.tsx`) → `/pricing`. |
-| `/c/demo/hr` | `modules/hr/components/hr-home.tsx` | HR home. |
+| `/c/demo/hr` | `modules/hr/components/hr-home.tsx` + `employees-panel.tsx` | HR home. **Signed in:** an Employees panel at the top shows the company code (with copy), the team with role and account status (active, or waiting for activation), an add-employee form (owner/admin; only the owner can make admins) and remove. **Demo:** a note asking you to sign in. |
 | `/c/demo/operations` | `modules/operations/components/operations-view.tsx` | Operations room: header actions (audit log, add operation, analysis, notes toggle), KPI cards, operations table by category (contracts, purchasing, finance, maintenance, operations, sales) with approve / reject / request changes, notes section with audience picker (whole company, or departments + employees). |
 | `/c/demo/automation` | `modules/automation/components/automation-view.tsx` | Automation room: views all / workflows / flows / templates. Approval workflows built from employees (name + role + department), with attachments up to 10 MB. Runs follow `applyRunAction` in `workflows.ts`: approve → next step, reject → previous step (closes at the first), request changes → first step. Template `tpl-sales-ops` (7 steps). |
 | `/c/demo/sales` | `modules/sales/components/sales-view.tsx` | Sale (SO-) and purchase (PO-) orders, totals, filter, order dialog, status changes. |

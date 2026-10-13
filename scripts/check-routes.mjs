@@ -1,10 +1,10 @@
 // npm run check:routes   (start the app first: npm run build && npx next start -p 3123, or set BASE_URL)
 // Requests every page in Arabic and English and checks status, lang/dir, error text and key content,
-// plus the auth-confirm redirect, an unknown company (404) and a broken auth cookie.
+// plus the auth-confirm redirect, a non-demo company while signed out (→ /login) and a broken auth cookie.
 const base = process.env.BASE_URL ?? "http://localhost:3123";
 const pages = [
   ["/", "هنا يبدأ"], ["/pricing", "300"], ["/compass", "بوصلة"], ["/login", "افتح أبواب"], ["/employee-login", ""],
-  ["/visitor-login", ""], ["/signup", ""], ["/client-portal", ""], ["/c/demo", ""], ["/c/demo/hr", ""],
+  ["/visitor-login", ""], ["/signup", ""], ["/join", "فعّل حسابك"], ["/forgot-password", "نسيت كلمة المرور"], ["/reset-password", ""], ["/client-portal", ""], ["/c/demo", ""], ["/c/demo/hr", ""],
   ["/c/demo/operations", ""], ["/c/demo/automation", ""], ["/c/demo/sales", "SO-"], ["/c/demo/marketing", ""], ["/c/demo/agents", ""],
 ];
 let failures = 0;
@@ -36,9 +36,11 @@ const loc = confirm.headers.get("location") ?? "";
 const okConfirm = confirm.status === 307 && loc.endsWith("/login?error=link");
 if (!okConfirm) failures++;
 console.log(`${okConfirm ? "PASS" : "FAIL"} /api/auth/confirm with a bad token → ${confirm.status} ${loc}`);
-const missing = await fetch(base + "/c/does-not-exist");
-if (missing.status !== 404) failures++;
-console.log(`${missing.status === 404 ? "PASS" : "FAIL"} unknown company slug → ${missing.status}`);
+// Signed out, any company but the public demo sends you to sign in (no hint whether it exists)
+const other = await fetch(base + "/c/does-not-exist", { redirect: "manual" });
+const toLogin = other.status === 307 && (other.headers.get("location") ?? "").endsWith("/login");
+if (!toLogin) failures++;
+console.log(`${toLogin ? "PASS" : "FAIL"} signed out, other company → ${other.status} ${other.headers.get("location") ?? ""}`);
 
 // Session refresh in the proxy must not break pages when a stale Supabase cookie is present
 const stale = await fetch(base + "/c/demo", { headers: { cookie: "sb-rosifnxvdpwkvpqzguzj-auth-token=base64-eyJhY2Nlc3NfdG9rZW4iOiJiYWQifQ" } });

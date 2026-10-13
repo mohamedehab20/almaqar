@@ -136,8 +136,8 @@
       "intro": "Welcome back. Enter your details to access the portal.",
       "companyCode": "Company code",
       "companyCodePlaceholder": "Enter your company code",
-      "identifier": "Email or employee ID",
-      "identifierPlaceholder": "example@almaqr.com",
+      "identifier": "Email",
+      "identifierPlaceholder": "name@company.com",
       "password": "Password",
       "remember": "Remember me",
       "forgot": "Forgot password?",
@@ -146,7 +146,8 @@
       "noAccount": "No account yet?",
       "joinCompany": "Join through your company",
       "panelTitle": "The digital headquarters",
-      "panelText": "Your desk, team and tasks in one place."
+      "panelText": "Your desk, team and tasks in one place.",
+      "working": "Signing in…"
     },
     "visitor": {
       "metaTitle": "Visitor access",
@@ -220,7 +221,9 @@
       "benefitSecurityText": "Your data is protected with modern technology",
       "benefitGrowth": "Room to grow",
       "benefitGrowthText": "Manage everything in one unified system",
-      "rights": "© {year} Al Maqr. All rights reserved."
+      "rights": "© {year} Al Maqr. All rights reserved.",
+      "checkEmail": "Done! We sent a confirmation link to {email}. Open it and your company will be ready.",
+      "working": "Creating your HQ…"
     },
     "login": {
       "metaTitle": "Log in",
@@ -249,7 +252,57 @@
       "ownerPrompt": "Own a company?",
       "ownerLink": "Register as a business owner",
       "ownerSuffix": "to get the gold benefits package.",
-      "rights": "© {year} Al Maqr Digital Diwan. All rights reserved."
+      "rights": "© {year} Al Maqr Digital Diwan. All rights reserved.",
+      "working": "Signing in…"
+    },
+    "errors": {
+      "auth_failed": "Wrong email or password.",
+      "forbidden": "This account is not a member of the company with that code.",
+      "conflict": "An account with this email already exists. Sign in instead.",
+      "invalid": "Check what you entered and try again.",
+      "not_found": "We couldn't find that.",
+      "not_configured": "Real sign-in is not enabled on this server yet.",
+      "unauthorized": "Please sign in first.",
+      "plan_limit": "You reached the free plan limit. Upgrade to continue.",
+      "server_error": "Something went wrong. Please try again shortly."
+    },
+    "join": {
+      "metaTitle": "Activate employee account",
+      "title": "Activate your account",
+      "intro": "Did your manager add you by email? Create a password with that same email and you'll go straight to your company.",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "e.g. Sara Youssef",
+      "email": "The email you were added with",
+      "password": "New password",
+      "passwordHint": "At least 8 characters",
+      "submit": "Activate and sign in",
+      "working": "Activating…",
+      "checkEmail": "We sent a confirmation link to {email}. Open it to reach your company.",
+      "noInvite": "Your account is created, but no company has added this email yet. Ask your manager to add you under HR → Employees, then sign in.",
+      "haveAccount": "Already have an account?",
+      "login": "Sign in"
+    },
+    "forgot": {
+      "metaTitle": "Forgot password",
+      "title": "Forgot your password?",
+      "intro": "Enter your email and we'll send you a link to create a new password.",
+      "email": "Email",
+      "submit": "Send the link",
+      "working": "Sending…",
+      "sent": "If this email has an account, a reset link will arrive within minutes.",
+      "back": "Back to sign in"
+    },
+    "reset": {
+      "metaTitle": "New password",
+      "title": "Create a new password",
+      "intro": "Choose a new password for your account.",
+      "password": "New password",
+      "confirm": "Confirm password",
+      "mismatch": "The passwords don't match.",
+      "submit": "Save password",
+      "working": "Saving…",
+      "done": "Password changed. Taking you to sign in…",
+      "expired": "This link has expired or was already used. Request a new one."
     }
   },
   "app": {
@@ -291,7 +344,8 @@
     "expandGroup": "Show {name} items",
     "collapseGroup": "Hide {name} items",
     "comingSoonItem": "{name} — coming soon",
-    "backHome": "Back to the home page"
+    "backHome": "Back to the home page",
+    "signOut": "Sign out"
   },
   "hq": {
     "title": "Main hall",
@@ -489,6 +543,44 @@
       "employeeFiles": "Employee files",
       "knowledgeBase": "Knowledge base",
       "offboarding": "Offboarding"
+    },
+    "employees": {
+      "title": "Employees",
+      "subtitle": "Add your employees by email; they activate their accounts and sign in with the company code.",
+      "companyCode": "Company code",
+      "copy": "Copy",
+      "copied": "Copied",
+      "howTo": "The employee opens Employee login → Join your company, and creates a password with the same email you added. Then they sign in with this code.",
+      "colName": "Name",
+      "colTitle": "Job title",
+      "colDepartment": "Department",
+      "colRole": "Role",
+      "colStatus": "Account",
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "employee": "Employee"
+      },
+      "linked": "Active",
+      "pending": "Waiting for activation",
+      "you": "You",
+      "noDepartment": "—",
+      "remove": "Remove",
+      "removeConfirm": "Remove {name} from the company?",
+      "invite": "Add an employee",
+      "name": "Name",
+      "namePlaceholder": "e.g. Karim Adel",
+      "email": "Email",
+      "jobTitle": "Job title",
+      "jobTitlePlaceholder": "e.g. Operations manager",
+      "department": "Department",
+      "role": "Role",
+      "add": "Add",
+      "adding": "Adding…",
+      "added": "{name} was added. Ask them to activate their account with their email; the company code is {code}.",
+      "addedEmailed": "{name} was added and an invitation email was sent.",
+      "onlyAdmins": "Only the owner and admins can add or remove employees.",
+      "demoNotice": "This is the demo. Sign in with your account to manage your real company's employees."
     }
   },
   "marketing": {

@@ -1,18 +1,31 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { AppShell } from "@/components/layout/app-shell";
+import { redirect } from "@/i18n/navigation";
 import { currentUserId, demoCompany, members } from "@/modules/hq/mock";
+import { getSignedInCompany } from "@/modules/hq/queries";
 
 export default async function CompanyLayout({ children, params }: LayoutProps<"/[locale]/c/[companySlug]">) {
   const { locale, companySlug } = await params;
   setRequestLocale(locale);
-
-  // TODO(backend): load the company + membership for the signed-in user instead of the demo data
-  if (companySlug !== demoCompany.slug) notFound();
-
   const lang = locale as "ar" | "en";
-  const user = members.find((m) => m.id === currentUserId)!;
 
+  // Signed in and a member: the real company
+  const current = await getSignedInCompany(companySlug);
+  if (current) {
+    return (
+      <AppShell companySlug={companySlug} userName={current.me.name[lang] || current.me.name.ar || current.me.name.en} signedIn>
+        {children}
+      </AppShell>
+    );
+  }
+
+  // Otherwise only the public demo is open (its screens still use mock data)
+  if (companySlug !== demoCompany.slug) {
+    if (current === null) notFound(); // signed in, but not a member of this company
+    redirect({ href: "/login", locale });
+  }
+  const user = members.find((m) => m.id === currentUserId)!;
   return (
     <AppShell companySlug={companySlug} userName={user.name[lang]}>
       {children}
