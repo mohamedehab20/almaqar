@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, Paperclip, CirclePlus, CornerUpLeft, GitBranch, Pencil, Play, Undo2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Paperclip, CornerUpLeft, GitBranch, Pencil, Play, Undo2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Fragment, useState, type Dispatch, type SetStateAction } from "react";
 import { Avatar } from "@/components/shared/avatar";
@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { currentUserId, memberRole, members } from "@/modules/hq/mock";
 import { applyRunAction, type RunStatus, type Workflow, type WorkflowRun } from "../workflows";
 import { AttachmentChip } from "./attachment-chip";
-import { WorkflowBuilderDialog } from "./workflow-builder-dialog";
 
 const statusStyle: Record<RunStatus, string> = {
   in_progress: "bg-primary-fixed text-primary",
@@ -20,7 +19,6 @@ const statusStyle: Record<RunStatus, string> = {
 /** Approval workflows as a flowchart: each step is owned by an employee; runs move forward on approval and back on rejection. */
 type WorkflowsSectionProps = {
   workflows: Workflow[];
-  setWorkflows: Dispatch<SetStateAction<Workflow[]>>;
   runs: WorkflowRun[];
   setRuns: Dispatch<SetStateAction<WorkflowRun[]>>;
   /** Run to show first (e.g. when opened from a task) */
@@ -30,7 +28,7 @@ type WorkflowsSectionProps = {
   onNotice: (message: string) => void;
 };
 
-export function WorkflowsSection({ workflows, setWorkflows, runs, setRuns, initialRunId, initialWorkflowId, onNotice }: WorkflowsSectionProps) {
+export function WorkflowsSection({ workflows, runs, setRuns, initialRunId, initialWorkflowId, onNotice }: WorkflowsSectionProps) {
   const t = useTranslations("automation.workflows");
   const locale = useLocale() as "ar" | "en";
   const Forward = locale === "ar" ? ArrowLeft : ArrowRight;
@@ -41,7 +39,6 @@ export function WorkflowsSection({ workflows, setWorkflows, runs, setRuns, initi
   const [runId, setRunId] = useState<string | undefined>(
     initialWorkflowId ? runs.find((r) => r.workflowId === initialWorkflowId)?.id : initialRun?.id,
   );
-  const [building, setBuilding] = useState(false);
   const [subject, setSubject] = useState("");
   const [note, setNote] = useState("");
 
@@ -95,14 +92,6 @@ export function WorkflowsSection({ workflows, setWorkflows, runs, setRuns, initi
           <GitBranch className="size-5 text-tertiary" aria-hidden />
           {t("title")}
         </h3>
-        <button
-          type="button"
-          onClick={() => setBuilding(true)}
-          className="flex h-10 items-center gap-2 rounded-sm bg-surface-container-lowest px-4 text-sm font-semibold text-tertiary ghost-border hover:bg-tertiary-fixed"
-        >
-          <CirclePlus className="size-4" aria-hidden />
-          {t("create")}
-        </button>
       </div>
 
       {/* Workflow picker */}
@@ -335,18 +324,6 @@ export function WorkflowsSection({ workflows, setWorkflows, runs, setRuns, initi
         )}
       </div>
 
-      {building && (
-        <WorkflowBuilderDialog
-          onClose={() => setBuilding(false)}
-          onCreate={(created) => {
-            setWorkflows((prev) => [...prev, created]);
-            setWorkflowId(created.id);
-            setRunId(undefined);
-            setBuilding(false);
-            onNotice(t("notices.created", { name: created.name[locale] }));
-          }}
-        />
-      )}
     </section>
   );
 }

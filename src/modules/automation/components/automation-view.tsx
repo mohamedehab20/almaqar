@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { members } from "@/modules/hq/mock";
 import { automationStats, flows as demoFlows, templates, type AutomationFlow } from "../mock";
 import { runs as demoRuns, workflowTemplates, workflows as demoWorkflows, type Workflow, type WorkflowRun, type WorkflowTemplate } from "../workflows";
+import { WorkflowBuilderDialog } from "./workflow-builder-dialog";
 import { WorkflowsSection } from "./workflows-section";
 
 /** Unique id for items created in the browser (until the backend assigns ids). */
@@ -41,6 +42,7 @@ export function AutomationView() {
   const [workflows, setWorkflows] = useState<Workflow[]>(demoWorkflows);
   const [runs, setRuns] = useState<WorkflowRun[]>(demoRuns);
   const [focusWorkflowId, setFocusWorkflowId] = useState<string>();
+  const [building, setBuilding] = useState(false);
 
   const applyWorkflowTemplate = (template: WorkflowTemplate) => {
     const workflowKey = uniqueId("wf");
@@ -124,6 +126,15 @@ export function AutomationView() {
               {t("analysis")}
               <ChevronDown className={cn("size-4 transition-transform", analysisOpen && "rotate-180")} aria-hidden />
             </button>
+            {/* Design an approval workflow (opens the builder) */}
+            <button
+              type="button"
+              onClick={() => setBuilding(true)}
+              className="flex h-11 items-center gap-2 rounded-sm bg-surface-container-lowest px-5 text-sm font-bold text-tertiary ghost-border transition hover:bg-tertiary-fixed"
+            >
+              <GitBranch className="size-4" aria-hidden />
+              {t("workflows.create")}
+            </button>
             <button
               type="button"
               onClick={() => setCreating(true)}
@@ -134,6 +145,20 @@ export function AutomationView() {
             </button>
           </div>
         </header>
+
+        {building && (
+          <WorkflowBuilderDialog
+            onClose={() => setBuilding(false)}
+            onCreate={(created) => {
+              setWorkflows((prev) => [...prev, created]);
+              // The workflows section opens on the new workflow
+              setFocusWorkflowId(created.id);
+              if (view !== "all") setView("workflows");
+              setBuilding(false);
+              setNotice(t("workflows.notices.created", { name: created.name[locale] }));
+            }}
+          />
+        )}
 
         {analysisOpen && (
           <section id="automation-analysis" aria-label={t("analysis")} className="grid gap-4 md:grid-cols-3">
@@ -148,7 +173,6 @@ export function AutomationView() {
           <WorkflowsSection
             key={focusWorkflowId ?? "default"}
             workflows={workflows}
-            setWorkflows={setWorkflows}
             runs={runs}
             setRuns={setRuns}
             initialWorkflowId={focusWorkflowId}

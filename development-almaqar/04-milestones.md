@@ -14,6 +14,10 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Automation room: «تصميم مسار عمل» moved to the header
+The button that opens the approval-workflow builder now sits in the room header next to «إنشاء مسار عمل مؤتمت جديد», instead of inside the workflows section. A new workflow opens selected in the workflows section (switching there from the flows or templates view).
+Files: `src/modules/automation/components/{automation-view,workflows-section}.tsx`.
+
 ### 2026-10-13 — Sales and Al Jarab back to "coming soon"
 - **Sidebar:** «المبيعات» and «الجراب» are dimmed, with the "coming soon" toast.
 - **Their URLs** (`/c/<slug>/sales`, `/c/<slug>/agents`) redirect to the main hall (307, in `src/proxy.ts`).
