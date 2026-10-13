@@ -1,7 +1,9 @@
 "use client";
 
-import { ClerkLoaded, ClerkLoading, SignIn, SignUp } from "@clerk/nextjs";
+import { ClerkFailed, SignIn, SignUp } from "@clerk/nextjs";
+import { RefreshCw } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
 import { AFTER_AUTH_URL } from "@/lib/clerk";
 
 /** Clerk's card blends into our own card: no second shadow or border, full width. */
@@ -22,8 +24,8 @@ export function useAfterAuthUrl(params: Record<string, string> = {}) {
 }
 
 /**
- * Placeholder with the shape of Clerk's form while its script loads (a few seconds on a cold visit),
- * so the page never shows only the guest button where the email field belongs.
+ * Placeholder with the shape of Clerk's form. Clerk loads in three steps after the page (its script,
+ * the account settings, then the form's own code), which can take several seconds on a first visit.
  */
 function FormSkeleton({ fields }: { fields: number }) {
   const t = useTranslations("auth.common");
@@ -43,6 +45,47 @@ function FormSkeleton({ fields }: { fields: number }) {
   );
 }
 
+/**
+ * Shows the skeleton until Clerk's form has really drawn its first field (not just until Clerk's script is
+ * ready: the form's own code loads after that), so the page never shows only the guest button.
+ */
+function FormGate({ fields, children }: { fields: number; children: React.ReactNode }) {
+  const t = useTranslations("auth.common");
+  const box = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const check = () => {
+      if (el.querySelector("input, button")) setReady(true);
+    };
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(el, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="relative">
+      {!ready && <FormSkeleton fields={fields} />}
+      {/* Mounted from the start so Clerk can draw into it; invisible until its first field exists */}
+      <div ref={box} className={ready ? undefined : "pointer-events-none absolute inset-x-0 top-0 opacity-0"} aria-hidden={!ready}>
+        {children}
+      </div>
+      <ClerkFailed>
+        <p className="mt-4 flex items-center justify-between gap-3 rounded-md bg-danger-container/60 px-4 py-3 text-sm text-danger">
+          {t("formFailed")}
+          <button type="button" onClick={() => window.location.reload()} className="flex shrink-0 items-center gap-1 font-bold underline-offset-4 hover:underline">
+            <RefreshCw className="size-4" aria-hidden />
+            {t("reload")}
+          </button>
+        </p>
+      </ClerkFailed>
+    </div>
+  );
+}
+
 /** Shown instead of the forms when the server has no Clerk keys (nothing would be saved). */
 export function AuthNotConfigured() {
   const t = useTranslations("auth.errors");
@@ -54,21 +97,16 @@ export function ClerkSignIn({ signUpPath = "/signup", params, withSignUp }: { si
   const locale = useLocale();
   const after = useAfterAuthUrl(params);
   return (
-    <>
-      <ClerkLoading>
-        <FormSkeleton fields={2} />
-      </ClerkLoading>
-      <ClerkLoaded>
-        <SignIn
-          routing="hash"
-          forceRedirectUrl={after}
-          signUpForceRedirectUrl={after}
-          signUpUrl={withLocale(signUpPath, locale)}
-          withSignUp={withSignUp}
-          appearance={appearance}
-        />
-      </ClerkLoaded>
-    </>
+    <FormGate fields={2}>
+      <SignIn
+        routing="hash"
+        forceRedirectUrl={after}
+        signUpForceRedirectUrl={after}
+        signUpUrl={withLocale(signUpPath, locale)}
+        withSignUp={withSignUp}
+        appearance={appearance}
+      />
+    </FormGate>
   );
 }
 
@@ -85,21 +123,16 @@ export function ClerkSignUp({
   const locale = useLocale();
   const after = useAfterAuthUrl();
   return (
-    <>
-      <ClerkLoading>
-        <FormSkeleton fields={3} />
-      </ClerkLoading>
-      <ClerkLoaded>
-        <SignUp
-          routing="hash"
-          forceRedirectUrl={after}
-          signInForceRedirectUrl={after}
-          signInUrl={withLocale(signInPath, locale)}
-          unsafeMetadata={unsafeMetadata}
-          initialValues={initialValues}
-          appearance={appearance}
-        />
-      </ClerkLoaded>
-    </>
+    <FormGate fields={3}>
+      <SignUp
+        routing="hash"
+        forceRedirectUrl={after}
+        signInForceRedirectUrl={after}
+        signInUrl={withLocale(signInPath, locale)}
+        unsafeMetadata={unsafeMetadata}
+        initialValues={initialValues}
+        appearance={appearance}
+      />
+    </FormGate>
   );
 }

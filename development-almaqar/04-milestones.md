@@ -14,6 +14,16 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-14 — Login: the skeleton stays until the real form is drawn
+- **Found by a load test:** a cold browser on the live site, polling every 150 ms. The first fix (`ClerkLoading`) hid the skeleton as soon as Clerk's script was ready, but the form's own code loads after that. That left the guest button alone for 3–4 s, and the form took up to 12 s on a first visit.
+- **Now:**
+  - `FormGate` keeps the skeleton until Clerk has drawn its first field (watched with a `MutationObserver`).
+  - If Clerk fails to load, `ClerkFailed` shows a message with a reload button.
+  - The layout preconnects to Clerk's Frontend API (sent as an HTTP `Link` header).
+  - The guest button no longer prefetches the demo company in the background.
+- **Test (local production build):** `/login`, `/employee-login` and `/en/login` normally, and `/login` on a throttled slow network. The guest button was alone for 0 ms in every run.
+Files: `src/modules/auth/components/{clerk-auth,guest-button}.tsx`, `src/lib/clerk.ts`, `src/app/[locale]/layout.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — Login: no more "guest only" flash while Clerk loads
 - **The problem:** for a few seconds on the sign-in and sign-up pages only the «ادخل كضيف» button showed, because Clerk's form loads in the browser after the page.
 - **Now:** a skeleton of the form (title, fields, button) holds its place (`ClerkLoading`) and is swapped for the real form when Clerk is ready (`ClerkLoaded`). This covers every page that uses `ClerkSignIn` / `ClerkSignUp`.

@@ -4,6 +4,12 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-14 — Auth forms: our skeleton until Clerk draws, not until Clerk loads
+Clerk loads in three steps after hydration (`clerk.browser.js`, then `/v1/environment` + `/v1/client`, then the sign-in UI chunks). `ClerkLoaded` fires after the second step, so it is not enough to know the form is visible.
+
+- **The rule:** the skeleton stays until an input or button exists inside Clerk's box.
+- **Faster later:** a production Clerk instance on our own domain would be quicker than the `*.clerk.accounts.dev` development instance.
+
 ### 2026-10-13 — Guest mode only from the guest button; links always ask to sign in
 **Chosen by the product owner,** to protect company data when a link is shared or moved between browsers.
 

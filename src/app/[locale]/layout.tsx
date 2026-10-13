@@ -6,7 +6,8 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { localeDirection, routing } from "@/i18n/routing";
-import { clerkEnabled } from "@/lib/clerk";
+import { preconnect } from "react-dom";
+import { clerkEnabled, clerkFrontendHost } from "@/lib/clerk";
 import "@/styles/globals.css";
 
 const cairo = Cairo({ subsets: ["arabic", "latin"], variable: "--font-cairo" });
@@ -29,6 +30,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  // Open the connection to Clerk while the page is still loading (its scripts and the sign-in form come from there)
+  const clerkHost = clerkFrontendHost();
+  if (clerkHost) preconnect(`https://${clerkHost}`, { crossOrigin: "anonymous" });
 
   return (
     <html

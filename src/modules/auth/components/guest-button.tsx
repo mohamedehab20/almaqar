@@ -21,6 +21,8 @@ export function GuestButton() {
       <Divider label={t("or")} />
       <Link
         href={`/c/${DEMO_COMPANY_SLUG}`}
+        // No background prefetch: on a slow line it competes with the sign-in form's scripts
+        prefetch={false}
         onClick={() => {
           document.cookie = `${GUEST_COOKIE}=1; path=/; SameSite=Lax`;
         }}
