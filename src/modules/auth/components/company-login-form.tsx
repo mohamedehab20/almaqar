@@ -12,7 +12,6 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Link, useRouter } from "@/i18n/navigation";
 import { signInWithCompanyCode } from "@/modules/auth/actions";
 import { useAuthAction } from "@/modules/auth/use-auth-action";
-import { DEMO_COMPANY_SLUG } from "@/modules/hq/mock";
 
 const ssoProviders = ["Google", "Microsoft"] as const;
 
@@ -36,9 +35,7 @@ export function CompanyLoginForm() {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
           submit(
-            { companyCode: String(data.get("companyCode") ?? ""), email: String(data.get("email") ?? ""), password: String(data.get("password") ?? "") },
-            // No Supabase on this server (e.g. a preview deploy): keep the demo reachable
-            (code) => code === "not_configured" && (router.push(`/c/${DEMO_COMPANY_SLUG}`), true),
+            { companyCode: String(data.get("companyCode") ?? ""), email: String(data.get("email") ?? ""), password: String(data.get("password") ?? "") }
           );
         }}
       >

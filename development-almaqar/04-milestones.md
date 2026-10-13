@@ -14,6 +14,10 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-13 — Auth forms no longer fall back to the demo silently
+The product owner signed up on a server without Supabase keys (Vercel). The form opened `/c/demo`, so the account looked created while nothing was saved; the Supabase auth logs had no sign-up request. Sign-up and both logins now show a clear "real sign-in isn't enabled on this server, nothing was saved" message.
+Files: `src/modules/auth/components/{company-login-form,login-form,signup-form}.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-13 — Real sign-in and employee management
 - **Sign-in and sign-up:** sign-up, company login and employee login now call the backend and open the real company. Errors are shown in Arabic and English.
 - **New pages:** `/join` (an invited employee activates their account), `/forgot-password` and `/reset-password`.

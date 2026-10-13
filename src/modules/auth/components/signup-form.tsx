@@ -12,7 +12,6 @@ import { Select } from "@/components/ui/select";
 import { Link, useRouter } from "@/i18n/navigation";
 import { signUp } from "@/modules/auth/actions";
 import { useAuthAction } from "@/modules/auth/use-auth-action";
-import { DEMO_COMPANY_SLUG } from "@/modules/hq/mock";
 
 const businessTypes = ["startup", "agency", "training", "consulting", "services", "other"] as const;
 const sizes = ["1-10", "11-50", "51-200", "200+"] as const;
@@ -52,9 +51,7 @@ export function SignupForm() {
               company: value("company"),
               businessType: value("businessType") || undefined,
               size: value("size") || undefined,
-            },
-            // No Supabase on this server (e.g. a preview deploy): keep the demo reachable
-            (code) => code === "not_configured" && (router.push(`/c/${DEMO_COMPANY_SLUG}`), true),
+            }
           );
         }}
       >

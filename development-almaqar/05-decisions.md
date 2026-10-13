@@ -4,6 +4,9 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-13 — Never fake success in auth forms
+When the server has no Supabase keys, the forms report it. They do not open the demo instead. Why: the silent fallback made a real sign-up look successful while nothing was saved. This reverses the earlier "keep the demo reachable" fallback. The demo is still open at `/c/demo` and from the landing page.
+
 ### 2026-10-13 — Employees join by email + company code; no separate employee IDs
 - **Joining:** an owner or admin adds the employee's email (HR → Employees). The employee activates at `/join` with that email and a password.
 - **Signing in:** from then on, company code + email + password.

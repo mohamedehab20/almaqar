@@ -261,7 +261,7 @@
       "conflict": "An account with this email already exists. Sign in instead.",
       "invalid": "Check what you entered and try again.",
       "not_found": "We couldn't find that.",
-      "not_configured": "Real sign-in is not enabled on this server yet.",
+      "not_configured": "Real sign-in isn't enabled on this server yet, so nothing was saved. Use a version connected to Supabase, or browse the demo.",
       "unauthorized": "Please sign in first.",
       "plan_limit": "You reached the free plan limit. Upgrade to continue.",
       "server_error": "Something went wrong. Please try again shortly."

@@ -16,7 +16,7 @@ All routes also exist under `/en`. Every page below still runs on mock data. The
 
 | Route | Form component | On submit |
 |---|---|---|
-| `/login` | `modules/auth/components/company-login-form.tsx` (company code, email, password; tabs to signup) | **Real sign-in** (`signInWithCompanyCode`) → `/c/<slug>`. Errors are shown under the form. Without Supabase configured → `/c/demo`. "Forgot password" → `/forgot-password`. |
+| `/login` | `modules/auth/components/company-login-form.tsx` (company code, email, password; tabs to signup) | **Real sign-in** (`signInWithCompanyCode`) → `/c/<slug>`. Errors are shown under the form. Without Supabase configured, it says so (nothing is saved) instead of opening the demo. "Forgot password" → `/forgot-password`. |
 | `/employee-login` | `login-form.tsx` inside `auth-split-layout.tsx` | **Real sign-in** with company code + email + password → `/c/<slug>`. "Join your company" → `/join`. |
 | `/visitor-login` | `visitor-login-form.tsx` (QR box, invite code, phone, OTP) | → `/client-portal` |
 | `/signup` | `signup-form.tsx` | **Real sign-up** (`signUp`): creates the owner and the company. With email confirmation on, it shows "check your email"; otherwise it opens `/c/<slug>`. |
