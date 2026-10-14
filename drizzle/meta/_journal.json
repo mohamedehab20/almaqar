@@ -197,6 +197,20 @@
       "when": 1792016156492,
       "tag": "0027_work_hours_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1792017801449,
+      "tag": "0028_departments_rooms",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792017804606,
+      "tag": "0029_departments_rooms_rls",
+      "breakpoints": true
     }
   ]
 }

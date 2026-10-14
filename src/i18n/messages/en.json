@@ -1426,6 +1426,11 @@
       "title": "No access here",
       "body": "This room is closed to you. If you need it, ask the company owner for the permission.",
       "back": "Back to HQ"
+    },
+    "roomClosed": {
+      "title": "This room is off",
+      "body": "Your company turned this room off in «Departments». Ask the owner to turn it on if you need it.",
+      "back": "Back to the HQ"
     }
   },
   "profitability": {
@@ -1768,6 +1773,65 @@
       "added": "Hours added.",
       "removed": "Hours removed.",
       "settingsSaved": "Working day saved."
+    }
+  },
+  "departments": {
+    "title": "Departments",
+    "subtitle": "The HQ rooms your company uses, the company departments your team works in, and who runs each one.",
+    "back": "HR",
+    "demoNotice": "Sample data for the demo company. Changes here stay in your browser.",
+    "manager": "Manager",
+    "managerOf": "Manager of {name}",
+    "noManager": "No manager",
+    "rooms": {
+      "title": "HQ rooms",
+      "subtitle": "The rooms in the sidebar. Turn off the ones your company does not need, and choose who runs each one.",
+      "count": "{on} of {total} on",
+      "on": "On",
+      "off": "Off",
+      "soon": "Soon",
+      "toggle": "Turn on {name}",
+      "onHint": "Shown in the sidebar to everyone allowed into it.",
+      "offHint": "Off for the whole company: hidden from the sidebar, and its link shows it is closed.",
+      "soonHint": "Still being built. You can choose its manager now and turn it on once it is ready.",
+      "open": "Open the room",
+      "readOnly": "Turning rooms on or off and choosing their managers is for the owner and whoever has «Company and office settings»."
+    },
+    "departments": {
+      "title": "Company departments",
+      "subtitle": "The teams your employees belong to, like design or sales. A stopped department keeps its people but is not offered for new ones.",
+      "add": "Add department",
+      "name": "Department name",
+      "namePlaceholder": "e.g. Customer service",
+      "color": "Colour",
+      "save": "Save",
+      "cancel": "Cancel",
+      "rename": "Rename",
+      "members": "{count, plural, =0 {No employees} =1 {1 employee} other {# employees}}",
+      "managedBy": "run by {name}",
+      "active": "Active",
+      "stopped": "Stopped",
+      "toggle": "Turn on the {name} department",
+      "delete": "Delete department",
+      "deleteConfirm": "Delete the {name} department?",
+      "deleteConfirmMembers": "Delete the {name} department? Its {count} employees stay in the company without a department. To keep them in it, stop it instead.",
+      "empty": "No departments yet. Add the first one.",
+      "readOnly": "Adding and editing departments is for the owner and whoever has «Manage departments»."
+    },
+    "colors": {
+      "blue": "Blue",
+      "violet": "Violet",
+      "amber": "Amber",
+      "emerald": "Green"
+    },
+    "notices": {
+      "saved": "Saved.",
+      "roomOn": "{name} is on.",
+      "roomOff": "{name} is off for the company.",
+      "deptOn": "The {name} department is active.",
+      "deptOff": "The {name} department is stopped.",
+      "added": "The {name} department was added.",
+      "deleted": "The {name} department was deleted."
     }
   }
 }

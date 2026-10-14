@@ -60,12 +60,12 @@ export const updateMember = action(
 
 export const removeMember = action(companyInput.extend({ memberId: id }), (input) => withUser((ctx) => svc.removeMember(ctx, input)));
 
-export const createDepartment = action(companyInput.extend({ name: localized(60), color: color.optional() }), (input) =>
+export const createDepartment = action(companyInput.extend({ name: localized(60), color: color.optional(), managerId: id.nullable().optional() }), (input) =>
   withUser((ctx) => svc.createDepartment(ctx, input)),
 );
 
 export const updateDepartment = action(
-  companyInput.extend({ departmentId: id, name: localized(60).optional(), color: color.optional() }),
+  companyInput.extend({ departmentId: id, name: localized(60).optional(), color: color.optional(), active: z.boolean().optional(), managerId: id.nullable().optional() }),
   (input) => withUser((ctx) => svc.updateDepartment(ctx, input)),
 );
 

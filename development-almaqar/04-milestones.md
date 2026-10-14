@@ -14,6 +14,15 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-15 — «إدارة الأقسام»: HQ rooms and company departments in one page
+- **Page:** `/c/<slug>/hr/departments`, from the «إدارة الأقسام» tile in HR (now with the working tools).
+- **«أقسام المقر»:** every room of the sidebar (HR, operations, automation, marketing, meetings, and the coming-soon accounts, sales, Al Jarab, archive) with its state (on, off, soon), an on / off switch and a manager. A room turned off is hidden from the sidebar for everyone and its pages show «القسم ده مقفول». Coming-soon rooms cannot be turned on; their manager can be chosen already. Needs `company.settings`.
+- **«أقسام الشركة»:** add a department (name, colour, manager), rename, recolour, choose the manager, stop / restart (a stopped department keeps its people but is not offered in the add-employee form), delete (its people stay, without a department). Needs `departments.manage`.
+- **Database:** `company_rooms` (on / off and manager per room; no row = on) and `departments.active` / `departments.manager_id` (migrations 0028–0029, applied). Departments were writable by any member through RLS; now only with `departments.manage`. A manager must belong to the company (also checked in RLS).
+- **Demo:** the demo departments and rooms with managers; changes stay in the browser.
+
+Files: `src/modules/departments/{rooms,service,actions,queries,demo}.ts`, `src/modules/departments/components/departments-view.tsx`, `src/app/[locale]/(app)/c/[companySlug]/hr/departments/page.tsx`, `src/modules/hq/{service,actions,mock}.ts`, `src/modules/permissions/{queries.ts,components/room-guard.tsx}`, `src/components/layout/app-sidebar.tsx`, `src/modules/hr/components/{hr-home,employees-panel}.tsx`, `src/db/schema.ts`, `drizzle/0028_departments_rooms.sql`, `drizzle/0029_departments_rooms_rls.sql`, `tests/db/departments.test.ts`, `scripts/check-routes.mjs`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-15 — HR home: working tools first, «إدارة الموظفين» gets its own page
 - **«إدارة الموظفين»:** the employees panel (company code, team, add / remove) moved off the HR home to `/c/<slug>/hr/employees`, opened from its own tile.
 - **Order:** the three working tools come first (إدارة الموظفين، الإجازات، ساعات العمل); the other 14 are dimmed with a «قريباً» badge.

@@ -2,6 +2,16 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-15 — Departments page (rooms and company departments)
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 62/62. 3 new tests in `tests/db/departments.test.ts`: demo data; rooms (off for the company, manager kept, coming-soon rooms cannot be turned on, outside manager refused, employees refused also with raw SQL); departments (create with manager, stop / restart, delete keeps the employee, raw SQL insert by an employee refused). |
+| Migrations 0028–0029 on Supabase | Applied: 3 policies on `company_rooms`, 4 on `departments` (the old "members manage departments" removed). |
+| Smoke test, advisors | SMOKE OK. Security: none. Performance: only INFO "unused index". |
+| Real browser (/c/demo/hr/departments) | Both sections, switches, managers and colours. No page errors. |
+| `tsc`, `lint`, `build`, `check:routes` | Pass. |
+
 ## 2026-10-15 — Working hours
 
 | Check | Result |

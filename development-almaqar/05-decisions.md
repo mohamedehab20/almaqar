@@ -4,6 +4,15 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-15 — Rooms on / off per company; department and room managers are labels for now
+**Chosen by the product owner:** one page with both the HQ rooms and the company departments.
+
+- **Turning a room off** hides it from the sidebar for everyone, owner included, and its pages show «القسم ده مقفول». It is a company choice on top of permissions: the services still check permissions, and do not check the room switch. Blocking every action of a closed room on the server can come later if needed.
+- **Rooms permission:** `company.settings`, because it changes the HQ for the whole company. **Departments:** `departments.manage`.
+- **Managers** (of a room or a department) are recorded and shown, but grant nothing by themselves; access still comes from roles and exceptions. They are ready to drive approvals (for example leave going to the department manager) later.
+- **Stop vs delete:** stopping keeps the people in the department and hides it for new employees; deleting leaves its people without a department.
+- **RLS tightened:** `departments` were writable by any member since 0001 (the services checked the permission). Now only `departments.manage` writes them.
+
 ### 2026-10-15 — Working hours: sessions, a company time zone, today never counts as short
 - **Data:** a session per stretch of work (`work_sessions`), from the clock-in button or typed by hand. A daily-total table would lose the in / out times needed for lateness.
 - **Time zone:** each company sets one; days and lateness are read in it (`zonedToUtc` / `localParts`, daylight saving included). The server's UTC date would put late-evening work on the wrong day.

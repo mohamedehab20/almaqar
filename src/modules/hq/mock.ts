@@ -47,7 +47,8 @@ export type FurnitureItem = {
 
 export type DepartmentColor = "blue" | "violet" | "amber" | "emerald";
 
-export type Department = { id: string; name: Localized; color: DepartmentColor };
+/** active: false = stopped (kept with its members, not offered for new ones). managerId: who runs it. */
+export type Department = { id: string; name: Localized; color: DepartmentColor; active?: boolean; managerId?: string | null };
 
 /** A department's area inside a room (e.g. sections of the open workspace) */
 export type Zone = {

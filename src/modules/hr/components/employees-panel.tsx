@@ -239,7 +239,8 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
           </Field>
           <Field label={t("department")} htmlFor="emp-dept">
             <Select id="emp-dept" name="departmentId" placeholder={t("noDepartment")}>
-              {departments.map((d) => (
+              {/* Stopped departments (إدارة الأقسام) are not offered for new employees */}
+              {departments.filter((d) => d.active !== false).map((d) => (
                 <option key={d.id} value={d.id}>
                   {text(d.name)}
                 </option>

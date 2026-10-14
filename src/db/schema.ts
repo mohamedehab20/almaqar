@@ -81,8 +81,27 @@ export const departments = pgTable("departments", {
   companyId: companyId(),
   name: jsonb("name").$type<Localized>().notNull(),
   color: departmentColor("color").notNull().default("blue"),
+  /** A stopped department stays with its members but is not offered for new ones */
+  active: boolean("active").notNull().default(true),
+  managerId: uuid("manager_id").references((): AnyPgColumn => members.id, { onDelete: "set null" }),
   createdAt: createdAt(),
-}, (t) => [index("departments_company_id_idx").on(t.companyId)]);
+}, (t) => [index("departments_company_id_idx").on(t.companyId), index("departments_manager_id_idx").on(t.managerId)]);
+
+/**
+ * The company's choice for each room of the HQ (hr, operations, marketing, …): on or off, and who runs it.
+ * No row = on, no manager. Rooms still being built ("coming soon") cannot be turned on.
+ */
+export const companyRooms = pgTable(
+  "company_rooms",
+  {
+    companyId: companyId(),
+    room: text("room").notNull(),
+    enabled: boolean("enabled").notNull().default(true),
+    managerId: uuid("manager_id").references((): AnyPgColumn => members.id, { onDelete: "set null" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.companyId, t.room] }), index("company_rooms_manager_id_idx").on(t.managerId)],
+);
 
 export const members = pgTable(
   "members",

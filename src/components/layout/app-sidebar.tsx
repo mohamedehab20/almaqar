@@ -35,7 +35,7 @@ type NavItem = { key: string; icon: LucideIcon; href?: string };
 type NavGroup = NavItem & { children: NavItem[] };
 
 /** Rooms a signed-in member may open, and whether they are the owner. null: the public demo (all open). */
-export type RoomAccess = { owner: boolean; rooms: string[] } | null;
+export type RoomAccess = { owner: boolean; rooms: string[]; closed: string[] } | null;
 
 export function AppSidebar({ companySlug, access = null, onClose }: { companySlug: string; access?: RoomAccess; onClose?: () => void }) {
   const t = useTranslations("app");
@@ -47,6 +47,8 @@ export function AppSidebar({ companySlug, access = null, onClose }: { companySlu
     if (!access) return true;
     if (item.key === "permissions") return access.owner;
     const room = item.key === "tasks" ? "meetings" : item.key;
+    // Turned off by the company in «إدارة الأقسام»: hidden for everyone
+    if (access.closed.includes(room)) return false;
     return !(room in ROOM_VIEW) || access.rooms.includes(room);
   };
 

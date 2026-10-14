@@ -183,24 +183,38 @@ export async function removeMember(ctx: Ctx, input: { companyId: string; memberI
 
 export async function listDepartments(ctx: Ctx, companyId: string): Promise<Department[]> {
   const rows = await ctx.tx.select().from(departments).where(eq(departments.companyId, companyId)).orderBy(asc(departments.createdAt));
-  return rows.map((r) => ({ id: r.id, name: r.name, color: r.color }));
+  return rows.map(toDepartment);
 }
 
-export async function createDepartment(ctx: Ctx, input: { companyId: string; name: Localized; color?: Department["color"] }) {
+const toDepartment = (r: typeof departments.$inferSelect): Department => ({ id: r.id, name: r.name, color: r.color, active: r.active, managerId: r.managerId });
+
+/** Throws `invalid` unless the member belongs to this company (department and room managers). */
+export async function assertMemberInCompany(ctx: Ctx, companyId: string, memberId: string | null | undefined) {
+  if (!memberId) return;
+  const [m] = await ctx.tx.select({ companyId: members.companyId }).from(members).where(eq(members.id, memberId));
+  if (m?.companyId !== companyId) throw new AppError("invalid");
+}
+
+export async function createDepartment(ctx: Ctx, input: { companyId: string; name: Localized; color?: Department["color"]; managerId?: string | null }) {
   await requirePermission(ctx, input.companyId, "departments.manage");
+  await assertMemberInCompany(ctx, input.companyId, input.managerId);
   const [row] = await ctx.tx.insert(departments).values(input).returning();
-  return { id: row.id, name: row.name, color: row.color } satisfies Department;
+  return toDepartment(row);
 }
 
-export async function updateDepartment(ctx: Ctx, input: { companyId: string; departmentId: string; name?: Localized; color?: Department["color"] }) {
+/** Rename, recolour, stop / restart (`active`) or set the manager (null = none). */
+export async function updateDepartment(
+  ctx: Ctx,
+  input: { companyId: string; departmentId: string; name?: Localized; color?: Department["color"]; active?: boolean; managerId?: string | null },
+) {
   await requirePermission(ctx, input.companyId, "departments.manage");
+  await assertMemberInCompany(ctx, input.companyId, input.managerId);
   const [row] = await ctx.tx
     .update(departments)
-    .set({ name: input.name, color: input.color })
+    .set({ name: input.name, color: input.color, active: input.active, managerId: input.managerId })
     .where(and(eq(departments.id, input.departmentId), eq(departments.companyId, input.companyId)))
     .returning();
-  const r = found(row);
-  return { id: r.id, name: r.name, color: r.color } satisfies Department;
+  return toDepartment(found(row));
 }
 
 export async function deleteDepartment(ctx: Ctx, input: { companyId: string; departmentId: string }) {

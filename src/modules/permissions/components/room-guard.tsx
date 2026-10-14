@@ -1,16 +1,17 @@
-import { ShieldX } from "lucide-react";
+import { DoorClosed, ShieldX } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getRoomAccess } from "../queries";
 
-/** Shown instead of a room (or page) the member has no permission for. */
-export function NoAccess({ companySlug }: { companySlug: string }) {
-  const t = useTranslations("permissions.noAccess");
+/** Shown instead of a room (or page) the member has no permission for, or that the company turned off. */
+export function NoAccess({ companySlug, closed = false }: { companySlug: string; closed?: boolean }) {
+  const t = useTranslations(closed ? "permissions.roomClosed" : "permissions.noAccess");
+  const Icon = closed ? DoorClosed : ShieldX;
   return (
     <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto p-6">
       <div className="flex max-w-md flex-col items-center gap-4 rounded-xl bg-surface-container-lowest p-8 text-center shadow-ambient">
         <span className="grid size-16 place-items-center rounded-full bg-danger/10 text-danger">
-          <ShieldX className="size-8" aria-hidden />
+          <Icon className="size-8" aria-hidden />
         </span>
         <h2 className="text-2xl font-black">{t("title")}</h2>
         <p className="text-on-surface-variant">{t("body")}</p>
@@ -28,6 +29,7 @@ export function NoAccess({ companySlug }: { companySlug: string }) {
  */
 export async function RoomGuard({ companySlug, room, children }: { companySlug: string; room: string; children: React.ReactNode }) {
   const access = await getRoomAccess(companySlug);
+  if (access?.closed.includes(room)) return <NoAccess companySlug={companySlug} closed />;
   if (access && !access.rooms.includes(room)) return <NoAccess companySlug={companySlug} />;
   return children;
 }
