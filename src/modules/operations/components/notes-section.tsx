@@ -6,6 +6,7 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { Avatar } from "@/components/shared/avatar";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { FileList, FilePicker } from "@/modules/approvals/components/approvals-section";
 import { currentUserId, departments, memberRole, members } from "@/modules/hq/mock";
 import type { WorkflowRow } from "../mock";
 import { noteConcernsDepartment, type Note, type NoteAudience } from "../notes";
@@ -30,6 +31,7 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
   const [departmentIds, setDepartmentIds] = useState<string[]>([]);
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [filter, setFilter] = useState<string>("all");
+  const [files, setFiles] = useState<File[]>([]);
 
   // Picking departments narrows the employee list to those departments
   const pickableMembers = departmentIds.length ? members.filter((m) => departmentIds.includes(m.departmentId)) : members;
@@ -51,12 +53,15 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
       return;
     }
     const audience: NoteAudience = audienceType === "company" ? { type: "company" } : { type: "custom", departmentIds, memberIds };
-    // TODO(backend): save the note and notify its audience
+    // TODO(backend): save the note (createNote takes attachments uploaded with uploadFile, folder "notes") and notify its audience.
+    // Until then the files stay in this browser as local previews.
+    const attachments = files.map((f) => ({ path: `local/${f.name}`, name: f.name, size: f.size, type: f.type, url: URL.createObjectURL(f) }));
     setNotes((prev) => [
-      { id: `n-${Date.now()}`, text: body, authorId: currentUserId, createdAt: new Date().toISOString(), operationId: operationId || undefined, audience, pinned: false },
+      { id: `n-${Date.now()}`, text: body, authorId: currentUserId, createdAt: new Date().toISOString(), operationId: operationId || undefined, audience, pinned: false, attachments },
       ...prev,
     ]);
     setText("");
+    setFiles([]);
     setOperationId("");
     setAudienceType("company");
     setDepartmentIds([]);
@@ -178,6 +183,8 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
           className="w-full resize-y rounded-sm bg-surface-container-low p-3 text-sm outline-none placeholder:text-muted focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20"
         />
 
+        <FilePicker files={files} setFiles={setFiles} onNotice={onNotice} />
+
         <div className="flex flex-wrap items-center gap-2">
           <div className="min-w-56 flex-1">
             <Select aria-label={t("linkTo")} value={operationId} onChange={(event) => setOperationId(event.target.value)} className="h-10">
@@ -228,6 +235,7 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
                   </span>
                 </p>
                 <p className="whitespace-pre-wrap text-sm leading-6">{note.text}</p>
+                {note.attachments && note.attachments.length > 0 && <FileList files={note.attachments} onNotice={onNotice} />}
                 {operation && (
                   <span className="flex w-fit items-center gap-1.5 rounded-full bg-surface-container-lowest/70 px-2.5 py-1 text-xs text-primary ghost-border">
                     <Link2 className="size-3.5" aria-hidden />

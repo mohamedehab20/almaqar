@@ -1543,10 +1543,11 @@
   },
   "meetings": {
     "title": "Meeting room",
-    "subtitle": "The company's appointments, meetings, trips and interviews, and the team's tasks, in one place.",
+    "subtitle": "The team's tasks, the company's schedule, and approval requests, in one place.",
     "tabs": {
       "tasks": "Task management",
-      "schedule": "Schedule"
+      "schedule": "Schedule",
+      "approvals": "Approvals"
     }
   },
   "leave": {
@@ -2081,5 +2082,75 @@
       "codeRenewed": "New code made. The old one no longer works.",
       "copied": "Code copied."
     }
+  },
+  "approvals": {
+    "views": {
+      "toMe": "Waiting for me",
+      "mine": "My requests",
+      "all": "All"
+    },
+    "ask": "Ask for approval",
+    "formTitle": "New approval request",
+    "approver": "Who should approve it?",
+    "kind": "Type",
+    "kinds": {
+      "action": "Approve an action",
+      "position": "Approve a position"
+    },
+    "kindHint": {
+      "action": "Something done or to be done: a purchase, a payment, a delivery, overtime…",
+      "position": "An opinion or decision that needs sign-off: a reply to a client, a policy, an agreement…"
+    },
+    "title": "What needs approving?",
+    "titleHint": {
+      "action": "e.g. Buying a new camera",
+      "position": "e.g. Our position on the client's refund request"
+    },
+    "details": "Details",
+    "detailsHint": "Explain the situation and why it needs approval…",
+    "due": "Answer needed by (optional)",
+    "files": "Photos or files",
+    "attach": "Attach photos or files",
+    "filesHint": "Up to {max} files, 10 MB each: images, PDF, Word, Excel…",
+    "removeFile": "Remove {name}",
+    "openFile": "Open {name}",
+    "send": "Send request",
+    "sending": "Uploading…",
+    "close": "Close",
+    "fromTo": "From {from} to {to}",
+    "dueOn": "Answer needed by {date}",
+    "overdue": "Past the answer date ({date})",
+    "approve": "Approve",
+    "reject": "Reject",
+    "confirmApprove": "Confirm approval",
+    "confirmReject": "Confirm rejection",
+    "notePlaceholderApprove": "Note with the approval (optional)",
+    "notePlaceholderReject": "Reason (the requester sees it)",
+    "decidedApproved": "Approved by {name} on {date}",
+    "decidedRejected": "Rejected by {name} on {date}",
+    "cancel": "Withdraw request",
+    "status": {
+      "pending": "Waiting",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Withdrawn"
+    },
+    "empty": {
+      "toMe": "No requests waiting for you.",
+      "mine": "You have not asked anyone yet.",
+      "all": "No approval requests."
+    },
+    "notices": {
+      "sent": "Request sent to {name}.",
+      "approved": "Request approved.",
+      "rejected": "Request rejected.",
+      "cancelled": "Request withdrawn.",
+      "tooBig": "{name} is larger than 10 MB.",
+      "tooMany": "You can attach {max} files at most.",
+      "uploadFailed": "Could not upload {name}. Try again.",
+      "storageOff": "File uploads are not switched on for this server yet (the storage key is missing). Remove the files and send the request without them for now."
+    },
+    "fromToMe": "From {from} to you",
+    "fromMe": "From you to {to}"
   }
 }

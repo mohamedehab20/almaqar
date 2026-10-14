@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, gte, inArray, lt } from "drizzle-orm";
-import { clients, meetings, members, notes, tasks, workflowRuns, type NoteAudience } from "@/db/schema";
+import { clients, meetings, members, notes, tasks, workflowRuns, type NoteAudience, type StoredFile } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
@@ -19,6 +19,7 @@ function toNote(r: NoteRow): Note {
     operationId: r.operationId ?? undefined,
     audience: r.audience,
     pinned: r.pinned,
+    attachments: r.attachments,
   };
 }
 
@@ -40,9 +41,14 @@ export async function listNotes(ctx: Ctx, companyId: string, departmentId?: stri
   return list.filter((note) => noteConcernsDepartment(note, departmentId, departmentOf));
 }
 
-export async function createNote(ctx: Ctx, input: { companyId: string; text: string; audience: NoteAudience; operationId?: string | null; pinned?: boolean }) {
+/** Files are uploaded first with uploadAttachment({ folder: "notes" }) and must sit in this company's notes folder. */
+export async function createNote(
+  ctx: Ctx,
+  input: { companyId: string; text: string; audience: NoteAudience; operationId?: string | null; pinned?: boolean; attachments?: StoredFile[] },
+) {
   const me = await requireMember(ctx, input.companyId);
   await requirePermission(ctx, input.companyId, "notes.write");
+  if ((input.attachments ?? []).some((f) => !f.path.startsWith(`${input.companyId}/notes/`))) throw new AppError("invalid");
   const [row] = await ctx.tx
     .insert(notes)
     .values({ ...input, authorId: me.id })

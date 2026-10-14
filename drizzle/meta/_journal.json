@@ -239,6 +239,20 @@
       "when": 1792019634290,
       "tag": "0033_client_portal_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1792020793131,
+      "tag": "0034_approvals",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792020796281,
+      "tag": "0035_approvals_rls",
+      "breakpoints": true
     }
   ]
 }

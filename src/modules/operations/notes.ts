@@ -14,6 +14,8 @@ export type Note = {
   operationId?: string;
   audience: NoteAudience;
   pinned: boolean;
+  /** Files attached to the note. `url` opens it (a signed link, or a local preview in the demo). */
+  attachments?: { path: string; name: string; size: number; type: string; url?: string }[];
 };
 
 /** A note concerns a department if it's company-wide, addressed to it, or addressed to one of its members. */

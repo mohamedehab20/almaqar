@@ -14,6 +14,15 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-15 — «الاعتماد» in the meeting room; files on approvals and notes
+- **Tab «الاعتماد»** next to «الجدولة» (`/c/<slug>/meetings?tab=approvals`): ask a specific colleague to approve an **action** (a purchase, a payment, overtime…) or a **position** (a reply to a client, a policy…), with details, an answer-by date and up to 6 photos or files (10 MB each, image thumbnails). Views: waiting for me (with a count), my requests, all. The approver approves or rejects with a note; the requester can withdraw while it waits.
+- **Saved for real companies:** `approval_requests` (migrations 0034–0035, applied). Only the two people and the owner see a request (RLS); only the approver decides, once; files must sit in the company's `approvals` folder. Events `approval.requested`, `approval.approved`, `approval.rejected`.
+- **Uploads go straight from the browser to storage:** the server checks access and hands out a one-time signed upload link (`createUploadTarget` + `uploadFile`), so files are not limited by Vercel's request size. The page gets short-lived links to show and open files.
+- **Notes (Operations room):** attach photos or files to a note; they show on the note. The notes screen still runs on demo data, so the files stay in the browser for now; `notes.attachments` and `createNote({ attachments })` are ready for when it is wired.
+- **Needs `SUPABASE_SECRET_KEY`:** it is not set on Vercel or in `.env.local` yet, so real uploads answer "storage off" until it is added. Requests without files work.
+
+Files: `src/modules/approvals/{service,actions,queries,demo}.ts`, `src/modules/approvals/components/approvals-section.tsx`, `src/modules/files/{actions,upload,storage}.ts`, `src/modules/operations/components/{meetings-room,notes-section}.tsx`, `src/modules/operations/{service,actions,notes}.ts`, `src/app/[locale]/(app)/c/[companySlug]/meetings/page.tsx`, `src/db/schema.ts`, `drizzle/0034_approvals.sql`, `drizzle/0035_approvals_rls.sql`, `next.config.ts`, `tests/db/approvals.test.ts`, `scripts/check-routes.mjs`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-15 — «إعدادات الربحية» moved into Marketing → «ربحية العملاء»
 - The «إعدادات التسويق» tab left the Permissions page. The same form now lives in Marketing → «ربحية العملاء» as a second tab, «إعدادات الربحية», next to «التقرير».
 - Owner only, as before (only the owner saves these costs); admins with `profitability.view` see the report without the settings tab. The demo shows both tabs.

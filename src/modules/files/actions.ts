@@ -50,7 +50,7 @@ async function assertCanAccess(ctx: Ctx, path: string, write: boolean) {
 export const uploadAttachment = action(
   z.object({
     companyId: id,
-    folder: z.enum(["workflows", "briefs", "notes", "orders", "contracts"]),
+    folder: z.enum(["workflows", "briefs", "notes", "orders", "contracts", "approvals"]),
     clientId: id.optional(),
     file: z.instanceof(File),
   }),
@@ -64,6 +64,26 @@ export const uploadAttachment = action(
     const { error } = await storage().upload(path, input.file, { contentType: input.file.type || undefined });
     if (error) throw new AppError("server_error", error.message);
     return { id: crypto.randomUUID(), path, name: input.file.name, size: input.file.size, type: input.file.type };
+  },
+);
+
+/**
+ * Direct upload from the browser (no size limit from the server in between, unlike uploadAttachment on Vercel):
+ * checks access, then returns a one-time signed upload link for a new path. Use uploadFile() in files/upload.ts.
+ */
+export const createUploadTarget = action(
+  z.object({
+    companyId: id,
+    folder: z.enum(["workflows", "notes", "orders", "contracts", "approvals"]),
+    name: z.string().min(1).max(200),
+    size: z.number().int().min(1).max(MAX_BYTES),
+  }),
+  async (input) => {
+    const path = `${input.companyId}/${input.folder}/${crypto.randomUUID()}-${safeName(input.name)}`;
+    await withUser((ctx) => assertCanAccess(ctx, path, true));
+    const { data, error } = await storage().createSignedUploadUrl(path);
+    if (error || !data) throw new AppError("server_error", error?.message);
+    return { path, signedUrl: data.signedUrl };
   },
 );
 

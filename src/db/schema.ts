@@ -43,6 +43,12 @@ export const furnitureKind = pgEnum("furniture_kind", ["desk", "meetingTable"]);
 export const clientStatus = pgEnum("client_status", ["active", "onboarding", "paused"]);
 /** client = an account a room or department works for; visitor = someone who only comes for a meeting */
 export const clientKind = pgEnum("client_kind", ["client", "visitor"]);
+/** action = approve something someone did or will do; position = approve a stance or decision */
+export const approvalKind = pgEnum("approval_kind", ["action", "position"]);
+export const approvalStatus = pgEnum("approval_status", ["pending", "approved", "rejected", "cancelled"]);
+
+/** A file in the attachments bucket, as stored on a row */
+export type StoredFile = { path: string; name: string; size: number; type: string };
 export const briefStatus = pgEnum("brief_status", ["new", "received", "clarification"]);
 export const runNature = pgEnum("run_nature", ["human", "automated", "autoCompleted"]);
 export const runStatus = pgEnum("run_status", ["in_progress", "changes_requested", "completed", "closed"]);
@@ -620,6 +626,38 @@ export const candidates = pgTable(
   ],
 );
 
+// ---------- Approvals (meeting room → «الاعتماد») ----------
+
+/** Someone asks a specific colleague to approve an action or a position, with files as evidence. */
+export const approvalRequests = pgTable(
+  "approval_requests",
+  {
+    id: id(),
+    companyId: companyId(),
+    requesterId: uuid("requester_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    approverId: uuid("approver_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    kind: approvalKind("kind").notNull().default("action"),
+    title: text("title").notNull(),
+    details: text("details"),
+    dueOn: date("due_on"),
+    attachments: jsonb("attachments").$type<StoredFile[]>().notNull().default([]),
+    status: approvalStatus("status").notNull().default("pending"),
+    decisionNote: text("decision_note"),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("approval_requests_company_created_idx").on(t.companyId, t.createdAt),
+    index("approval_requests_requester_id_idx").on(t.requesterId),
+    index("approval_requests_approver_id_idx").on(t.approverId),
+    check("approval_requests_not_self", sql`${t.requesterId} <> ${t.approverId}`),
+  ],
+);
+
 // ---------- Operations, automation, sales ----------
 
 export type NoteAudience = { type: "company" } | { type: "custom"; departmentIds: string[]; memberIds: string[] };
@@ -632,6 +670,8 @@ export const notes = pgTable("notes", {
   operationId: text("operation_id"),
   audience: jsonb("audience").$type<NoteAudience>().notNull(),
   pinned: boolean("pinned").notNull().default(false),
+  /** Files attached to the note ("<company_id>/notes/…") */
+  attachments: jsonb("attachments").$type<StoredFile[]>().notNull().default([]),
   createdAt: createdAt(),
 }, (t) => [index("notes_company_id_idx").on(t.companyId), index("notes_author_id_idx").on(t.authorId)]);
 

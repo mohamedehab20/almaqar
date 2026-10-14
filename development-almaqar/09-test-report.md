@@ -2,6 +2,17 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-15 — Approvals and files
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 74/74. 4 new tests in `tests/db/approvals.test.ts`: request with files, not to yourself, files only from the company's approvals folder; visibility (the two people and the owner), only the approver decides and only once, only the requester withdraws; RLS with raw SQL (no self-approval, no peeking, no foreign file paths); notes keep their files and refuse foreign paths. |
+| Migrations 0034–0035 on Supabase | Applied. |
+| Smoke test, advisors | SMOKE OK. Security: none. Performance: only INFO "unused index". |
+| Real browser (/c/demo/meetings?tab=approvals) | The three views, the request form, attaching a real PNG (thumbnail on the sent request). No page errors. |
+| Real storage upload | Not run: `SUPABASE_SECRET_KEY` is empty locally and not set on Vercel. |
+| `tsc`, `lint`, `build`, `check:routes` | Pass. |
+
 ## 2026-10-15 — Client portal tile, HR always on
 
 | Check | Result |

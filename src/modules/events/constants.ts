@@ -27,6 +27,8 @@ export const EVENT_TYPES = [
   { type: "task.overdue", label: { ar: "تأخر مهمة", en: "Task overdue" }, defaultSeverity: "warning" },
   // Approvals
   { type: "approval.requested", label: { ar: "طلب موافقة", en: "Approval requested" }, defaultSeverity: "info" },
+  { type: "approval.approved", label: { ar: "اعتماد طلب", en: "Request approved" }, defaultSeverity: "info" },
+  { type: "approval.rejected", label: { ar: "رفض طلب اعتماد", en: "Approval rejected" }, defaultSeverity: "info" },
   { type: "approval.overdue", label: { ar: "تأخر موافقة", en: "Approval overdue" }, defaultSeverity: "warning" },
   // People
   { type: "leave.requested", label: { ar: "طلب إجازة", en: "Leave requested" }, defaultSeverity: "info" },

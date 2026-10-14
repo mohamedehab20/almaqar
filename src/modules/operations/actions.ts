@@ -25,7 +25,13 @@ export const startOperation = action(
 );
 
 export const createNote = action(
-  companyInput.extend({ text: z.string().trim().min(1).max(4000), audience, operationId: z.string().max(60).nullable().optional(), pinned: z.boolean().optional() }),
+  companyInput.extend({
+    text: z.string().trim().min(1).max(4000),
+    audience,
+    operationId: z.string().max(60).nullable().optional(),
+    pinned: z.boolean().optional(),
+    attachments: z.array(z.object({ path: z.string().min(3).max(400), name: z.string().min(1).max(200), size: z.number().int().min(0), type: z.string().max(120) })).max(6).optional(),
+  }),
   (input) => withUser((ctx) => svc.createNote(ctx, input)),
 );
 

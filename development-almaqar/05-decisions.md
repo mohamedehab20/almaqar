@@ -4,6 +4,12 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-15 — Approvals are person to person; files upload straight to storage
+- **Not the Automation room's approval workflows:** those are fixed multi-step paths for operations. «الاعتماد» is a quick one-to-one request («approve this for me»), so it has its own small table.
+- **Privacy:** only the requester, the approver and the owner see a request.
+- **Direct uploads:** Vercel limits a request to about 4.5 MB, so a 10 MB photo cannot go through a Server Action. The server checks access, then gives the browser a one-time signed upload link for a path it chose. `uploadAttachment` stays for small files.
+- **Storage key:** uploads and file links need `SUPABASE_SECRET_KEY` (Clerk users are unknown to Supabase Storage, so the server talks to it). It must be added on Vercel; until then the screens say storage is off.
+
 ### 2026-10-15 — Clients belong to a room, a department, or nobody (visitor); HR is always on
 - **One owner per client:** an HQ room or a company department, never both (a database check); a visitor (`kind = visitor`) belongs to nobody and the server refuses one with an owner. Existing clients came from Marketing, so the migration set them to the Marketing room.
 - **Same table:** visitors are rows of `clients` too, so they get a portal code and their meetings use `meetings.client_id` like any client.

@@ -1,24 +1,27 @@
 "use client";
 
-import { CalendarClock, ListTodo } from "lucide-react";
+import { CalendarClock, ListTodo, Stamp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
+import { ApprovalsSection } from "@/modules/approvals/components/approvals-section";
+import type { ApprovalsData } from "@/modules/approvals/service";
 import { workflowRows } from "../mock";
 import { demoSchedule, type ScheduleItem } from "../schedule";
 import { tasks as demoTasks, type Task } from "../tasks";
 import { ScheduleSection } from "./schedule-section";
 import { TasksSection } from "./tasks-section";
 
-export type MeetingsTab = "schedule" | "tasks";
+export type MeetingsTab = "schedule" | "tasks" | "approvals";
 
 const subscribe = () => () => {};
 
 /**
  * «غرفة الاجتماعات»: the company schedule (meetings, appointments, trips outside, interviews) next to
- * task management. Demo data, built in the browser so dates follow the viewer's clock.
+ * task management (demo data, built in the browser so dates follow the viewer's clock), and «الاعتماد»
+ * (approval requests between colleagues, saved for a real company; `companyId` null = the public demo).
  */
-export function MeetingsRoom({ initialTab = "schedule" }: { initialTab?: MeetingsTab }) {
+export function MeetingsRoom({ initialTab = "schedule", approvals, companyId }: { initialTab?: MeetingsTab; approvals: ApprovalsData; companyId: string | null }) {
   const t = useTranslations("meetings");
   const mounted = useSyncExternalStore(subscribe, () => true, () => false);
   const [tab, setTab] = useState<MeetingsTab>(initialTab);
@@ -43,6 +46,7 @@ export function MeetingsRoom({ initialTab = "schedule" }: { initialTab?: Meeting
             [
               ["tasks", ListTodo],
               ["schedule", CalendarClock],
+              ["approvals", Stamp],
             ] as const
           ).map(([key, Icon]) => (
             <button
@@ -62,7 +66,9 @@ export function MeetingsRoom({ initialTab = "schedule" }: { initialTab?: Meeting
           ))}
         </div>
 
-        {mounted ? (
+        {tab === "approvals" ? (
+          <ApprovalsSection data={approvals} companyId={companyId} onNotice={setNotice} />
+        ) : mounted ? (
           <RoomContent tab={tab} onNotice={setNotice} />
         ) : (
           <div className="h-64 animate-pulse rounded-lg bg-surface-container-low" aria-busy="true" />
@@ -79,7 +85,7 @@ export function MeetingsRoom({ initialTab = "schedule" }: { initialTab?: Meeting
 }
 
 /** Mounted only in the browser: the demo schedule is built from the viewer's own date. */
-function RoomContent({ tab, onNotice }: { tab: MeetingsTab; onNotice: (message: string) => void }) {
+function RoomContent({ tab, onNotice }: { tab: "schedule" | "tasks"; onNotice: (message: string) => void }) {
   const [schedule, setSchedule] = useState<ScheduleItem[]>(() => demoSchedule());
   const [tasks, setTasks] = useState<Task[]>(demoTasks);
   return tab === "schedule" ? (
