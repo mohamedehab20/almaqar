@@ -676,7 +676,8 @@
       "recruitment": "Recruitment",
       "employeeFiles": "Employee files",
       "knowledgeBase": "Knowledge base",
-      "offboarding": "Offboarding"
+      "offboarding": "Offboarding",
+      "clientPortal": "Client portal"
     },
     "employees": {
       "title": "Employee management",
@@ -1795,7 +1796,8 @@
       "offHint": "Off for the whole company: hidden from the sidebar, and its link shows it is closed.",
       "soonHint": "Still being built. You can choose its manager now and turn it on once it is ready.",
       "open": "Open the room",
-      "readOnly": "Turning rooms on or off and choosing their managers is for the owner and whoever has «Company and office settings»."
+      "readOnly": "Turning rooms on or off and choosing their managers is for the owner and whoever has «Company and office settings».",
+      "lockedHint": "Always on: it holds this page, so turning it off would leave no way back."
     },
     "departments": {
       "title": "Company departments",
@@ -1993,6 +1995,88 @@
       "hired": "Congratulations! {name} was hired.",
       "hiredInvited": "Congratulations! {name} was hired and added to the team; they activate their account by email.",
       "deleted": "Candidate deleted."
+    }
+  },
+  "clientsPortal": {
+    "title": "Client portal",
+    "subtitle": "Every client and visitor of the company in one place: which room or department a client belongs to (marketing, sales, any department), or whether they only come for a meeting.",
+    "back": "HR",
+    "demoNotice": "Sample data for the demo company. Changes here stay in your browser.",
+    "readOnly": "Adding and editing clients is for the owner and whoever has «Manage clients and invite codes».",
+    "stats": {
+      "clients": "Clients",
+      "visitors": "Meeting visitors",
+      "owners": "Rooms and departments with clients",
+      "meetings": "Upcoming meetings"
+    },
+    "filters": {
+      "all": "All ({count})"
+    },
+    "owner": {
+      "visitor": "Meeting visitor",
+      "none": "Not set",
+      "belongsTo": "Belongs to {name}"
+    },
+    "status": {
+      "active": "Active",
+      "onboarding": "Onboarding",
+      "paused": "Paused"
+    },
+    "manager": "Handled by {name}",
+    "nextMeeting": "Next meeting: {date}",
+    "code": "Portal code",
+    "copy": "Copy the code",
+    "renew": "New code (the old one stops working)",
+    "portalUsers": "{count, plural, =0 {Nobody signed in yet} =1 {1 person signed in} other {# people signed in}}",
+    "add": "Add a client or visitor",
+    "book": "Book a meeting",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete {name} from the client portal? Its meetings stay in the Schedule.",
+    "empty": "No clients here.",
+    "form": {
+      "newTitle": "New client or visitor",
+      "editTitle": "Edit",
+      "name": "Client or company name",
+      "visitorName": "Visitor's name",
+      "owner": "Belongs to",
+      "rooms": "HQ rooms",
+      "departments": "Company departments",
+      "other": "Other",
+      "ownerHint": "The room or department that works with this client and answers for it.",
+      "visitorHint": "Someone who only comes for a meeting and belongs to no department.",
+      "industry": "Industry",
+      "status": "Status",
+      "manager": "Handled by",
+      "host": "Who meets them",
+      "contactName": "Contact person",
+      "phone": "Mobile",
+      "email": "Email",
+      "notes": "Notes",
+      "visitPurpose": "Reason for the visit",
+      "save": "Save",
+      "close": "Cancel"
+    },
+    "meeting": {
+      "title": "Meeting title",
+      "date": "Day",
+      "time": "Time",
+      "duration": "Length",
+      "minutes": "{count} minutes",
+      "place": "Place",
+      "placeHint": "Meeting room or an online link",
+      "withManager": "It shows in the Schedule, with {name}.",
+      "inSchedule": "It shows in the Schedule of the meeting room.",
+      "save": "Save meeting"
+    },
+    "notices": {
+      "added": "{name} added.",
+      "visitorAdded": "Visitor {name} added. Book their meeting.",
+      "saved": "Saved.",
+      "deleted": "{name} deleted.",
+      "booked": "Meeting with {name} booked and in the Schedule.",
+      "codeRenewed": "New code made. The old one no longer works.",
+      "copied": "Code copied."
     }
   }
 }

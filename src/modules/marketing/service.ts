@@ -33,7 +33,7 @@ async function companyOfRow(ctx: Ctx, table: typeof clients | typeof marketingId
 // ---------- Clients ----------
 
 /** Invite codes are 7 characters without look-alikes (0/O, 1/I). */
-function newInviteCode() {
+export function newInviteCode() {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const bytes = crypto.getRandomValues(new Uint8Array(7));
   return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");

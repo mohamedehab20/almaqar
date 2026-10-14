@@ -1,9 +1,10 @@
 /**
  * The rooms of the HQ a company can turn on or off from «إدارة الأقسام» (same order as the sidebar).
  * `soon`: still being built, so it stays off whatever the company chooses.
+ * `locked`: always on. HR holds «إدارة الأقسام» itself, so turning it off would leave no way back.
  */
 export const ROOMS = [
-  { key: "hr", soon: false },
+  { key: "hr", soon: false, locked: true },
   { key: "operations", soon: false },
   { key: "automation", soon: false },
   { key: "marketing", soon: false },
@@ -17,3 +18,4 @@ export const ROOMS = [
 export type RoomKey = (typeof ROOMS)[number]["key"];
 export const ROOM_KEYS = ROOMS.map((r) => r.key) as RoomKey[];
 export const isSoon = (room: string) => ROOMS.some((r) => r.key === room && r.soon);
+export const isLocked = (room: string) => ROOMS.some((r) => r.key === room && "locked" in r && r.locked);

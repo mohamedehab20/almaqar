@@ -212,7 +212,7 @@ export function DepartmentsView({ data, companyId, companySlug }: { data: Depart
                     </div>
                     <Switch
                       on={room.enabled}
-                      disabled={room.soon || !state.canRooms || pending}
+                      disabled={room.soon || room.locked || !state.canRooms || pending}
                       label={t("rooms.toggle", { name: tNav(room.key) })}
                       onChange={(enabled) => updateRoom(room, { enabled })}
                     />
@@ -222,7 +222,7 @@ export function DepartmentsView({ data, companyId, companySlug }: { data: Depart
                     {managerSelect(room.managerId, !state.canRooms, t("managerOf", { name: tNav(room.key) }), (managerId) => updateRoom(room, { managerId }))}
                   </label>
                   <p className="text-xs text-on-surface-variant">
-                    {room.soon ? t("rooms.soonHint") : room.enabled ? t("rooms.onHint") : t("rooms.offHint")}
+                    {room.locked ? t("rooms.lockedHint") : room.soon ? t("rooms.soonHint") : room.enabled ? t("rooms.onHint") : t("rooms.offHint")}
                   </p>
                   {path && room.enabled && (
                     <Link href={`/c/${companySlug}/${path}`} className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-primary hover:underline">

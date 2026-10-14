@@ -60,7 +60,7 @@ test("rooms: turned off for the company, a manager per room; coming-soon rooms s
   await t.as(admin, (ctx) => departments.setRoom(ctx, { companyId, room: "marketing", enabled: false, managerId: ids.staff }));
   assert.deepEqual(await t.as(staff, (ctx) => departments.disabledRooms(ctx, companyId)), ["marketing"]);
   const after = await t.as(owner, (ctx) => departments.getDepartmentsData(ctx, companyId));
-  assert.deepEqual(after.rooms.find((r) => r.key === "marketing"), { key: "marketing", soon: false, enabled: false, managerId: ids.staff });
+  assert.deepEqual(after.rooms.find((r) => r.key === "marketing"), { key: "marketing", soon: false, locked: false, enabled: false, managerId: ids.staff });
 
   // Changing the manager keeps the room off
   await t.as(owner, (ctx) => departments.setRoom(ctx, { companyId, room: "marketing", managerId: null }));
@@ -69,6 +69,11 @@ test("rooms: turned off for the company, a manager per room; coming-soon rooms s
   assert.deepEqual(await t.as(owner, (ctx) => departments.disabledRooms(ctx, companyId)), []);
 
   await failsWith("invalid", t.as(owner, (ctx) => departments.setRoom(ctx, { companyId, room: "sales", enabled: true })));
+  // HR holds this page: it cannot be turned off, and an old "off" row is ignored
+  await failsWith("invalid", t.as(owner, (ctx) => departments.setRoom(ctx, { companyId, room: "hr", enabled: false })));
+  await t.pg.query("INSERT INTO company_rooms (company_id, room, enabled) VALUES ($1, $2, false)", [companyId, "hr"]);
+  assert.deepEqual(await t.as(owner, (ctx) => departments.disabledRooms(ctx, companyId)), []);
+  assert.equal((await t.as(owner, (ctx) => departments.getDepartmentsData(ctx, companyId))).rooms.find((r) => r.key === "hr")!.enabled, true);
   await t.as(owner, (ctx) => departments.setRoom(ctx, { companyId, room: "sales", managerId: ids.admin }));
   await failsWith("invalid", t.as(owner, (ctx) => departments.setRoom(ctx, { companyId, room: "hr", managerId: ids.outsider })));
   await failsWith("forbidden", t.as(staff, (ctx) => departments.setRoom(ctx, { companyId, room: "hr", enabled: false })));

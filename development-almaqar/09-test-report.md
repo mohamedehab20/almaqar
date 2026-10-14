@@ -2,6 +2,16 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-15 — Client portal tile, HR always on
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 70/70. 4 new tests in `tests/db/client-portal.test.ts` (demo owners and visitor meetings; one owner only, no foreign department, moving owner clears the other, visitor drops its owner; new marketing clients; meetings in the Schedule, codes hidden without `clients.manage`, employees refused also with raw SQL, delete keeps meetings). `departments.test.ts`: HR cannot be turned off and an old "off" row is ignored. |
+| Migrations 0032–0033 on Supabase | Applied. The 6 existing clients now belong to Marketing. HR turned back on for the demo company. |
+| Smoke test, advisors | SMOKE OK. Security: none. Performance: only INFO "unused index". |
+| Real browser (/c/demo/hr/client-portal, /c/demo/hr) | Cards, filters, add form with «تبع مين؟». No page errors. |
+| `tsc`, `lint`, `build`, `check:routes` | Pass. |
+
 ## 2026-10-15 — Recruitment
 
 | Check | Result |

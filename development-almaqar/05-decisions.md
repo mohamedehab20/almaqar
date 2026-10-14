@@ -4,6 +4,12 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-15 — Clients belong to a room, a department, or nobody (visitor); HR is always on
+- **One owner per client:** an HQ room or a company department, never both (a database check); a visitor (`kind = visitor`) belongs to nobody and the server refuses one with an owner. Existing clients came from Marketing, so the migration set them to the Marketing room.
+- **Same table:** visitors are rows of `clients` too, so they get a portal code and their meetings use `meetings.client_id` like any client.
+- **The visitor side of the portal** (`/client-portal`) still shows the marketing demo; showing each client what belongs to their owner (meetings for a visitor, orders for a sales client, …) is the next step.
+- **HR is locked on:** «إدارة الأقسام» lives inside HR, so turning HR off left the owner with no way back (it happened on the demo company). Rooms can carry `locked` in `rooms.ts`.
+
 ### 2026-10-15 — Recruitment: private candidates, referrals for everyone, interviews in the Schedule
 - **Privacy:** candidates are personal data, so only `recruitment.manage` reads them. Other members see open jobs and the people they referred, nothing else (RLS).
 - **Referrals:** any member may refer someone to an open job. It is saved as source «ترشيح», first stage, with them as the referrer; RLS refuses anything else from a non-recruiter.

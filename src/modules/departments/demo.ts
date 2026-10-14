@@ -10,7 +10,7 @@ export function demoDepartmentsData(): DepartmentsData {
   return {
     canRooms: true,
     canDepartments: true,
-    rooms: ROOMS.map(({ key, soon }) => ({ key, soon, enabled: !soon, managerId: roomManagers[key] ?? null })),
+    rooms: ROOMS.map((r) => ({ key: r.key, soon: r.soon, locked: "locked" in r && r.locked, enabled: !r.soon, managerId: roomManagers[r.key] ?? null })),
     departments: departments.map((d) => ({
       ...d,
       active: true,

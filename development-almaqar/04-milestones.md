@@ -14,6 +14,17 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-15 — «بوابة العملاء» tile; HR can no longer be turned off
+- **Page:** `/c/<slug>/hr/client-portal`, from the new «بوابة العملاء» tile in HR.
+- **Who a client belongs to («تبع مين؟»):** an HQ room (marketing, sales, operations, …), a company department, or «زائر اجتماع» for someone who only comes to a meeting. Filter chips per owner, and stats (clients, visitors, rooms and departments with clients, upcoming meetings).
+- **Each card:** status, owner, who handles it, contact person, phone, email, notes, the next meeting, the portal code (copy, renew) and how many people signed in. **«حدد اجتماع»** books a meeting with the client into the company Schedule (a visitor as an appointment), with the person handling it.
+- **Existing clients** (all from Marketing) now belong to the Marketing room.
+- **Security:** clients were writable by any member; now only `clients.manage` adds, edits or deletes them, and a department must be the company's (RLS).
+- **Fix:** the HR room had been turned off by mistake on the demo company from «إدارة الأقسام», which lives inside HR, so there was no way back. It was turned back on in the database, and HR is now always on (`locked`): its switch is disabled, the server refuses it, and an old "off" row is ignored.
+- **Database:** `clients.kind`, `room`, `department_id`, `contact_name`, `contact_phone`, `contact_email`, `notes` (migrations 0032–0033, applied).
+
+Files: `src/modules/clients/{service,actions,queries,demo}.ts`, `src/modules/clients/components/client-portal-view.tsx`, `src/app/[locale]/(app)/c/[companySlug]/hr/client-portal/page.tsx`, `src/modules/departments/{rooms,service,demo}.ts`, `src/modules/departments/components/departments-view.tsx`, `src/modules/marketing/service.ts`, `src/modules/hr/components/hr-home.tsx`, `src/db/schema.ts`, `drizzle/0032_client_portal.sql`, `drizzle/0033_client_portal_rls.sql`, `tests/db/{client-portal,departments}.test.ts`, `scripts/check-routes.mjs`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-15 — Recruitment («التوظيف»)
 - **Page:** `/c/<slug>/hr/recruitment`, from the «التوظيف» tile in HR (now with the working tools).
 - **Recruiters (`recruitment.manage`):**

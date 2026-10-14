@@ -5,12 +5,12 @@ import { AppError } from "@/server/errors";
 import { requireMember } from "@/server/membership";
 import { hasPermission, requirePermission } from "@/server/permissions";
 import { assertMemberInCompany, listDepartments, listMembers } from "@/modules/hq/service";
-import { isSoon, ROOMS, type RoomKey } from "./rooms";
+import { isLocked, isSoon, ROOMS, type RoomKey } from "./rooms";
 
 /** Rooms the company turned off (plus rooms still being built never count as on). */
 export async function disabledRooms(ctx: Ctx, companyId: string) {
   const rows = await ctx.tx.select({ room: companyRooms.room, enabled: companyRooms.enabled }).from(companyRooms).where(eq(companyRooms.companyId, companyId));
-  return rows.filter((r) => !r.enabled).map((r) => r.room);
+  return rows.filter((r) => !r.enabled && !isLocked(r.room)).map((r) => r.room);
 }
 
 /**
@@ -31,7 +31,8 @@ export async function getDepartmentsData(ctx: Ctx, companyId: string) {
     canDepartments,
     rooms: ROOMS.map(({ key, soon }) => {
       const row = rows.find((r) => r.room === key);
-      return { key: key as RoomKey, soon, enabled: !soon && (row?.enabled ?? true), managerId: row?.managerId ?? null };
+      const locked = isLocked(key);
+      return { key: key as RoomKey, soon, locked, enabled: locked || (!soon && (row?.enabled ?? true)), managerId: row?.managerId ?? null };
     }),
     departments: departments.map((d) => ({ ...d, active: d.active ?? true, managerId: d.managerId ?? null, memberCount: members.filter((m) => m.departmentId === d.id).length })),
     members: members.map((m) => ({ id: m.id, name: m.name, title: m.title, departmentId: m.departmentId })),
@@ -45,6 +46,7 @@ export async function setRoom(ctx: Ctx, input: { companyId: string; room: RoomKe
   await requirePermission(ctx, input.companyId, "company.settings");
   if (!ROOMS.some((r) => r.key === input.room)) throw new AppError("invalid");
   if (input.enabled === true && isSoon(input.room)) throw new AppError("invalid");
+  if (input.enabled === false && isLocked(input.room)) throw new AppError("invalid");
   await assertMemberInCompany(ctx, input.companyId, input.managerId);
   const [current] = await ctx.tx.select().from(companyRooms).where(and(eq(companyRooms.companyId, input.companyId), eq(companyRooms.room, input.room)));
   const values = {

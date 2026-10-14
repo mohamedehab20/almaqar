@@ -41,6 +41,8 @@ export const departmentColor = pgEnum("department_color", ["blue", "violet", "am
 export const roomType = pgEnum("room_type", ["meeting", "ceo", "open"]);
 export const furnitureKind = pgEnum("furniture_kind", ["desk", "meetingTable"]);
 export const clientStatus = pgEnum("client_status", ["active", "onboarding", "paused"]);
+/** client = an account a room or department works for; visitor = someone who only comes for a meeting */
+export const clientKind = pgEnum("client_kind", ["client", "visitor"]);
 export const briefStatus = pgEnum("brief_status", ["new", "received", "clarification"]);
 export const runNature = pgEnum("run_nature", ["human", "automated", "autoCompleted"]);
 export const runStatus = pgEnum("run_status", ["in_progress", "changes_requested", "completed", "closed"]);
@@ -242,8 +244,21 @@ export const clients = pgTable("clients", {
   /** Package in the contract: deliverables per month, and revisions allowed per deliverable */
   packageDeliverables: integer("package_deliverables"),
   packageRevisionsPerPost: integer("package_revisions_per_post"),
+  kind: clientKind("kind").notNull().default("client"),
+  /** Who the client belongs to: an HQ room (marketing, sales, …) or a company department; neither for a visitor */
+  room: text("room"),
+  departmentId: uuid("department_id").references(() => departments.id, { onDelete: "set null" }),
+  contactName: text("contact_name"),
+  contactPhone: text("contact_phone"),
+  contactEmail: text("contact_email"),
+  notes: text("notes"),
   createdAt: createdAt(),
-}, (t) => [index("clients_company_id_idx").on(t.companyId), index("clients_manager_id_idx").on(t.managerId)]);
+}, (t) => [
+  index("clients_company_id_idx").on(t.companyId),
+  index("clients_manager_id_idx").on(t.managerId),
+  index("clients_department_id_idx").on(t.departmentId),
+  check("clients_one_owner", sql`${t.room} is null or ${t.departmentId} is null`),
+]);
 
 /** Auth users who sign in to a client's portal */
 export const clientUsers = pgTable(
