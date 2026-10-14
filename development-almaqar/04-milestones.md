@@ -14,6 +14,13 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-15 — HR home: working tools first, «إدارة الموظفين» gets its own page
+- **«إدارة الموظفين»:** the employees panel (company code, team, add / remove) moved off the HR home to `/c/<slug>/hr/employees`, opened from its own tile.
+- **Order:** the three working tools come first (إدارة الموظفين، الإجازات، ساعات العمل); the other 14 are dimmed with a «قريباً» badge.
+- **Removed:** the «الصلاحيات» tile (permissions stay in the sidebar).
+
+Files: `src/modules/hr/components/hr-home.tsx`, `src/app/[locale]/(app)/c/[companySlug]/hr/page.tsx`, `src/app/[locale]/(app)/c/[companySlug]/hr/employees/page.tsx`, `scripts/check-routes.mjs`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-15 — Working hours («ساعات العمل»)
 - **Page:** `/c/<slug>/hr/work-hours` (`?month=YYYY-MM`, last six months), opened from the «ساعات العمل» tile in HR.
 - **«ساعاتي» (everyone):** a clock-in / clock-out button with the running time; the month's hours worked, hours expected, the difference (extra or short), late days and absent days; every day of the month with status (present, late, absent, leave, weekend, today), in, out and hours; hours added by hand (marked «يدوي», with a note), and removing them.

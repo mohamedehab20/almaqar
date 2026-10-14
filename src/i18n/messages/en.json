@@ -660,6 +660,7 @@
     "subtitle": "Welcome back — here's a quick look at your tools",
     "comingSoon": "The “{name}” page is coming soon.",
     "tools": {
+      "employees": "Employee management",
       "attendance": "Attendance",
       "leave": "Leave",
       "payroll": "Payroll",
@@ -669,7 +670,6 @@
       "departments": "Departments",
       "communication": "Communication",
       "schedules": "Schedules",
-      "permissions": "Permissions",
       "performance": "Performance review",
       "workHours": "Work hours",
       "archive": "Archive",
@@ -679,7 +679,7 @@
       "offboarding": "Offboarding"
     },
     "employees": {
-      "title": "Employees",
+      "title": "Employee management",
       "subtitle": "Add your employees by email; they activate their accounts and sign in with the company code.",
       "companyCode": "Company code",
       "copy": "Copy",
@@ -723,7 +723,9 @@
       "addedShare": "{name} was added. Send them the invite on WhatsApp so they can activate their account.",
       "noRole": "No role",
       "noPermission": "You have no permission for this employee or department."
-    }
+    },
+    "soon": "Soon",
+    "back": "HR"
   },
   "marketing": {
     "navTitle": "Marketing",
