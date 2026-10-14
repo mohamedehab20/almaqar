@@ -1833,5 +1833,166 @@
       "added": "اتضاف قسم «{name}».",
       "deleted": "اتحذف قسم «{name}»."
     }
+  },
+  "recruitment": {
+    "title": "التوظيف",
+    "subtitle": "الوظائف المفتوحة، والمرشحين في كل مرحلة، والمقابلات، والتعيين.",
+    "subtitleMember": "الوظائف المفتوحة في الشركة. تعرف حد مناسب؟ رشّحه.",
+    "back": "الموارد البشرية",
+    "close": "إغلاق",
+    "demoNotice": "دي بيانات تجريبية للشركة النموذجية، وأي تعديل هنا بيفضل في المتصفح بس.",
+    "tabs": {
+      "pipeline": "مسار المرشحين",
+      "jobs": "الوظائف",
+      "referrals": "ترشيحاتي"
+    },
+    "stats": {
+      "openJobs": "وظائف مفتوحة",
+      "active": "مرشحين في المسار",
+      "interviews": "مقابلات الأسبوع ده",
+      "hired": "اتعيّنوا آخر 3 شهور"
+    },
+    "stages": {
+      "applied": "قدّم",
+      "screening": "فرز",
+      "interview": "مقابلة",
+      "offer": "عرض",
+      "hired": "اتعيّن",
+      "rejected": "مرفوض"
+    },
+    "sources": {
+      "linkedin": "لينكدإن",
+      "wuzzuf": "وظّف",
+      "website": "موقع الشركة",
+      "referral": "ترشيح",
+      "facebook": "فيسبوك",
+      "other": "مصدر تاني"
+    },
+    "types": {
+      "fullTime": "دوام كامل",
+      "partTime": "دوام جزئي",
+      "internship": "تدريب",
+      "freelance": "فريلانس"
+    },
+    "modes": {
+      "office": "من المكتب",
+      "remote": "عن بُعد",
+      "hybrid": "هجين"
+    },
+    "jobStatus": {
+      "open": "مفتوحة",
+      "paused": "متوقفة مؤقتاً",
+      "closed": "مقفولة"
+    },
+    "pipeline": {
+      "job": "الوظيفة",
+      "allJobs": "كل الوظائف",
+      "add": "إضافة مرشح",
+      "formTitle": "مرشح جديد",
+      "save": "إضافة",
+      "empty": "مفيش حد هنا",
+      "none": "مفيش حد.",
+      "days": "{count, plural, =0 {النهارده} =1 {من يوم} =2 {من يومين} few {من # أيام} many {من # يوم} other {من # يوم}}"
+    },
+    "candidate": {
+      "job": "الوظيفة",
+      "name": "الاسم",
+      "email": "الإيميل",
+      "phone": "الموبايل",
+      "source": "جه منين",
+      "cv": "رابط السي في",
+      "notes": "ملاحظات",
+      "notesHint": "انطباعك من المقابلة، نقط القوة والضعف…",
+      "saveNotes": "حفظ الملاحظات",
+      "openCv": "افتح السي في",
+      "referredBy": "رشّحه {name}",
+      "interviewOn": "المقابلة: {date}",
+      "rejectedBecause": "سبب الرفض: {reason}",
+      "inStage": "{count, plural, =0 {في المرحلة دي من النهارده} =1 {في المرحلة دي من يوم} =2 {في المرحلة دي من يومين} few {في المرحلة دي من # أيام} many {في المرحلة دي من # يوم} other {في المرحلة دي من # يوم}}",
+      "ratingLabel": "التقييم",
+      "rating": "تقييم {value} من 5",
+      "rate": "قيّم {value} من 5",
+      "stageTitle": "المرحلة",
+      "moveTo": "انقله لـ«{stage}»",
+      "backTo": "رجّعه لـ«{stage}»",
+      "bookInterview": "حدد مقابلة",
+      "moveInterview": "غيّر معاد المقابلة",
+      "reject": "رفض",
+      "rejectReason": "سبب الرفض (اختياري)",
+      "confirmReject": "تأكيد الرفض",
+      "reopen": "رجّعه للمسار",
+      "inviteToTeam": "ضيفه لفريق الشركة في «إدارة الموظفين» بالإيميل بتاعه، بمسمى الوظيفة وقسمها",
+      "inviteNeedsEmail": "علشان يتضاف للفريق على طول لازم يكون له إيميل.",
+      "hire": "تعيين",
+      "delete": "حذف المرشح",
+      "deleteConfirm": "حذف {name} من التوظيف؟"
+    },
+    "interview": {
+      "date": "اليوم",
+      "time": "الساعة",
+      "duration": "المدة",
+      "minutes": "{count} دقيقة",
+      "place": "المكان",
+      "placeHint": "غرفة الاجتماعات أو رابط أونلاين",
+      "withManager": "هتظهر في «الجدولة» ومعاك {name} (مدير التوظيف للوظيفة).",
+      "inSchedule": "هتظهر في «الجدولة» في غرفة الاجتماعات.",
+      "save": "حفظ المقابلة"
+    },
+    "jobs": {
+      "add": "وظيفة جديدة",
+      "newTitle": "وظيفة جديدة",
+      "editTitle": "تعديل الوظيفة",
+      "title": "المسمى الوظيفي",
+      "titleHint": "مثلاً: مصمم جرافيك",
+      "department": "القسم",
+      "hiringManager": "مدير التوظيف",
+      "type": "نوع الدوام",
+      "mode": "مكان الشغل",
+      "openingsLabel": "عدد المطلوبين",
+      "salaryMin": "المرتب من",
+      "salaryMax": "لحد",
+      "description": "وصف الوظيفة",
+      "requirementsLabel": "المطلوب",
+      "save": "حفظ",
+      "openings": "اتعيّن {hired} من {total}",
+      "salary": "المرتب: {range} ج.م",
+      "manager": "مدير التوظيف: {name}",
+      "requirements": "المطلوب: {text}",
+      "candidates": "المرشحين",
+      "edit": "تعديل",
+      "status": "حالة الوظيفة",
+      "delete": "حذف الوظيفة",
+      "deleteConfirm": "حذف وظيفة «{title}» والمرشحين بتوعها؟",
+      "empty": "مفيش وظايف لسه. ضيف أول وظيفة.",
+      "noneOpen": "مفيش وظايف مفتوحة دلوقتي."
+    },
+    "referrals": {
+      "refer": "رشّح حد",
+      "formTitle": "ترشيح لوظيفة",
+      "why": "ليه شايفه مناسب؟",
+      "submit": "ابعت الترشيح",
+      "empty": "لسه مرشحتش حد. افتح «الوظائف» ورشّح حد تعرفه."
+    },
+    "notices": {
+      "jobAdded": "اتضافت الوظيفة.",
+      "jobSaved": "اتحفظت الوظيفة.",
+      "job_open": "الوظيفة اتفتحت.",
+      "job_paused": "الوظيفة اتوقفت مؤقتاً.",
+      "job_closed": "الوظيفة اتقفلت.",
+      "jobDeleted": "اتحذفت الوظيفة.",
+      "added": "اتضاف {name}.",
+      "referred": "شكراً! ترشيحك لـ{name} وصل لفريق التوظيف.",
+      "saved": "اتحفظ.",
+      "moved_applied": "{name} رجع للمسار.",
+      "moved_screening": "{name} في الفرز.",
+      "moved_interview": "{name} في مرحلة المقابلة.",
+      "moved_offer": "{name} في مرحلة العرض.",
+      "moved_hired": "{name} اتعيّن.",
+      "moved_rejected": "اترفض {name}.",
+      "interview": "اتحددت مقابلة {name} وظهرت في الجدولة.",
+      "hired": "مبروك! {name} اتعيّن.",
+      "hiredInvited": "مبروك! {name} اتعيّن واتضاف للفريق، وهيفعّل حسابه بالإيميل.",
+      "deleted": "اتحذف المرشح."
+    }
   }
 }

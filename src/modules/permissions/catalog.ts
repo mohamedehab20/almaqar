@@ -20,6 +20,7 @@ export const PERMISSIONS = [
   { key: "departments.manage", area: "hr", label: { ar: "إدارة الأقسام", en: "Manage departments" } },
   { key: "leaves.manage", area: "hr", scoped: true, label: { ar: "اعتماد الإجازات وتعديل الأرصدة", en: "Approve leave and edit balances" } },
   { key: "hours.manage", area: "hr", scoped: true, label: { ar: "متابعة ساعات العمل وتعديلها", en: "Follow and edit working hours" } },
+  { key: "recruitment.manage", area: "hr", label: { ar: "إدارة التوظيف والمرشحين", en: "Manage recruitment and candidates" } },
 
   { key: "operations.view", area: "operations", label: { ar: "فتح غرفة العمليات", en: "Open the Operations room" } },
   { key: "operations.create", area: "operations", label: { ar: "إضافة عمليات", en: "Add operations" } },

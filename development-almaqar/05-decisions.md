@@ -4,6 +4,14 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-15 — Recruitment: private candidates, referrals for everyone, interviews in the Schedule
+- **Privacy:** candidates are personal data, so only `recruitment.manage` reads them. Other members see open jobs and the people they referred, nothing else (RLS).
+- **Referrals:** any member may refer someone to an open job. It is saved as source «ترشيح», first stage, with them as the referrer; RLS refuses anything else from a non-recruiter.
+- **Stages:** one step at a time (forward or back), reject from any active stage, hire only from an offer. This keeps the pipeline honest without blocking quick moves.
+- **Interviews** are written straight into `meetings` (kind interview) by the recruitment service, so a recruiter does not also need Operations permissions; moving the interview updates the same item.
+- **Hiring** can add the person to the team through `inviteMember` (so `members.invite` and the plan limit still apply). A job closes by itself once its openings are filled.
+- **CVs** are a link for now; uploading files to storage can follow.
+
 ### 2026-10-15 — Rooms on / off per company; department and room managers are labels for now
 **Chosen by the product owner:** one page with both the HQ rooms and the company departments.
 

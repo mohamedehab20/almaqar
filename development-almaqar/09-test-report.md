@@ -2,6 +2,16 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-15 — Recruitment
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 66/66. 4 new tests in `tests/db/recruitment.test.ts`: stage rules and demo data; jobs (recruiters only, salary order, paused jobs hidden from employees); referrals (forced to «ترشيح», open jobs only, own referrals only, raw SQL cannot skip stages); the full pipeline (no skipping, interview written to the Schedule and moved in place, hire into the team with title and department, job closes when filled, reject with reason, reopen, delete). |
+| Migrations 0030–0031 on Supabase | Applied. `recruitment.manage` given to Admin roles. |
+| Smoke test, advisors | SMOKE OK. Security: none. Performance: only INFO "unused index". |
+| Real browser (/c/demo/hr/recruitment) | Pipeline, candidate panel, hire, jobs tab. No page errors. |
+| `tsc`, `lint`, `build`, `check:routes` | Pass. |
+
 ## 2026-10-15 — Departments page (rooms and company departments)
 
 | Check | Result |

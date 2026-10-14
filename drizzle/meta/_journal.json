@@ -211,6 +211,20 @@
       "when": 1792017804606,
       "tag": "0029_departments_rooms_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1792018639575,
+      "tag": "0030_recruitment",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1792018642650,
+      "tag": "0031_recruitment_rls",
+      "breakpoints": true
     }
   ]
 }

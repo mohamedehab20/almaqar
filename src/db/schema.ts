@@ -58,6 +58,11 @@ export const scheduleStatus = pgEnum("schedule_status", ["scheduled", "done", "c
 export const leaveType = pgEnum("leave_type", ["annual", "casual", "sick", "unpaid"]);
 export const leaveStatus = pgEnum("leave_status", ["pending", "approved", "rejected", "cancelled"]);
 export const workSessionSource = pgEnum("work_session_source", ["timer", "manual"]);
+export const jobStatus = pgEnum("job_status", ["open", "paused", "closed"]);
+export const employmentType = pgEnum("employment_type", ["fullTime", "partTime", "internship", "freelance"]);
+export const workMode = pgEnum("work_mode", ["office", "remote", "hybrid"]);
+export const candidateStage = pgEnum("candidate_stage", ["applied", "screening", "interview", "offer", "hired", "rejected"]);
+export const candidateSource = pgEnum("candidate_source", ["linkedin", "wuzzuf", "website", "referral", "facebook", "other"]);
 export const ideaStage = pgEnum("idea_stage", ["bank", "lab", "delivery"]);
 export const agentKind = pgEnum("agent_kind", ["general", "specialist"]);
 export const agentStatus = pgEnum("agent_status", ["active", "busy", "paused"]);
@@ -530,6 +535,73 @@ export const workSessions = pgTable(
     // At most one running session per person
     uniqueIndex("work_sessions_one_open_idx").on(t.memberId).where(sql`${t.endedAt} is null`),
     check("work_sessions_order", sql`${t.endedAt} is null or ${t.endedAt} > ${t.startedAt}`),
+  ],
+);
+
+// ---------- Recruitment (job openings and candidates) ----------
+
+export const jobOpenings = pgTable(
+  "job_openings",
+  {
+    id: id(),
+    companyId: companyId(),
+    title: text("title").notNull(),
+    departmentId: uuid("department_id").references(() => departments.id, { onDelete: "set null" }),
+    employmentType: employmentType("employment_type").notNull().default("fullTime"),
+    workMode: workMode("work_mode").notNull().default("office"),
+    openings: integer("openings").notNull().default(1),
+    status: jobStatus("status").notNull().default("open"),
+    description: text("description"),
+    requirements: text("requirements"),
+    salaryMin: numeric("salary_min", { mode: "number" }),
+    salaryMax: numeric("salary_max", { mode: "number" }),
+    hiringManagerId: uuid("hiring_manager_id").references(() => members.id, { onDelete: "set null" }),
+    createdById: uuid("created_by_id").references(() => members.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("job_openings_company_id_idx").on(t.companyId),
+    index("job_openings_department_id_idx").on(t.departmentId),
+    index("job_openings_hiring_manager_id_idx").on(t.hiringManagerId),
+    index("job_openings_created_by_id_idx").on(t.createdById),
+    check("job_openings_openings_positive", sql`${t.openings} > 0`),
+    check("job_openings_salary_order", sql`${t.salaryMin} is null or ${t.salaryMax} is null or ${t.salaryMax} >= ${t.salaryMin}`),
+  ],
+);
+
+/** A person applying for a job. Referrals by employees carry referred_by_id. */
+export const candidates = pgTable(
+  "candidates",
+  {
+    id: id(),
+    companyId: companyId(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => jobOpenings.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    email: text("email"),
+    phone: text("phone"),
+    source: candidateSource("source").notNull().default("other"),
+    stage: candidateStage("stage").notNull().default("applied"),
+    rating: integer("rating"),
+    notes: text("notes"),
+    cvUrl: text("cv_url"),
+    referredById: uuid("referred_by_id").references(() => members.id, { onDelete: "set null" }),
+    interviewAt: timestamp("interview_at", { withTimezone: true }),
+    /** The interview in the company schedule (meetings, kind = interview) */
+    interviewItemId: uuid("interview_item_id").references(() => meetings.id, { onDelete: "set null" }),
+    rejectedReason: text("rejected_reason"),
+    hiredMemberId: uuid("hired_member_id").references(() => members.id, { onDelete: "set null" }),
+    stageChangedAt: timestamp("stage_changed_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("candidates_company_stage_idx").on(t.companyId, t.stage),
+    index("candidates_job_id_idx").on(t.jobId),
+    index("candidates_referred_by_id_idx").on(t.referredById),
+    index("candidates_interview_item_id_idx").on(t.interviewItemId),
+    index("candidates_hired_member_id_idx").on(t.hiredMemberId),
+    check("candidates_rating_range", sql`${t.rating} is null or ${t.rating} between 1 and 5`),
   ],
 );
 

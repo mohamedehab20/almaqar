@@ -1833,5 +1833,166 @@
       "added": "The {name} department was added.",
       "deleted": "The {name} department was deleted."
     }
+  },
+  "recruitment": {
+    "title": "Recruitment",
+    "subtitle": "Open jobs, candidates at every stage, interviews and hiring.",
+    "subtitleMember": "The company's open jobs. Know someone who fits? Refer them.",
+    "back": "HR",
+    "close": "Close",
+    "demoNotice": "Sample data for the demo company. Changes here stay in your browser.",
+    "tabs": {
+      "pipeline": "Candidate pipeline",
+      "jobs": "Jobs",
+      "referrals": "My referrals"
+    },
+    "stats": {
+      "openJobs": "Open jobs",
+      "active": "Candidates in the pipeline",
+      "interviews": "Interviews this week",
+      "hired": "Hired in the last 3 months"
+    },
+    "stages": {
+      "applied": "Applied",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "hired": "Hired",
+      "rejected": "Rejected"
+    },
+    "sources": {
+      "linkedin": "LinkedIn",
+      "wuzzuf": "Wuzzuf",
+      "website": "Company website",
+      "referral": "Referral",
+      "facebook": "Facebook",
+      "other": "Other"
+    },
+    "types": {
+      "fullTime": "Full time",
+      "partTime": "Part time",
+      "internship": "Internship",
+      "freelance": "Freelance"
+    },
+    "modes": {
+      "office": "Office",
+      "remote": "Remote",
+      "hybrid": "Hybrid"
+    },
+    "jobStatus": {
+      "open": "Open",
+      "paused": "Paused",
+      "closed": "Closed"
+    },
+    "pipeline": {
+      "job": "Job",
+      "allJobs": "All jobs",
+      "add": "Add candidate",
+      "formTitle": "New candidate",
+      "save": "Add",
+      "empty": "Nobody here",
+      "none": "Nobody.",
+      "days": "{count, plural, =0 {today} =1 {1 day} other {# days}}"
+    },
+    "candidate": {
+      "job": "Job",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Mobile",
+      "source": "Source",
+      "cv": "CV link",
+      "notes": "Notes",
+      "notesHint": "Your impression, strengths and weaknesses…",
+      "saveNotes": "Save notes",
+      "openCv": "Open the CV",
+      "referredBy": "Referred by {name}",
+      "interviewOn": "Interview: {date}",
+      "rejectedBecause": "Rejected: {reason}",
+      "inStage": "{count, plural, =0 {In this stage since today} =1 {In this stage for 1 day} other {In this stage for # days}}",
+      "ratingLabel": "Rating",
+      "rating": "Rated {value} of 5",
+      "rate": "Rate {value} of 5",
+      "stageTitle": "Stage",
+      "moveTo": "Move to {stage}",
+      "backTo": "Back to {stage}",
+      "bookInterview": "Book an interview",
+      "moveInterview": "Change the interview",
+      "reject": "Reject",
+      "rejectReason": "Reason (optional)",
+      "confirmReject": "Confirm rejection",
+      "reopen": "Back into the pipeline",
+      "inviteToTeam": "Add them to the team in Employee management with their email, the job's title and department",
+      "inviteNeedsEmail": "They need an email to be added to the team right away.",
+      "hire": "Hire",
+      "delete": "Delete candidate",
+      "deleteConfirm": "Delete {name} from recruitment?"
+    },
+    "interview": {
+      "date": "Day",
+      "time": "Time",
+      "duration": "Length",
+      "minutes": "{count} minutes",
+      "place": "Place",
+      "placeHint": "Meeting room or an online link",
+      "withManager": "It shows in the Schedule, with {name} (the job's hiring manager).",
+      "inSchedule": "It shows in the Schedule of the meeting room.",
+      "save": "Save interview"
+    },
+    "jobs": {
+      "add": "New job",
+      "newTitle": "New job",
+      "editTitle": "Edit job",
+      "title": "Job title",
+      "titleHint": "e.g. Graphic designer",
+      "department": "Department",
+      "hiringManager": "Hiring manager",
+      "type": "Employment type",
+      "mode": "Work place",
+      "openingsLabel": "People needed",
+      "salaryMin": "Salary from",
+      "salaryMax": "To",
+      "description": "Description",
+      "requirementsLabel": "Requirements",
+      "save": "Save",
+      "openings": "{hired} of {total} hired",
+      "salary": "Salary: {range} EGP",
+      "manager": "Hiring manager: {name}",
+      "requirements": "Requirements: {text}",
+      "candidates": "Candidates",
+      "edit": "Edit",
+      "status": "Job status",
+      "delete": "Delete job",
+      "deleteConfirm": "Delete the {title} job and its candidates?",
+      "empty": "No jobs yet. Add the first one.",
+      "noneOpen": "No open jobs right now."
+    },
+    "referrals": {
+      "refer": "Refer someone",
+      "formTitle": "Refer to a job",
+      "why": "Why do they fit?",
+      "submit": "Send referral",
+      "empty": "No referrals yet. Open Jobs and refer someone you know."
+    },
+    "notices": {
+      "jobAdded": "Job added.",
+      "jobSaved": "Job saved.",
+      "job_open": "The job is open.",
+      "job_paused": "The job is paused.",
+      "job_closed": "The job is closed.",
+      "jobDeleted": "Job deleted.",
+      "added": "{name} added.",
+      "referred": "Thanks! Your referral of {name} reached the hiring team.",
+      "saved": "Saved.",
+      "moved_applied": "{name} is back in the pipeline.",
+      "moved_screening": "{name} is in screening.",
+      "moved_interview": "{name} is at the interview stage.",
+      "moved_offer": "{name} is at the offer stage.",
+      "moved_hired": "{name} was hired.",
+      "moved_rejected": "{name} was rejected.",
+      "interview": "{name}'s interview is booked and in the Schedule.",
+      "hired": "Congratulations! {name} was hired.",
+      "hiredInvited": "Congratulations! {name} was hired and added to the team; they activate their account by email.",
+      "deleted": "Candidate deleted."
+    }
   }
 }

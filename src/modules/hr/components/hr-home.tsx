@@ -32,6 +32,7 @@ const ready: { key: string; icon: LucideIcon; page: string }[] = [
   { key: "leave", icon: CalendarPlus, page: "leave" },
   { key: "workHours", icon: Timer, page: "work-hours" },
   { key: "departments", icon: Users, page: "departments" },
+  { key: "recruitment", icon: UserSearch, page: "recruitment" },
 ];
 
 /** Tools still to come: marked «قريباً». Permissions live in the sidebar («الصلاحيات»), not here. */
@@ -45,7 +46,6 @@ const soon: { key: string; icon: LucideIcon }[] = [
   { key: "schedules", icon: Clock },
   { key: "performance", icon: TrendingUp },
   { key: "archive", icon: Archive },
-  { key: "recruitment", icon: UserSearch },
   { key: "employeeFiles", icon: FolderOpen },
   { key: "knowledgeBase", icon: BookOpen },
   { key: "offboarding", icon: UserX },

@@ -14,6 +14,19 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-15 — Recruitment («التوظيف»)
+- **Page:** `/c/<slug>/hr/recruitment`, from the «التوظيف» tile in HR (now with the working tools).
+- **Recruiters (`recruitment.manage`):**
+  - Stats: open jobs, candidates in the pipeline, interviews this week, hired in the last 3 months.
+  - **«مسار المرشحين»:** columns applied → screening → interview → offer, filtered by job, with hired and rejected counted aside. Each card shows the source, rating, days in the stage (red after a week) and the next interview.
+  - **A candidate's panel:** contact, CV link, 1–5 stars, notes, one step forward or back, book or move the interview (goes into the company Schedule as an «مقابلة», with the job's hiring manager), reject with a reason, reopen, and **hire** (optionally adding them to the team in Employee management with the job's title and department).
+  - **«الوظائف»:** add / edit (title, department, hiring manager, type, work place, people needed, salary range, description, requirements), open / pause / close, delete, and candidates per stage. A job closes by itself when all its openings are hired.
+- **Everyone else:** sees the open jobs, refers someone to one («رشّح حد»), and follows their referrals in «ترشيحاتي». Candidate data stays private to recruiters.
+- **Database:** `job_openings` and `candidates` with RLS (migrations 0030–0031, applied). New permission `recruitment.manage` (Admin roles). New events `candidate.added`, `candidate.hired`.
+- **Demo:** five jobs and fourteen candidates across every stage.
+
+Files: `src/modules/recruitment/{pipeline,service,actions,queries,demo}.ts`, `src/modules/recruitment/components/recruitment-view.tsx`, `src/app/[locale]/(app)/c/[companySlug]/hr/recruitment/page.tsx`, `src/modules/hr/components/hr-home.tsx`, `src/db/schema.ts`, `drizzle/0030_recruitment.sql`, `drizzle/0031_recruitment_rls.sql`, `src/modules/permissions/catalog.ts`, `src/modules/events/constants.ts`, `tests/db/recruitment.test.ts`, `scripts/check-routes.mjs`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-15 — «إدارة الأقسام»: HQ rooms and company departments in one page
 - **Page:** `/c/<slug>/hr/departments`, from the «إدارة الأقسام» tile in HR (now with the working tools).
 - **«أقسام المقر»:** every room of the sidebar (HR, operations, automation, marketing, meetings, and the coming-soon accounts, sales, Al Jarab, archive) with its state (on, off, soon), an on / off switch and a manager. A room turned off is hidden from the sidebar for everyone and its pages show «القسم ده مقفول». Coming-soon rooms cannot be turned on; their manager can be chosen already. Needs `company.settings`.
