@@ -28,7 +28,7 @@ import { clients } from "../sections-mock";
 import { ClientPortal, type NewBrief } from "./client-portal";
 import { LabView, type Decision } from "./lab-view";
 import { AccountsSection, BudgetsSection, CampaignsSection, ChannelsSection, ClientsSection } from "./sections";
-import type { ProfitReport } from "@/modules/profitability/calc";
+import type { ProfitReport, ProfitSettings } from "@/modules/profitability/calc";
 import { ProfitabilitySection } from "@/modules/profitability/components/profitability-section";
 
 const stages: { key: Stage; icon: typeof Lightbulb }[] = [
@@ -55,8 +55,19 @@ const deliveryStyle: Record<DeliveryStatus, string> = {
   changes: "bg-danger-container text-danger",
 };
 
-/** `profitability`: the report computed on the server, or null when the viewer may not see it (owner and admins). */
-export function MarketingView({ profitability = null }: { profitability?: ProfitReport | null }) {
+/**
+ * `profitability`: the report computed on the server, or null when the viewer may not see it (owner and admins).
+ * `profitSettings`: the owner's «إعدادات الربحية» (null for everyone else). `companyId` null = the public demo.
+ */
+export function MarketingView({
+  profitability = null,
+  profitSettings = null,
+  companyId = null,
+}: {
+  profitability?: ProfitReport | null;
+  profitSettings?: ProfitSettings | null;
+  companyId?: string | null;
+}) {
   const t = useTranslations("marketing");
   const locale = useLocale() as "ar" | "en";
   const [ideas, setIdeas] = useState<Idea[]>(demoIdeas);
@@ -237,7 +248,7 @@ export function MarketingView({ profitability = null }: { profitability?: Profit
         {section === "campaigns" && <CampaignsSection />}
         {section === "budgets" && <BudgetsSection />}
         {section === "channels" && <ChannelsSection />}
-        {section === "profitability" && profitability && <ProfitabilitySection report={profitability} />}
+        {section === "profitability" && profitability && <ProfitabilitySection report={profitability} settings={profitSettings} companyId={companyId ?? "demo"} demo={companyId === null} />}
 
         {section === "pipeline" && (
           <>

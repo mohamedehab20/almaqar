@@ -1376,8 +1376,7 @@
     "demoSaved": "Changed in the demo only (not saved).",
     "tabs": {
       "roles": "Roles",
-      "members": "Members",
-      "marketing": "Marketing settings"
+      "members": "Members"
     },
     "errors": {
       "forbidden": "Only the owner manages permissions."
@@ -1439,7 +1438,7 @@
     "month": "Month",
     "sector": "Sector",
     "allSectors": "All sectors",
-    "noSettings": "Set the costs in Permissions → Marketing settings to get the hourly cost.",
+    "noSettings": "The owner sets the costs in the «Profitability settings» tab here to get the hourly cost.",
     "hourlyCost": "Internal hourly cost",
     "alertsTitle": "This month's alerts",
     "alert": {
@@ -1511,7 +1510,7 @@
       "chronic": "No improvement for 3 months in a row: consider ending the engagement."
     },
     "settings": {
-      "intro": "Client profitability in Marketing uses these numbers. Set them once and change them any time.",
+      "intro": "The client profitability report is built on these numbers. Set them once and change them any time; only the owner sees and edits them.",
       "timesTitle": "Standard time per task type",
       "types": {
         "post": "Post",
@@ -1534,8 +1533,12 @@
       "hourlyMissing": "Enter the costs and working hours to get the hourly cost.",
       "hourlyPreview": "Internal hourly cost = {cost} EGP",
       "save": "Save settings",
-      "saved": "Marketing settings saved.",
+      "saved": "Profitability settings saved.",
       "demoSaved": "This is the demo; nothing was saved."
+    },
+    "tabs": {
+      "report": "Report",
+      "settings": "Profitability settings"
     }
   },
   "meetings": {

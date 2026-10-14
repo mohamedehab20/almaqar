@@ -14,6 +14,13 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-15 — «إعدادات الربحية» moved into Marketing → «ربحية العملاء»
+- The «إعدادات التسويق» tab left the Permissions page. The same form now lives in Marketing → «ربحية العملاء» as a second tab, «إعدادات الربحية», next to «التقرير».
+- Owner only, as before (only the owner saves these costs); admins with `profitability.view` see the report without the settings tab. The demo shows both tabs.
+- Texts that pointed to «الصلاحيات ← إعدادات التسويق» now point to the new tab.
+
+Files: `src/modules/profitability/components/{profitability-section,settings-form}.tsx`, `src/modules/marketing/components/marketing-view.tsx`, `src/app/[locale]/(app)/c/[companySlug]/marketing/page.tsx`, `src/modules/permissions/components/permissions-manager.tsx`, `src/app/[locale]/(app)/c/[companySlug]/permissions/page.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-15 — «بوابة العملاء» tile; HR can no longer be turned off
 - **Page:** `/c/<slug>/hr/client-portal`, from the new «بوابة العملاء» tile in HR.
 - **Who a client belongs to («تبع مين؟»):** an HQ room (marketing, sales, operations, …), a company department, or «زائر اجتماع» for someone who only comes to a meeting. Filter chips per owner, and stats (clients, visitors, rooms and departments with clients, upcoming meetings).

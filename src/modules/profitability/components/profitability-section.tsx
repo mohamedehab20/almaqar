@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ArrowUpDown, BellRing, ChevronDown, Lightbulb, PieChart, TriangleAlert } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, BellRing, ChartColumn, ChevronDown, Lightbulb, PieChart, SlidersHorizontal, TriangleAlert } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Fragment, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { MARGIN_GREEN, MARGIN_RED, type ClientMonth, type ClientReport, type ProfitReport, type Zone } from "../calc";
+import { MARGIN_GREEN, MARGIN_RED, type ClientMonth, type ClientReport, type ProfitReport, type ProfitSettings, type Zone } from "../calc";
+import { ProfitabilitySettingsForm } from "./settings-form";
 
 type Localized = { ar: string; en: string };
 type SortKey = "name" | "margin" | "effectiveHourly" | "usage" | "avgRevisions" | "latePaymentDays" | "profit";
@@ -21,10 +22,51 @@ const zoneStyle: Record<Zone, string> = {
 };
 
 /**
- * Marketing → Client profitability (owner and admins). Everything is computed on the server
- * (modules/profitability/calc.ts); this only filters, sorts and shows it.
+ * Marketing → Client profitability (owner and admins): the report, and for the owner «إعدادات الربحية»
+ * (standard times, revision time, monthly costs). `settings` null = no settings tab for this viewer.
  */
-export function ProfitabilitySection({ report }: { report: ProfitReport }) {
+export function ProfitabilitySection({
+  report,
+  settings = null,
+  companyId,
+  demo = false,
+}: {
+  report: ProfitReport;
+  settings?: ProfitSettings | null;
+  companyId: string;
+  demo?: boolean;
+}) {
+  const t = useTranslations("profitability");
+  const [tab, setTab] = useState<"report" | "settings">("report");
+  return (
+    <div className="flex flex-col gap-5">
+      {settings && (
+        <div role="tablist" className="flex w-fit gap-1 rounded-full bg-surface-container-low p-1">
+          {(["report", "settings"] as const).map((key) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={tab === key}
+              onClick={() => setTab(key)}
+              className={cn(
+                "flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-colors",
+                tab === key ? "bg-surface-container-lowest text-primary shadow-ambient" : "text-on-surface-variant hover:text-on-surface",
+              )}
+            >
+              {key === "report" ? <ChartColumn className="size-4" aria-hidden /> : <SlidersHorizontal className="size-4" aria-hidden />}
+              {t(`tabs.${key}`)}
+            </button>
+          ))}
+        </div>
+      )}
+      {tab === "settings" && settings ? <ProfitabilitySettingsForm companyId={companyId} settings={settings} demo={demo} /> : <ProfitabilityReport report={report} />}
+    </div>
+  );
+}
+
+/** The report itself. Everything is computed on the server (modules/profitability/calc.ts); this only filters, sorts and shows it. */
+function ProfitabilityReport({ report }: { report: ProfitReport }) {
   const t = useTranslations("profitability");
   const locale = useLocale() as "ar" | "en";
   const text = (v: Localized) => v[locale] || v.ar || v.en;

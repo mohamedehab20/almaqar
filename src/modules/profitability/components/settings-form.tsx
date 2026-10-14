@@ -12,7 +12,7 @@ import { hourlyCostOf, TASK_TYPES, type ProfitSettings, type TaskType } from "..
 const inputClass = "h-10 w-full rounded-sm bg-surface-container-lowest px-3 text-sm ghost-border";
 
 /**
- * Permissions → Marketing settings (owner): the standard time of each task type, the time one revision
+ * Marketing → Client profitability → «إعدادات الربحية» (owner): the standard time of each task type, the time one revision
  * adds, and the monthly costs behind the internal hourly cost. Client profitability uses them.
  */
 export function ProfitabilitySettingsForm({ companyId, settings, demo }: { companyId: string; settings: ProfitSettings; demo: boolean }) {
