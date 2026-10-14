@@ -14,6 +14,19 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-15 — Leave: requests, balances, approvals and policy («الإجازات»)
+- **Page:** `/c/<slug>/hr/leave`, opened from the «الإجازات» tile in HR (the first HR tool with its own page).
+- **Every employee («إجازاتي»):** a balance card per type (annual, casual, sick, unpaid) with days left, used and pending; a request form that counts working days and shows the balance after; their requests with status, the manager's name and note, and cancel (while pending, or approved and not started).
+- **Managers («طلبات الفريق»):** who is off today; waiting / approved / all, by department; approve, or reject with a reason. Each request shows the employee's balance and colleagues from the same department away on the same days.
+- **«أرصدة الموظفين»:** left / allowance per employee and type for the chosen year; a custom allowance per person (marked «خاص»), and reset to the default.
+- **«سياسة الإجازات»:** yearly days per type (empty = no limit) and the weekend days. Defaults: 21 annual, 6 casual, 15 sick, unpaid with no limit; Friday and Saturday off.
+- **Rules on the server:** working days only; no overlapping requests; no request or approval beyond the balance (pending days are reserved); a request across New Year counts in each year.
+- **Permission:** new `leaves.manage` (scoped by the employee's department), given to every Admin role. Requesting needs no permission. The policy needs an all-departments grant.
+- **Database:** `leave_requests`, `leave_balances` and `leave_settings` with RLS (migrations 0024–0025, applied to Supabase). New events: `leave.approved`, `leave.rejected`, `leave.cancelled`.
+- **Demo:** the demo team with sample requests built around today; changes stay in the browser.
+
+Files: `src/modules/leave/{calc,service,actions,queries,demo}.ts`, `src/modules/leave/components/leave-view.tsx`, `src/app/[locale]/(app)/c/[companySlug]/hr/leave/page.tsx`, `src/modules/hr/components/hr-home.tsx`, `src/db/schema.ts`, `drizzle/0024_leave.sql`, `drizzle/0025_leave_rls.sql`, `src/modules/permissions/catalog.ts`, `src/modules/events/constants.ts`, `src/server/errors.ts`, `tests/db/leave.test.ts`, `scripts/check-routes.mjs`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-14 — «غرفة الاجتماعات» page (schedule + task management)
 - **Sidebar:** «اجتماعات» now opens `/c/<slug>/meetings` (no longer "coming soon"), with the tabs «إدارة المهام» and «الجدولة» side by side. «مهام» opens the same room on the tasks tab (`?tab=tasks`).
 - **The schedule** is the one from the Operations room: meetings, appointments, trips outside and interviews, with full details per item. It stays in the Operations room too.

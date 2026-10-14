@@ -8,6 +8,8 @@ export type ErrorCode =
   | "not_found"
   | "conflict" // unique value already taken (slug, code, ...)
   | "plan_limit" // the company's plan does not allow more
+  | "overlap" // dates clash with another request of the same person
+  | "insufficient_balance" // not enough leave days left
   | "not_configured" // Supabase env vars missing
   | "auth_failed" // wrong credentials / OTP
   | "server_error";

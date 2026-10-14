@@ -278,7 +278,9 @@
       "not_configured": "Real sign-in isn't enabled on this server yet, so nothing was saved. Use a version connected to Supabase, or browse the demo.",
       "unauthorized": "Please sign in first.",
       "plan_limit": "You reached the free plan limit. Upgrade to continue.",
-      "server_error": "Something went wrong. Please try again shortly."
+      "server_error": "Something went wrong. Please try again shortly.",
+      "overlap": "You already have a leave request on these days.",
+      "insufficient_balance": "Not enough days left of this type."
     },
     "join": {
       "metaTitle": "Activate employee account",
@@ -659,7 +661,7 @@
     "comingSoon": "The “{name}” page is coming soon.",
     "tools": {
       "attendance": "Attendance",
-      "leave": "Leave request",
+      "leave": "Leave",
       "payroll": "Payroll",
       "integration": "Integrations",
       "contracts": "Commercial contracts",
@@ -1534,6 +1536,118 @@
     "tabs": {
       "tasks": "Task management",
       "schedule": "Schedule"
+    }
+  },
+  "leave": {
+    "title": "Leave",
+    "subtitle": "Request leave and follow your balance; managers approve their team's requests and set balances.",
+    "backToHr": "HR",
+    "year": "Year",
+    "demoNotice": "Sample data for the demo company's team. Changes here stay in your browser.",
+    "tabs": {
+      "mine": "My leave",
+      "team": "Team requests",
+      "balances": "Employee balances",
+      "settings": "Leave policy"
+    },
+    "types": {
+      "annual": "Annual",
+      "casual": "Casual",
+      "sick": "Sick",
+      "unpaid": "Unpaid"
+    },
+    "status": {
+      "pending": "Awaiting approval",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "days": "{count, plural, =1 {1 working day} other {# working days}}",
+    "balance": {
+      "daysLeft": "days left",
+      "unlimited": "No limit",
+      "detail": "Used {used} · pending {pending} · of {total} days",
+      "takenOnly": "Used {used} days · pending {pending}"
+    },
+    "mine": {
+      "title": "My requests",
+      "new": "Request leave",
+      "empty": "No leave requests this year."
+    },
+    "form": {
+      "type": "Leave type",
+      "left": "{days} left",
+      "from": "From",
+      "to": "To",
+      "workingDays": "{days} working days",
+      "after": "Balance after: {days}",
+      "reason": "Reason (optional)",
+      "reasonHint": "e.g. travel, family matter, doctor's appointment…",
+      "ok": "Your manager approves the request; the days come off your balance once approved.",
+      "submit": "Send request"
+    },
+    "errors": {
+      "overlap": "You already have a leave request on these days.",
+      "insufficient_balance": "Not enough days left of this type.",
+      "invalid": "The dates are not valid, or they are all weekend days.",
+      "forbidden": "You are not allowed to do this."
+    },
+    "actions": {
+      "cancel": "Cancel request",
+      "approve": "Approve",
+      "reject": "Reject",
+      "confirmReject": "Confirm rejection",
+      "close": "Close",
+      "save": "Save"
+    },
+    "decision": {
+      "approvedBy": "Approved by {name}",
+      "rejectedBy": "Rejected by {name}"
+    },
+    "team": {
+      "offToday": "Off today:",
+      "nobodyOff": "The whole team is in today.",
+      "backOn": "last day {date}",
+      "filters": {
+        "pending": "Waiting",
+        "approved": "Approved",
+        "all": "All"
+      },
+      "department": "Department",
+      "allDepartments": "All departments",
+      "noPending": "No requests waiting for you.",
+      "empty": "No requests.",
+      "balanceBefore": "Balance before this request: {days} days",
+      "noLimit": "No limit for this type",
+      "overlap": "Also away from the same department: {names}",
+      "rejectNote": "Reason for rejecting (the employee sees it)"
+    },
+    "balances": {
+      "intro": "What each employee has left in {year} (left / allowance). The default comes from the leave policy; you can give someone their own allowance.",
+      "employee": "Employee",
+      "taken": "{days} days taken",
+      "allowance": "Yearly allowance",
+      "custom": "Custom",
+      "edit": "Edit the {type} balance of {name}",
+      "reset": "Back to the default",
+      "legend": "“Custom” = an allowance different from the company policy for this year. Leave the field empty to go back to the default."
+    },
+    "settings": {
+      "allowancesTitle": "Yearly allowance per type",
+      "allowancesHint": "Working days per employee per year. Leave it empty for no limit (like unpaid leave). Egyptian labour law: 21 annual and 6 casual days.",
+      "noLimit": "No limit",
+      "perYear": "days a year",
+      "weekendTitle": "Weekend days",
+      "weekendHint": "These days never count against a leave balance.",
+      "tooMany": "Choose 3 days at most."
+    },
+    "notices": {
+      "requested": "Request sent, waiting for approval.",
+      "cancelled": "Request cancelled; the days are back in your balance.",
+      "approved": "Leave approved.",
+      "rejected": "Request rejected.",
+      "balanceSaved": "Balance saved.",
+      "settingsSaved": "Leave policy saved."
     }
   }
 }

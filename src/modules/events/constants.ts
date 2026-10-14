@@ -30,6 +30,9 @@ export const EVENT_TYPES = [
   { type: "approval.overdue", label: { ar: "تأخر موافقة", en: "Approval overdue" }, defaultSeverity: "warning" },
   // People
   { type: "leave.requested", label: { ar: "طلب إجازة", en: "Leave requested" }, defaultSeverity: "info" },
+  { type: "leave.approved", label: { ar: "اعتماد إجازة", en: "Leave approved" }, defaultSeverity: "info" },
+  { type: "leave.rejected", label: { ar: "رفض إجازة", en: "Leave rejected" }, defaultSeverity: "info" },
+  { type: "leave.cancelled", label: { ar: "إلغاء إجازة", en: "Leave cancelled" }, defaultSeverity: "info" },
   { type: "employee.joined", label: { ar: "انضمام موظف", en: "Employee joined" }, defaultSeverity: "info" },
   // Automation
   { type: "automation.triggered", label: { ar: "تشغيل أتمتة", en: "Automation triggered" }, defaultSeverity: "info" },

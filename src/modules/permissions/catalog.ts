@@ -18,6 +18,7 @@ export const PERMISSIONS = [
   { key: "members.edit", area: "hr", scoped: true, label: { ar: "تعديل بيانات الموظفين", en: "Edit employees" } },
   { key: "members.remove", area: "hr", scoped: true, label: { ar: "إزالة موظفين", en: "Remove employees" } },
   { key: "departments.manage", area: "hr", label: { ar: "إدارة الأقسام", en: "Manage departments" } },
+  { key: "leaves.manage", area: "hr", scoped: true, label: { ar: "اعتماد الإجازات وتعديل الأرصدة", en: "Approve leave and edit balances" } },
 
   { key: "operations.view", area: "operations", label: { ar: "فتح غرفة العمليات", en: "Open the Operations room" } },
   { key: "operations.create", area: "operations", label: { ar: "إضافة عمليات", en: "Add operations" } },

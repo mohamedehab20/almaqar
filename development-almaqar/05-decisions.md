@@ -4,6 +4,13 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-15 — Leave: working days, reserved pending days, a fixed list of types
+- **Days counted:** working days only, skipping the company's weekend (Friday and Saturday by default). The server counts them when the request is made; public holidays are not subtracted yet.
+- **Balance:** allowance − approved − pending. Pending days are reserved, so two requests cannot spend the same days; approval checks again (the allowance may have been lowered).
+- **Types:** a fixed list (annual, casual, sick, unpaid), with company-wide yearly days and a per-employee figure per year. Casual leave has its own balance here; Egyptian law counts it inside annual leave, which a company can mirror by lowering the annual days. Custom types can come later.
+- **Who decides:** `leaves.manage`, scoped by the employee's department, so a department head approves only their team. Nobody decides their own request except the owner. The policy needs an all-departments grant.
+- **Alternative considered:** a separate approvals flow through the Automation room. It was left out for now, because leave needs balances and overlap checks that a generic approval run does not have.
+
 ### 2026-10-14 — Auth forms: our skeleton until Clerk draws, not until Clerk loads
 Clerk loads in three steps after hydration (`clerk.browser.js`, then `/v1/environment` + `/v1/client`, then the sign-in UI chunks). `ClerkLoaded` fires after the second step, so it is not enough to know the form is visible.
 

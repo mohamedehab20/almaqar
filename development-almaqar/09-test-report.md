@@ -2,6 +2,16 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-15 — Leave
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 51/51. 9 new tests in `tests/db/leave.test.ts`: working days and New Year split; balance (approved, pending, custom allowance, unpaid); refusals (overlap, weekend-only, overdraft); demo data; requests end to end; RLS with raw SQL (no reading, adding or approving someone else's leave); department-scoped managers, no deciding your own; a lowered allowance blocks approval; cancel rules; the company policy. |
+| Migrations 0024–0025 on Supabase | Applied. RLS on the 3 tables (10 policies), and `leaves.manage` given to all 4 Admin roles. |
+| Smoke test, advisors | SMOKE OK. Security: none. Performance: only INFO "unused index". |
+| Real browser (headless Edge over DevTools, /c/demo/hr/leave) | All four tabs; approving a request (badge 3 → 2) and sending a new one (annual balance 16 → 15). No page errors. |
+| `tsc`, `lint`, `build`, `check:routes` | Pass. |
+
 ## 2026-10-14 — Login page load (guest button shown alone)
 
 Headless Edge with a fresh profile, cache disabled, and the page checked every 150 ms.

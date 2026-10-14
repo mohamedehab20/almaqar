@@ -169,6 +169,20 @@
       "when": 1791924619931,
       "tag": "0023_schedule",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792014453081,
+      "tag": "0024_leave",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792014476615,
+      "tag": "0025_leave_rls",
+      "breakpoints": true
     }
   ]
 }

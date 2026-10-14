@@ -55,6 +55,8 @@ export const taskStatus = pgEnum("task_status", ["todo", "in_progress", "done"])
 export const taskPriority = pgEnum("task_priority", ["low", "medium", "high"]);
 export const scheduleKind = pgEnum("schedule_kind", ["meeting", "appointment", "trip", "interview"]);
 export const scheduleStatus = pgEnum("schedule_status", ["scheduled", "done", "cancelled"]);
+export const leaveType = pgEnum("leave_type", ["annual", "casual", "sick", "unpaid"]);
+export const leaveStatus = pgEnum("leave_status", ["pending", "approved", "rejected", "cancelled"]);
 export const ideaStage = pgEnum("idea_stage", ["bank", "lab", "delivery"]);
 export const agentKind = pgEnum("agent_kind", ["general", "specialist"]);
 export const agentStatus = pgEnum("agent_status", ["active", "busy", "paused"]);
@@ -413,6 +415,64 @@ export const profitabilitySettings = pgTable("profitability_settings", {
   monthlyHours: numeric("monthly_hours", { mode: "number" }).notNull().default(0),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ---------- Leave (requests, balances, company policy) ----------
+
+/** One row per company: yearly days per leave type (null = no limit) and the weekend days (0 = Sunday). */
+export const leaveSettings = pgTable("leave_settings", {
+  companyId: uuid("company_id").primaryKey().references(() => companies.id, { onDelete: "cascade" }),
+  allowances: jsonb("allowances").$type<Partial<Record<string, number | null>>>().notNull().default({}),
+  weekendDays: integer("weekend_days").array().notNull().default([5, 6]),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** A per-employee allowance for one year and type, replacing the company default (null = no limit). */
+export const leaveBalances = pgTable(
+  "leave_balances",
+  {
+    companyId: companyId(),
+    memberId: uuid("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    year: integer("year").notNull(),
+    type: leaveType("type").notNull(),
+    allowance: numeric("allowance", { mode: "number" }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.memberId, t.year, t.type] }),
+    index("leave_balances_company_id_idx").on(t.companyId),
+    check("leave_balances_allowance_positive", sql`${t.allowance} is null or ${t.allowance} >= 0`),
+  ],
+);
+
+/** A leave request. `days` = working days between the dates, computed by the server when it is made. */
+export const leaveRequests = pgTable(
+  "leave_requests",
+  {
+    id: id(),
+    companyId: companyId(),
+    memberId: uuid("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    type: leaveType("type").notNull(),
+    startsOn: date("starts_on").notNull(),
+    endsOn: date("ends_on").notNull(),
+    days: integer("days").notNull(),
+    reason: text("reason"),
+    status: leaveStatus("status").notNull().default("pending"),
+    decidedById: uuid("decided_by_id").references(() => members.id, { onDelete: "set null" }),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    decisionNote: text("decision_note"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("leave_requests_company_starts_on_idx").on(t.companyId, t.startsOn),
+    index("leave_requests_member_id_idx").on(t.memberId),
+    index("leave_requests_decided_by_id_idx").on(t.decidedById),
+    check("leave_requests_dates", sql`${t.endsOn} >= ${t.startsOn}`),
+    check("leave_requests_days_positive", sql`${t.days} > 0`),
+  ],
+);
 
 // ---------- Operations, automation, sales ----------
 
