@@ -14,6 +14,11 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-15 — The seeded "demo" company was removed from the live database
+- The owner asked to delete it and keep **kira glass** (`/c/kira-glass-7c2n`) as the company for real testing. The row and all its data (7 members, rooms, orders…) were deleted; every table cascades from `companies`, and it had no stored files.
+- `/c/demo` still works for everyone as the public demo on mock data (the layout falls back to it when no real company has that slug). `npm run db:seed` can recreate the database copy if it is ever needed.
+- Live companies now: `kira-glass-7c2n`, `ismail-7qz4`, `simulation`.
+
 ### 2026-10-15 — «الاعتماد» in the meeting room; files on approvals and notes
 - **Tab «الاعتماد»** next to «الجدولة» (`/c/<slug>/meetings?tab=approvals`): ask a specific colleague to approve an **action** (a purchase, a payment, overtime…) or a **position** (a reply to a client, a policy…), with details, an answer-by date and up to 6 photos or files (10 MB each, image thumbnails). Views: waiting for me (with a count), my requests, all. The approver approves or rejects with a note; the requester can withdraw while it waits.
 - **Saved for real companies:** `approval_requests` (migrations 0034–0035, applied). Only the two people and the owner see a request (RLS); only the approver decides, once; files must sit in the company's `approvals` folder. Events `approval.requested`, `approval.approved`, `approval.rejected`.

@@ -4,6 +4,9 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-15 — Real testing happens in kira glass, not in a database "demo"
+- A database company with the slug `demo` hid the public mock demo for its owner and mixed seeded rows with real tests. It was removed; `/c/demo` is only the mock demo, and real checks use `kira-glass-7c2n`.
+
 ### 2026-10-15 — Approvals are person to person; files upload straight to storage
 - **Not the Automation room's approval workflows:** those are fixed multi-step paths for operations. «الاعتماد» is a quick one-to-one request («approve this for me»), so it has its own small table.
 - **Privacy:** only the requester, the approver and the owner see a request.
