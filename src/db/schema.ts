@@ -57,6 +57,7 @@ export const scheduleKind = pgEnum("schedule_kind", ["meeting", "appointment", "
 export const scheduleStatus = pgEnum("schedule_status", ["scheduled", "done", "cancelled"]);
 export const leaveType = pgEnum("leave_type", ["annual", "casual", "sick", "unpaid"]);
 export const leaveStatus = pgEnum("leave_status", ["pending", "approved", "rejected", "cancelled"]);
+export const workSessionSource = pgEnum("work_session_source", ["timer", "manual"]);
 export const ideaStage = pgEnum("idea_stage", ["bank", "lab", "delivery"]);
 export const agentKind = pgEnum("agent_kind", ["general", "specialist"]);
 export const agentStatus = pgEnum("agent_status", ["active", "busy", "paused"]);
@@ -471,6 +472,45 @@ export const leaveRequests = pgTable(
     index("leave_requests_decided_by_id_idx").on(t.decidedById),
     check("leave_requests_dates", sql`${t.endsOn} >= ${t.startsOn}`),
     check("leave_requests_days_positive", sql`${t.days} > 0`),
+  ],
+);
+
+// ---------- Working hours (clock in / out, the company's working day) ----------
+
+/** One row per company: the working day ("HH:MM" local), break, grace for lateness and time zone. The weekend is leave_settings'. */
+export const workSettings = pgTable("work_settings", {
+  companyId: uuid("company_id").primaryKey().references(() => companies.id, { onDelete: "cascade" }),
+  dayStart: text("day_start").notNull().default("09:00"),
+  dayEnd: text("day_end").notNull().default("17:00"),
+  breakMinutes: integer("break_minutes").notNull().default(60),
+  graceMinutes: integer("grace_minutes").notNull().default(15),
+  timeZone: text("time_zone").notNull().default("Africa/Cairo"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** A stretch of work: from the clock-in button (timer, ended_at null while running) or entered by hand (manual). */
+export const workSessions = pgTable(
+  "work_sessions",
+  {
+    id: id(),
+    companyId: companyId(),
+    memberId: uuid("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    source: workSessionSource("source").notNull().default("timer"),
+    note: text("note"),
+    createdById: uuid("created_by_id").references(() => members.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("work_sessions_company_started_idx").on(t.companyId, t.startedAt),
+    index("work_sessions_member_started_idx").on(t.memberId, t.startedAt),
+    index("work_sessions_created_by_id_idx").on(t.createdById),
+    // At most one running session per person
+    uniqueIndex("work_sessions_one_open_idx").on(t.memberId).where(sql`${t.endedAt} is null`),
+    check("work_sessions_order", sql`${t.endedAt} is null or ${t.endedAt} > ${t.startedAt}`),
   ],
 );
 

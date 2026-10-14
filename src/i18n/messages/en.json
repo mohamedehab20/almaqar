@@ -1649,5 +1649,123 @@
       "balanceSaved": "Balance saved.",
       "settingsSaved": "Leave policy saved."
     }
+  },
+  "hours": {
+    "title": "Working hours",
+    "subtitle": "Clock in and out, and follow your month against the hours expected; managers follow their team's hours.",
+    "backToHr": "HR",
+    "month": "Month",
+    "demoNotice": "Sample data for the demo company's team. Changes here stay in your browser.",
+    "tabs": {
+      "mine": "My hours",
+      "team": "Team hours",
+      "settings": "Working day"
+    },
+    "clock": {
+      "working": "Working since {since}",
+      "notWorking": "Not clocked in",
+      "running": "{time} hours so far",
+      "todaySoFar": "Worked today: {time}",
+      "schedule": "Working day {start} – {end}",
+      "start": "Clock in",
+      "stop": "Clock out"
+    },
+    "summary": {
+      "worked": "Hours worked",
+      "expected": "Hours expected",
+      "balance": "Difference",
+      "late": "Late days",
+      "absent": "Absent days",
+      "plusToday": "Plus today: {time}",
+      "expectedDays": "{days} working days until yesterday",
+      "extra": "Hours above what is expected",
+      "short": "Hours below what is expected",
+      "ofDays": "Of {days} days present",
+      "leaveDays": "Leave days: {days}"
+    },
+    "status": {
+      "worked": "Present",
+      "late": "Late",
+      "absent": "Absent",
+      "leave": "Leave",
+      "weekend": "Weekend",
+      "today": "Today",
+      "future": ""
+    },
+    "days": {
+      "title": "Days of the month",
+      "add": "Add hours by hand",
+      "date": "Day",
+      "status": "Status",
+      "in": "In",
+      "out": "Out",
+      "hours": "Hours",
+      "details": "Details",
+      "stillIn": "Still in",
+      "manual": "Manual",
+      "remove": "Remove these hours"
+    },
+    "form": {
+      "date": "Day",
+      "from": "From",
+      "to": "To",
+      "note": "Note",
+      "noteHint": "e.g. forgot to clock in, was at a client…",
+      "total": "Total {time} hours",
+      "manualHint": "Your manager sees it was entered by hand.",
+      "close": "Close",
+      "save": "Save"
+    },
+    "errors": {
+      "overlap": "These hours are already recorded.",
+      "invalid": "The times are not valid: the end must follow the start, and it cannot be in the future.",
+      "conflict": "You are already clocked in.",
+      "forbidden": "You are not allowed to do this."
+    },
+    "team": {
+      "workingNow": "{count, plural, =0 {Nobody is working right now} other {Working now (#):}}",
+      "since": "since {time}",
+      "inNow": "Working now",
+      "department": "Department",
+      "allDepartments": "All departments",
+      "columns": {
+        "employee": "Employee",
+        "present": "Present",
+        "late": "Late",
+        "absent": "Absent",
+        "leave": "Leave",
+        "worked": "Worked",
+        "expected": "Expected",
+        "balance": "Difference"
+      },
+      "show": "Show days",
+      "hide": "Hide days",
+      "legend": "Figures run until yesterday; today never counts as short. Approved leave is not absence. Click an employee to see their days and add or remove hours."
+    },
+    "settings": {
+      "title": "The company's working day",
+      "start": "Day starts",
+      "end": "Day ends",
+      "break": "Break (minutes)",
+      "grace": "Grace for lateness (minutes)",
+      "timeZone": "Company time zone",
+      "daily": "Hours expected per day: {time}. Arriving more than {grace} minutes after {late} counts as late.",
+      "weekendNote": "Weekend days come from the «Leave policy» on the Leave page, so both pages use the same days."
+    },
+    "zones": {
+      "Africa_Cairo": "Cairo",
+      "Asia_Riyadh": "Riyadh",
+      "Asia_Dubai": "Dubai",
+      "Asia_Kuwait": "Kuwait",
+      "Asia_Qatar": "Doha",
+      "Europe_London": "London"
+    },
+    "notices": {
+      "clockedIn": "Clocked in. Have a good day!",
+      "clockedOut": "Clocked out.",
+      "added": "Hours added.",
+      "removed": "Hours removed.",
+      "settingsSaved": "Working day saved."
+    }
   }
 }

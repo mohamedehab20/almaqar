@@ -38,7 +38,7 @@ const tools: { key: string; icon: LucideIcon; page?: string }[] = [
   { key: "schedules", icon: Clock },
   { key: "permissions", icon: ShieldUser },
   { key: "performance", icon: TrendingUp },
-  { key: "workHours", icon: Timer },
+  { key: "workHours", icon: Timer, page: "work-hours" },
   { key: "archive", icon: Archive },
   { key: "recruitment", icon: UserSearch },
   { key: "employeeFiles", icon: FolderOpen },

@@ -2,6 +2,16 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-15 — Working hours
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 59/59. 8 new tests in `tests/db/hours.test.ts`: time zones with daylight saving; the month summary (expected, worked, late, absent, leave, weekend work, today); demo habits; clock in / out (one running session); hand entries (manual flag, overlap, future, order); RLS with raw SQL; a department-scoped lead (sees and edits only their team, and its approved leave); the working day settings. |
+| Migrations 0026–0027 on Supabase | Applied. RLS on both tables (7 policies), `hours.manage` given to all 4 Admin roles. |
+| Smoke test, advisors | SMOKE OK. Security: none. Performance: only INFO "unused index". |
+| Real browser (headless Edge over DevTools, /c/demo/hr/work-hours) | All three tabs, an employee's days opened from the team table, clock in. No page errors. |
+| `tsc`, `lint`, `build`, `check:routes` | Pass. |
+
 ## 2026-10-15 — Leave
 
 | Check | Result |

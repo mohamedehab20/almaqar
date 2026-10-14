@@ -4,6 +4,14 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-15 — Working hours: sessions, a company time zone, today never counts as short
+- **Data:** a session per stretch of work (`work_sessions`), from the clock-in button or typed by hand. A daily-total table would lose the in / out times needed for lateness.
+- **Time zone:** each company sets one; days and lateness are read in it (`zonedToUtc` / `localParts`, daylight saving included). The server's UTC date would put late-evening work on the wrong day.
+- **Expected hours** count working days until yesterday, minus approved leave. Counting today would show everyone "short" until they leave.
+- **Hand entries:** allowed for yourself (forgotten clock-in, work outside the office), always marked «يدوي» with an optional note, and visible to the manager. Employees cannot remove timer records. A stricter flow (hand entries waiting for approval) can come later if needed.
+- **Weekend:** shared with the leave policy, so the two pages never disagree.
+- **Alternative considered:** reusing `leaves.manage` for hours. A separate `hours.manage` was kept, so a company can let someone follow attendance without approving leave.
+
 ### 2026-10-15 — Leave: working days, reserved pending days, a fixed list of types
 - **Days counted:** working days only, skipping the company's weekend (Friday and Saturday by default). The server counts them when the request is made; public holidays are not subtracted yet.
 - **Balance:** allowance − approved − pending. Pending days are reserved, so two requests cannot spend the same days; approval checks again (the allowance may have been lowered).

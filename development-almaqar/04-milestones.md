@@ -14,6 +14,18 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-15 — Working hours («ساعات العمل»)
+- **Page:** `/c/<slug>/hr/work-hours` (`?month=YYYY-MM`, last six months), opened from the «ساعات العمل» tile in HR.
+- **«ساعاتي» (everyone):** a clock-in / clock-out button with the running time; the month's hours worked, hours expected, the difference (extra or short), late days and absent days; every day of the month with status (present, late, absent, leave, weekend, today), in, out and hours; hours added by hand (marked «يدوي», with a note), and removing them.
+- **«ساعات الفريق» (`hours.manage`):** who is working now; per employee: days present, late, absent, leave, hours worked, expected and the difference; click a row for their days, to add or remove hours.
+- **«مواعيد العمل»:** start and end of the day, break, grace for lateness, time zone. The weekend comes from the leave policy.
+- **Rules (`calc.ts`, shared with the demo):** a session counts on the local day it started; expected = working days until yesterday, minus approved leave, × daily hours; today never counts as short; late = first clock-in after start + grace.
+- **Permission:** new `hours.manage` (scoped by department), given to every Admin role. Clocking in and adding your own hours needs none. A lead with `hours.manage` also sees their team's approved leave.
+- **Database:** `work_sessions` (one running session per person) and `work_settings`, with RLS (migrations 0026–0027, applied to Supabase).
+- **Demo:** the demo team's month with habits (early and long days, often late, short days, an absence), leave from the leave demo, and people clocked in during the day.
+
+Files: `src/modules/hours/{calc,service,actions,queries,demo}.ts`, `src/modules/hours/components/hours-view.tsx`, `src/app/[locale]/(app)/c/[companySlug]/hr/work-hours/page.tsx`, `src/modules/hr/components/hr-home.tsx`, `src/db/schema.ts`, `drizzle/0026_work_hours.sql`, `drizzle/0027_work_hours_rls.sql`, `src/modules/permissions/catalog.ts`, `tests/db/hours.test.ts`, `scripts/check-routes.mjs`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-15 — Leave: requests, balances, approvals and policy («الإجازات»)
 - **Page:** `/c/<slug>/hr/leave`, opened from the «الإجازات» tile in HR (the first HR tool with its own page).
 - **Every employee («إجازاتي»):** a balance card per type (annual, casual, sick, unpaid) with days left, used and pending; a request form that counts working days and shows the balance after; their requests with status, the manager's name and note, and cancel (while pending, or approved and not started).
