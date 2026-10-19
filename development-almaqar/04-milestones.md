@@ -19,7 +19,7 @@ Files: main files touched.
 - **Permissions** (migration `0036_analytics`): `analytics.view` opens the room; `analytics.departments` (scoped) chooses which departments' totals appear; `analytics.members` (scoped) shows people. The default Admin role has all three; Employee none.
 - **Scope is decided on the server.** The page sends only the month. Hours, leave and approvals are private under RLS, so three readers (`private.analytics_minutes`, `analytics_leave`, `analytics_waiting_approvals`, SECURITY DEFINER) return rows only for departments the caller may analyse.
 - **Fairness:** no single score; under 5 items shows «بيانات غير كافية»; bottlenecks never label a person.
-- **Not applied on Supabase yet:** the Supabase connection needs signing in again, so 0036 waits; this commit stays local until it is applied.
+- **Applied on Supabase** (2026-10-19, version 20261019193147). The MCP connection was signed out, so it went through `DATABASE_URL` in one transaction and was recorded in `drizzle.__drizzle_migrations` and `supabase_migrations.schema_migrations` like the earlier ones.
 
 Files: `src/modules/analytics/{calc,service,queries,demo}.ts`, `src/modules/analytics/components/analytics-view.tsx`, `src/app/[locale]/(app)/c/[companySlug]/analytics/{layout,page}.tsx`, `drizzle/0036_analytics.sql`, `src/modules/permissions/catalog.ts`, `src/modules/departments/{rooms.ts,components/departments-view.tsx}`, `src/components/layout/{app-sidebar,app-topbar}.tsx`, `src/i18n/messages/{ar,en}.json`, `scripts/check-routes.mjs`, `tests/db/analytics.test.ts`.
 

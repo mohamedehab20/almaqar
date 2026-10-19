@@ -9,7 +9,9 @@ A complete check of the frontend, the backend and the live Supabase database. Ne
 | `npm run test:db` | 84/84. 10 new in `tests/db/analytics.test.ts`: formulas against hand-worked values (delivery 6/7, on time 5/6, overdue 9 days, 13 working days in 1–19 Oct minus 2 leave days, small samples → insufficient), scope filtering, runs waiting on the step assignee or the owner, demo data; SEC-TC-01/04 (no view, other company → forbidden), SEC-TC-02/06 (scoped head sees Sales only and no people; the SQL readers return nothing outside the scope), SEC-TC-05 (a new grant shows on the next call), owner sees all, default roles. |
 | `tsc`, `lint`, `build`, `check:routes` | Pass (`/c/demo/analytics` added). |
 | Real browser (/c/demo/analytics) | Tiles, comparison table, a department opened with its people, bottlenecks. No page errors. |
-| Migration 0036 on Supabase | **Not applied yet**: the Supabase connection is signed out. |
+| Migration 0036 on Supabase | Applied. Live checks: `permission_keys()` = catalog (35/35); all 3 Admin roles have analytics.*, no Employee role does; the 3 readers are SECURITY DEFINER with `search_path=''`, not executable by anon; no SECURITY DEFINER in public; RLS on every public table; a non-member gets nothing from the readers; RLS smoke test SMOKE OK. |
+| Live service | `getAnalyticsData` as the kira glass owner: 1 department, little data → «بيانات غير كافية», 1 bottleneck. |
+| Advisors | Not run: the Supabase MCP is signed out (`/mcp` → supabase → Authenticate). |
 
 ## 2026-10-15 — Approvals and files
 
