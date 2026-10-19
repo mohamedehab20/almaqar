@@ -2,6 +2,31 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-19 — Full end-to-end run on production (owner, employee, visitor)
+
+Real browser (headless Edge over CDP) on https://almaqar-theta.vercel.app, three new Clerk accounts signed in through the real login form, every action through the UI, then checked in the live database. A temporary company was created by the owner's first sign-in and deleted at the end with the three accounts.
+
+**Passed (about 110 checks)**
+- **Owner:** sign-in creates the company and opens it. All 18 pages return 200 with no error screens or exceptions (rooms, HR pages, meetings tabs, permissions, analytics, English pages). Adding a department, adding the employee (name, email, title, department, default role), starting and stopping work (68 s session), adding a client (invite code shown), and asking the employee for an approval were all saved correctly.
+- **Employee:** first sign-in links the invite (`members.user_id`) and opens the company. Pages open. Analytics and Permissions are closed (NoAccess) and hidden from the sidebar. Approving with a note, requesting a day of leave (1 working day), and start/stop work were all saved.
+- **Owner again:** approves the leave (`decided_by_id` = owner). Analytics shows the department with the hours. The employee shows as linked.
+- **Visitor:** the invite code is accepted, sign-in opens `/client-portal`, and `client_users` links them to the client. `/c/<slug>`, `/hr` and `/analytics` return 404 for them.
+- **Database (RLS as each user):**
+  - The employee sees only their own working sessions and only their company.
+  - The visitor cannot read the company's members.
+  - The analytics readers give the employee nothing.
+  - Events: member.invited, client.created, approval.requested, approval.approved, leave.requested, leave.approved.
+
+**Problems found**
+
+| ID | Severity | Where | What happens | Cause |
+|---|---|---|---|---|
+| QA-001 | High | Main hall `/c/<slug>` | A real company with 2 people shows the 7 demo people (خالد منصور, نور العتيبي…) on the floor plan and in «الحضور» | `hq-view` still renders `hq/mock` members for signed-in companies |
+| QA-002 | High | Visitor `/client-portal` | The visitor sees the demo client «مخبز الصباح», not their own client, although `client_users` links them correctly | `client-home.tsx` uses `DEMO_CLIENT_ID` (TODO(backend)) |
+| QA-003 | High | Tasks (`meetings?tab=tasks`), Operations, Automation | Demo tasks, people and operations (OP-1042…) inside a real company; tasks added there are not saved | `tasks-section`, `operations-view`, `automation-view` not wired (TODO(backend)); analytics therefore gets no tasks from the UI |
+| QA-004 | Medium | Approvals tab | React error #418 (hydration mismatch) when a request exists | `approvals-section.tsx:86` formats times without `timeZone`: the server renders in UTC, the browser in Cairo time. Same pattern in `client-portal-view.tsx:97` and `recruitment-view.tsx:103` |
+| QA-005 | Low | Notes, schedule, marketing ideas, briefs | Still demo / local state in a real company (known TODO(backend) list in 06) | Not wired yet |
+
 ## 2026-10-19 — Analytics room
 
 | Check | Result |
