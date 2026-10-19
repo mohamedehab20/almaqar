@@ -14,6 +14,13 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-19 — Analytics design documented against the real code
+- `Almaqar.pdf` (a proposed SRS, ERD, use cases, architecture, API and QA plan for an analytics module) was reconciled with the code and written as files 10–15 in this folder, linked by IDs (ANA-FR, KPI, UC, API, SEC-TC, QA).
+- Key mappings: organizations → `companies`, teams → `departments`, roles/scopes → the existing permissions tables, audit log → `events`, REST endpoints → queries and Server Actions.
+- Release 1 (next): a read-only «التحليلات» room on existing data. Release 2: CSV/Excel import, jobs, saved dashboards, reports, AI.
+
+Files: `development-almaqar/{10-analytics-srs,11-erd,12-use-cases,13-analytics-architecture,14-api-contracts,15-security-qa}.md`, `README.md`.
+
 ### 2026-10-15 — The seeded "demo" company was removed from the live database
 - The owner asked to delete it and keep **kira glass** (`/c/kira-glass-7c2n`) as the company for real testing. The row and all its data (7 members, rooms, orders…) were deleted; every table cascades from `companies`, and it had no stored files.
 - `/c/demo` still works for everyone as the public demo on mock data (the layout falls back to it when no real company has that slug). `npm run db:seed` can recreate the database copy if it is ever needed.

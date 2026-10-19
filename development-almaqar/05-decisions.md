@@ -4,6 +4,12 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-19 — Analytics: departments are the teams; live data first; no single score
+- **No team table:** the PDF's teams are Al Maqr's departments. A manager over several departments is a role scoped to those departments, not a new managerships table.
+- **Release 1 reads live data** (tasks, hours, leave, approvals, runs) inside the normal module pattern. Imports, jobs and reports wait for release 2 (owner's choice).
+- **Two scoped keys:** `analytics.departments` (totals) and `analytics.members` (people), so a head can see department figures without individual records.
+- **Fairness:** each dimension is shown on its own with its sample; under 5 items shows «بيانات غير كافية»; no labels on people.
+
 ### 2026-10-15 — Real testing happens in kira glass, not in a database "demo"
 - A database company with the slug `demo` hid the public mock demo for its owner and mixed seeded rows with real tests. It was removed; `/c/demo` is only the mock demo, and real checks use `kira-glass-7c2n`.
 

@@ -17,6 +17,12 @@ This folder is the running engineering record of **Al Maqr (المقر)**, a "di
 | [07-conventions.md](07-conventions.md) | Coding rules, verification steps and known gotchas |
 | [08-backend-tasks.md](08-backend-tasks.md) | What is left of the backend plan, as tasks for two engineers |
 | [09-test-report.md](09-test-report.md) | Full test runs across frontend, backend and the live database, with findings |
+| [10-analytics-srs.md](10-analytics-srs.md) | Analytics: requirements (ANA-FR-xxx), metrics (KPI-xx), fairness rules, targets |
+| [11-erd.md](11-erd.md) | The real schema as an ERD, data dictionary, and known data gaps |
+| [12-use-cases.md](12-use-cases.md) | Analytics use cases (UC-xx) |
+| [13-analytics-architecture.md](13-analytics-architecture.md) | How the Analytics room is built and where authorization happens |
+| [14-api-contracts.md](14-api-contracts.md) | Proposed REST endpoints mapped to Al Maqr's queries and actions (API-xx), error codes |
+| [15-security-qa.md](15-security-qa.md) | Access matrix, security test cases (SEC-TC-xx), regression steps, issue template |
 
 ## Keeping this folder current
 
