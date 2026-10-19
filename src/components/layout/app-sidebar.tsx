@@ -6,6 +6,7 @@ import {
   BriefcaseBusiness,
   Banknote,
   CalendarDays,
+  ChartColumn,
   ChevronDown,
   Circle,
   CircleCheck,
@@ -76,6 +77,7 @@ export function AppSidebar({ companySlug, access = null, onClose }: { companySlu
         { key: "accounts", icon: Banknote },
         { key: "sales", icon: TrendingUp }, // coming soon (page kept, closed in its layout)
         { key: "marketing", icon: Megaphone, href: `${base}/marketing` },
+        { key: "analytics", icon: ChartColumn, href: `${base}/analytics` },
         { key: "agents", icon: BriefcaseBusiness }, // coming soon (page kept, closed in its layout)
         { key: "archive", icon: Archive },
         { key: "meetings", icon: DoorOpen, href: `${base}/meetings` },

@@ -6,6 +6,7 @@ import {
   Banknote,
   BriefcaseBusiness,
   Building2,
+  ChartColumn,
   Check,
   Contact,
   DoorOpen,
@@ -43,6 +44,7 @@ const roomIcon: Record<RoomKey, LucideIcon> = {
   operations: Workflow,
   automation: Zap,
   marketing: Megaphone,
+  analytics: ChartColumn,
   meetings: DoorOpen,
   accounts: Banknote,
   sales: TrendingUp,
@@ -50,7 +52,7 @@ const roomIcon: Record<RoomKey, LucideIcon> = {
   archive: Archive,
 };
 /** Room → its page under /c/<slug> */
-const roomPath: Partial<Record<RoomKey, string>> = { hr: "hr", operations: "operations", automation: "automation", marketing: "marketing", meetings: "meetings" };
+const roomPath: Partial<Record<RoomKey, string>> = { hr: "hr", operations: "operations", automation: "automation", marketing: "marketing", analytics: "analytics", meetings: "meetings" };
 const COLORS: DepartmentColor[] = ["blue", "violet", "amber", "emerald"];
 const colorDot: Record<DepartmentColor, string> = { blue: "bg-[#2563eb]", violet: "bg-[#7c3aed]", amber: "bg-[#d97706]", emerald: "bg-[#059669]" };
 

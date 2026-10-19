@@ -8,7 +8,7 @@
 
 type Localized = { ar: string; en: string };
 
-export type PermissionArea = "hr" | "operations" | "automation" | "sales" | "marketing" | "agents" | "company";
+export type PermissionArea = "hr" | "operations" | "automation" | "sales" | "marketing" | "agents" | "analytics" | "company";
 
 export type PermissionDef = { key: string; area: PermissionArea; label: Localized; scoped?: boolean };
 
@@ -50,6 +50,10 @@ export const PERMISSIONS = [
   { key: "agents.use", area: "agents", label: { ar: "تكليف الوكلاء بمهام", en: "Give agents tasks" } },
   { key: "agents.manage", area: "agents", label: { ar: "إضافة وإيقاف الوكلاء", en: "Add and pause agents" } },
 
+  { key: "analytics.view", area: "analytics", label: { ar: "فتح غرفة التحليلات", en: "Open the Analytics room" } },
+  { key: "analytics.departments", area: "analytics", scoped: true, label: { ar: "أرقام الأقسام المجمّعة", en: "Department totals" } },
+  { key: "analytics.members", area: "analytics", scoped: true, label: { ar: "تفاصيل كل موظف في التحليلات", en: "Per-person details in analytics" } },
+
   { key: "company.settings", area: "company", label: { ar: "إعدادات الشركة والمكتب", en: "Company and office settings" } },
 ] as const satisfies readonly PermissionDef[];
 
@@ -65,6 +69,7 @@ export const AREAS: { area: PermissionArea; label: Localized }[] = [
   { area: "sales", label: { ar: "المبيعات", en: "Sales" } },
   { area: "marketing", label: { ar: "التسويق", en: "Marketing" } },
   { area: "agents", label: { ar: "الجراب", en: "Al Jarab" } },
+  { area: "analytics", label: { ar: "التحليلات", en: "Analytics" } },
   { area: "company", label: { ar: "الشركة", en: "Company" } },
 ];
 
@@ -77,6 +82,7 @@ export const ROOM_VIEW: Record<string, PermissionKey> = {
   sales: "sales.view",
   marketing: "marketing.view",
   agents: "agents.view",
+  analytics: "analytics.view",
 };
 
 /** Default "Employee" role: open every room, add things and use agents; no managing others. */

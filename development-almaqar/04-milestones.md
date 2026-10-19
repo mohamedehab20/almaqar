@@ -14,6 +14,15 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-19 — «التحليلات» room (release 1)
+- New room in the sidebar (`/c/<slug>/analytics`), on/off from «إدارة الأقسام». For one month it puts the departments side by side: delivery, on-time completion, overdue work (and how old), median cycle time, open work per person, hours logged vs expected (after approved leave), approvals waiting and operations stuck at a step. Summary tiles, a status per department (on target / below / little data), «محتاج متابعة» with evidence and neutral advice, per-person details, and «إزاي بنحسب؟».
+- **Permissions** (migration `0036_analytics`): `analytics.view` opens the room; `analytics.departments` (scoped) chooses which departments' totals appear; `analytics.members` (scoped) shows people. The default Admin role has all three; Employee none.
+- **Scope is decided on the server.** The page sends only the month. Hours, leave and approvals are private under RLS, so three readers (`private.analytics_minutes`, `analytics_leave`, `analytics_waiting_approvals`, SECURITY DEFINER) return rows only for departments the caller may analyse.
+- **Fairness:** no single score; under 5 items shows «بيانات غير كافية»; bottlenecks never label a person.
+- **Not applied on Supabase yet:** the Supabase connection needs signing in again, so 0036 waits; this commit stays local until it is applied.
+
+Files: `src/modules/analytics/{calc,service,queries,demo}.ts`, `src/modules/analytics/components/analytics-view.tsx`, `src/app/[locale]/(app)/c/[companySlug]/analytics/{layout,page}.tsx`, `drizzle/0036_analytics.sql`, `src/modules/permissions/catalog.ts`, `src/modules/departments/{rooms.ts,components/departments-view.tsx}`, `src/components/layout/{app-sidebar,app-topbar}.tsx`, `src/i18n/messages/{ar,en}.json`, `scripts/check-routes.mjs`, `tests/db/analytics.test.ts`.
+
 ### 2026-10-19 — Analytics design documented against the real code
 - `Almaqar.pdf` (a proposed SRS, ERD, use cases, architecture, API and QA plan for an analytics module) was reconciled with the code and written as files 10–15 in this folder, linked by IDs (ANA-FR, KPI, UC, API, SEC-TC, QA).
 - Key mappings: organizations → `companies`, teams → `departments`, roles/scopes → the existing permissions tables, audit log → `events`, REST endpoints → queries and Server Actions.

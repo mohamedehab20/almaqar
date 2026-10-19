@@ -8,6 +8,7 @@ export const ROOMS = [
   { key: "operations", soon: false },
   { key: "automation", soon: false },
   { key: "marketing", soon: false },
+  { key: "analytics", soon: false },
   { key: "meetings", soon: false },
   { key: "accounts", soon: true },
   { key: "sales", soon: true },

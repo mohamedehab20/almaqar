@@ -349,7 +349,8 @@
       "meetings": "Meetings",
       "tasks": "Tasks",
       "permissions": "Permissions",
-      "agents": "Al Jarab"
+      "agents": "Al Jarab",
+      "analytics": "Analytics"
     },
     "tabs": {
       "dashboard": "Dashboard",
@@ -2152,5 +2153,131 @@
     },
     "fromToMe": "From {from} to you",
     "fromMe": "From you to {to}"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Departments side by side for the month: delivery, timeliness, overdue work and workload, and where work is waiting.",
+    "readAt": "Data as of {time}",
+    "month": "Month",
+    "demoNotice": "Sample data. In your company the numbers come from real tasks, working hours, leave and approvals.",
+    "empty": "There are no departments you can see figures for. Ask the owner for “Department totals” if you need them.",
+    "noDepartment": "No department",
+    "members": "{n, plural, =0 {No members} one {# member} other {# members}}",
+    "insufficient": "Not enough data ({n})",
+    "oldestDays": "oldest {n} days",
+    "days": "{n} days",
+    "doneCount": "of {n} done",
+    "openCount": "{n} open",
+    "approvalsN": "{n} approvals",
+    "stuckN": "{n} stuck operations",
+    "tiles": {
+      "onTarget": "Departments on target",
+      "onTargetSub": "Of those with enough data ({known}). Target {target}",
+      "overdue": "Overdue tasks",
+      "overdueSub": "Open and past their date",
+      "timeliness": "On-time completion",
+      "timelinessSub": "Of {n} finished tasks that had a date",
+      "waiting": "Work waiting on someone",
+      "waitingSub": "Pending approvals and operations stuck at a step"
+    },
+    "compare": {
+      "title": "Departments — {month}",
+      "hint": "Click a department for details",
+      "cols": {
+        "department": "Department",
+        "status": "Status",
+        "delivery": "Delivery",
+        "timeliness": "On time",
+        "overdue": "Overdue",
+        "cycle": "Cycle time",
+        "load": "Open per person",
+        "hours": "Hours",
+        "waiting": "Waiting"
+      }
+    },
+    "status": {
+      "on_target": "On target",
+      "behind": "Below target",
+      "unknown": "Little data"
+    },
+    "details": {
+      "noPeople": "You see department totals only. Per-person details need “Per-person details in analytics”.",
+      "notThisDepartment": "Per-person details are not available to you in this department.",
+      "empty": "No members in this department.",
+      "cols": {
+        "person": "Person",
+        "open": "Open",
+        "overdue": "Overdue",
+        "done": "Done",
+        "timeliness": "On time",
+        "hours": "Logged / expected"
+      },
+      "note": "These numbers start a question, not a verdict: check workload, approvals and dependencies on other departments before any decision."
+    },
+    "bottlenecks": {
+      "title": "Needs attention",
+      "hint": "Measurable facts with their evidence. The cause can be workload, waiting on another department, or unclear requirements.",
+      "none": "No clear bottlenecks this month.",
+      "noDepartment": "No department",
+      "overdue": "{dept}: {count} overdue tasks, the oldest {days} days late",
+      "approvals": "{dept}: {count} approval requests waiting over 3 days, the oldest {days} days",
+      "approvalsPerson": "{dept}: {count} approval requests waiting on {name}, the oldest {days} days",
+      "stuck": "{dept}: {count} operations stuck at a step for {days} days ({codes})",
+      "overload": "{dept}: {perMember} open tasks per person, against an average of {average}",
+      "hours": "{dept}: hours logged are {value} of expected",
+      "unowned": "{count} open tasks with nobody responsible",
+      "advice": {
+        "overdue": "Check whether the dates are realistic and whether something is waiting on another department.",
+        "approvals": "These requests hold up other people's work; delegate them or set a date.",
+        "stuck": "Open the operation in the Operations room and see who should act.",
+        "overload": "Spread the work or postpone part of it before dates slip.",
+        "hours": "Make sure people log their time and leave is recorded before reading this number.",
+        "unowned": "A task without an owner rarely gets done; assign someone."
+      }
+    },
+    "help": {
+      "title": "How are the numbers computed?",
+      "fairness": "No single score ranks departments or people. Each number stands on its own with its sample size; the aim is to find where work is stuck, not to judge anyone.",
+      "delivery": {
+        "title": "Delivery",
+        "text": "Tasks due in the month (up to today) that are done ÷ all tasks due in the month."
+      },
+      "timeliness": {
+        "title": "On time",
+        "text": "Tasks finished in the month on or before their date ÷ tasks finished in the month that had a date."
+      },
+      "overdue": {
+        "title": "Overdue",
+        "text": "Open tasks past their date, and how many days the oldest is late."
+      },
+      "cycle": {
+        "title": "Cycle time",
+        "text": "Median days from creating a task to finishing it, for tasks finished in the month."
+      },
+      "load": {
+        "title": "Open per person",
+        "text": "Open tasks in the department ÷ its members. Far above the average means heavy workload."
+      },
+      "hours": {
+        "title": "Hours",
+        "text": "Hours logged in Working hours ÷ expected (working days so far × hours per day, minus approved leave)."
+      },
+      "waiting": {
+        "title": "Waiting",
+        "text": "Approval requests waiting on someone in the department, and operations stuck at one step for {days} days or more."
+      },
+      "status": {
+        "title": "Status",
+        "text": "“On target” when delivery and timeliness (those with enough data) are {target} or more."
+      },
+      "sample": {
+        "title": "Not enough data",
+        "text": "A ratio built on fewer than {min} tasks is not shown, because it can mislead."
+      },
+      "department": {
+        "title": "A task's department",
+        "text": "A task counts in its assignee's department today. When someone moves, their tasks move with them."
+      }
+    }
   }
 }

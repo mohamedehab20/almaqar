@@ -2,6 +2,15 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-19 — Analytics room
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 84/84. 10 new in `tests/db/analytics.test.ts`: formulas against hand-worked values (delivery 6/7, on time 5/6, overdue 9 days, 13 working days in 1–19 Oct minus 2 leave days, small samples → insufficient), scope filtering, runs waiting on the step assignee or the owner, demo data; SEC-TC-01/04 (no view, other company → forbidden), SEC-TC-02/06 (scoped head sees Sales only and no people; the SQL readers return nothing outside the scope), SEC-TC-05 (a new grant shows on the next call), owner sees all, default roles. |
+| `tsc`, `lint`, `build`, `check:routes` | Pass (`/c/demo/analytics` added). |
+| Real browser (/c/demo/analytics) | Tiles, comparison table, a department opened with its people, bottlenecks. No page errors. |
+| Migration 0036 on Supabase | **Not applied yet**: the Supabase connection is signed out. |
+
 ## 2026-10-15 — Approvals and files
 
 | Check | Result |
