@@ -27,7 +27,7 @@ export function NoCompany({ email, name }: { email: string; name: string }) {
     <div className="flex flex-col gap-6 rounded-xl bg-surface-container-lowest p-6 shadow-ambient sm:p-10">
       <div>
         <h1 className="text-3xl font-extrabold">{t("title")}</h1>
-        <p className="mt-2 text-sm text-on-surface-variant">{t("intro", { email })}</p>
+        <p className="mt-2 text-sm text-on-surface-variant">{t.rich("intro", { email, b: (chunks) => <bdi dir="ltr" className="font-semibold">{chunks}</bdi> })}</p>
       </div>
 
       <form
@@ -66,7 +66,7 @@ export function NoCompany({ email, name }: { email: string; name: string }) {
           <MailCheck className="size-5 text-primary" aria-hidden />
           {t("inviteTitle")}
         </h2>
-        <p className="text-sm text-on-surface-variant">{t("inviteIntro", { email })}</p>
+        <p className="text-sm text-on-surface-variant">{t.rich("inviteIntro", { email, b: (chunks) => <bdi dir="ltr" className="font-semibold">{chunks}</bdi> })}</p>
         <Button type="button" variant="secondary" disabled={checking} onClick={() => startChecking(() => router.refresh())} className="h-11 w-fit">
           <RefreshCw className="size-4" aria-hidden />
           {checking ? t("checking") : t("checkAgain")}

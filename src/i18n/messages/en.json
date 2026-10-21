@@ -322,7 +322,7 @@
     },
     "noCompany": {
       "title": "You are not in a company yet",
-      "intro": "You are signed in as {email}, but no company on Al Maqr has added this email yet.",
+      "intro": "You are signed in as <b>{email}</b>, but no company on Al Maqr has added this email yet.",
       "createTitle": "Create your company",
       "createIntro": "Running your own business or team? Create your company's HQ now; you will be its owner and everything you do is saved.",
       "company": "Company name",
@@ -332,7 +332,7 @@
       "creating": "Creating the company…",
       "invalid": "Type the company name and your name (at least 2 letters).",
       "inviteTitle": "Waiting for an invite?",
-      "inviteIntro": "Ask your manager to add {email} from «Employees», then press «Check again».",
+      "inviteIntro": "Ask your manager to add <b>{email}</b> from «Employees», then press «Check again».",
       "checkAgain": "Check again",
       "checking": "Checking…",
       "signOut": "Sign out"
