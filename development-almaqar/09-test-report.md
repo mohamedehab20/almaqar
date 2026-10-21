@@ -2,6 +2,13 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-21 — Signed in without a company (production)
+
+| Check | Result |
+|---|---|
+| Fresh account with no company, real browser on production | 12/12: sign-in lands on `/join` with «لسه مش تابع لشركة» (create, check again, sign out); `/c/demo` and `/client-portal` send them to `/join` instead of demo data; «أنشئ الشركة وادخل» creates the company in the database with them as owner and opens it; the main hall shows them and no demo people; afterwards `/c/demo` and `/join` open their own company; no page errors. Company and account deleted afterwards. |
+| `test:db`, `tsc`, `lint`, `build` | 92/92, pass. |
+
 ## 2026-10-21 — Fixes for QA-001…004
 
 | Check | Result |
