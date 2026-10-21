@@ -10,6 +10,7 @@ import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { getAttachmentUrl } from "@/modules/files/actions";
 import { MAX_FILE_BYTES, uploadFile } from "@/modules/files/upload";
+import { useTimeZone } from "@/lib/time-zone";
 import { cancelApproval, decideApproval, requestApproval } from "../actions";
 import type { Approval, ApprovalFile, ApprovalKind, ApprovalsData, ApprovalStatus } from "../service";
 
@@ -83,7 +84,8 @@ export function ApprovalsSection({ data, companyId, onNotice }: { data: Approval
   const [note, setNote] = useState("");
 
   const nameOf = (id: string) => state.members.find((m) => m.id === id)?.name[locale] ?? "—";
-  const fmt = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }), [locale]);
+  const timeZone = useTimeZone();
+  const fmt = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone }), [locale, timeZone]);
   const fmtDay = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }), [locale]);
 
   const toMe = state.approvals.filter((a) => a.approverId === state.meId);

@@ -431,7 +431,8 @@
       "trial": "Free for 14 days · EGP 300/month after the trial",
       "later": "Not now",
       "close": "Close"
-    }
+    },
+    "statusFailed": "Could not save your status. Try again."
   },
   "ops": {
     "title": "Operations room",
@@ -449,7 +450,8 @@
       "cycle": "Average action time",
       "hours": "hrs",
       "previously": "before",
-      "saved": "{percent}% time saved thanks to AI workflows"
+      "saved": "{percent}% time saved thanks to AI workflows",
+      "period": "Last {days} days"
     },
     "tabs": {
       "all": "All operations",
@@ -508,7 +510,8 @@
       "added": "“{name}” was added to the log.",
       "firstStep": "Request review",
       "firstStepBy": "Awaiting assignment",
-      "noHuman": "No human input"
+      "noHuman": "No human input",
+      "forbidden": "You do not have permission to add operations."
     },
     "analysis": "Analysis",
     "subtitle": "Track every running operation and pending approval in one place.",
@@ -525,7 +528,8 @@
       "notices": {
         "added": "Note added.",
         "empty": "Write the note first.",
-        "noAudience": "Pick at least one department or employee."
+        "noAudience": "Pick at least one department or employee.",
+        "forbidden": "You do not have permission for this note."
       },
       "filter": "Filter by department",
       "all": "All",
@@ -575,7 +579,9 @@
         "added": "Task added.",
         "empty": "Write the task first.",
         "done": "Nice! Task done.",
-        "deleted": "Task deleted."
+        "deleted": "Task deleted.",
+        "moved": "Task moved.",
+        "forbidden": "You cannot change this task: only its creator, its assignee or a manager of its department can."
       },
       "dueLabel": "Due"
     },
@@ -651,7 +657,8 @@
         "done": "“{title}” marked done.",
         "cancelled": "“{title}” cancelled.",
         "scheduled": "“{title}” is scheduled again.",
-        "deleted": "Removed from the schedule."
+        "deleted": "Removed from the schedule.",
+        "forbidden": "Only the organizer or a manager of their department can change this item."
       }
     }
   },
@@ -994,7 +1001,10 @@
       }
     },
     "notices": {
-      "created": "New flow created: {name}"
+      "created": "New flow created: {name}",
+      "forbidden": "You do not have permission to do this in the Automation room.",
+      "storageOff": "File uploads are not available right now.",
+      "uploadFailed": "Could not upload {name}. Try again."
     },
     "analysis": "Analysis",
     "views": {
@@ -1083,9 +1093,12 @@
         "completed": "“{subject}” completed the whole workflow.",
         "closed": "“{subject}” was rejected and closed.",
         "started": "“{subject}” started with {name}.",
-        "created": "New workflow created: {name}"
+        "created": "New workflow created: {name}",
+        "notYourStep": "This step is not yours; only its owner can act on it.",
+        "cannotStart": "You do not have permission to start an approval run."
       },
-      "attachments": "Attachments ({count})"
+      "attachments": "Attachments ({count})",
+      "none": "No approval workflows yet. Start a new one or use a template."
     }
   },
   "sales": {

@@ -24,6 +24,12 @@ async function loadSettings(ctx: Ctx, companyId: string) {
 
 // ---------- Reading ----------
 
+/** The company's time zone (work settings, or the default): every date on screen is shown in it. */
+export async function getCompanyTimeZone(ctx: Ctx, companyId: string) {
+  const [row] = await ctx.tx.select({ timeZone: workSettings.timeZone }).from(workSettings).where(eq(workSettings.companyId, companyId));
+  return readWorkSettings(row).timeZone;
+}
+
 /**
  * The hours page for one month ("YYYY-MM", default: this month in the company's time zone): the company's
  * working day, the caller's sessions, and for whoever has hours.manage the sessions of the departments they

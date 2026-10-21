@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import type { ActionResult } from "@/server/action";
 import { ROOMS } from "@/modules/departments/rooms";
 import { regenerateInviteCode } from "@/modules/marketing/actions";
+import { useTimeZone } from "@/lib/time-zone";
 import { bookClientMeeting, createPortalClient, deletePortalClient, updatePortalClient } from "../actions";
 import type { ClientInput, ClientMeeting, ClientPortalData, ClientStatus, PortalClient } from "../service";
 
@@ -94,7 +95,8 @@ export function ClientPortalView({ data, companyId, companySlug }: { data: Clien
   const ownerLabel = (v: OwnerValue) =>
     v === "visitor" ? t("owner.visitor") : v.startsWith("room:") ? tNav(v.slice(5)) : v.startsWith("dept:") ? (state.departments.find((d) => d.id === v.slice(5))?.name[locale] ?? "—") : t("owner.none");
   const memberName = (id: string | null) => (id ? state.members.find((m) => m.id === id)?.name[locale] : undefined);
-  const fmt = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }), [locale]);
+  const timeZone = useTimeZone();
+  const fmt = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone }), [locale, timeZone]);
 
   function run(local: () => void, remote: () => Promise<ActionResult<unknown>>, success: string, after?: () => void) {
     if (demo) {

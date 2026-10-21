@@ -2,41 +2,45 @@
 
 import { CalendarClock, ChartColumn, ChevronDown, ListTodo, Plus, ScrollText, StickyNote } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { currentUserId, members } from "@/modules/hq/mock";
-import { categoryCounts, kpis, workflowRows, type OpsCategory, type WorkflowRow } from "../mock";
+import { startOperation } from "../actions";
+import type { OpsCategory, WorkflowRow } from "../mock";
+import { OPS_CATEGORIES } from "../rows";
+import type { OperationsData } from "../service";
 import { AddOperationDialog, type NewOperation } from "./add-operation-dialog";
 import { KpiCards } from "./kpi-cards";
-import { notes as demoNotes, type Note } from "../notes";
 import { NotesSection } from "./notes-section";
-import { tasks as demoTasks, type Task } from "../tasks";
 import { TasksSection } from "./tasks-section";
-import { demoSchedule, type ScheduleItem } from "../schedule";
 import { ScheduleSection } from "./schedule-section";
 import { WorkflowsTable } from "./workflows-table";
 
-const categories = Object.keys(categoryCounts) as OpsCategory[];
-
-export function OperationsView() {
+/**
+ * Operations room: the operations log by category, the Analysis figures, notes, tasks and the schedule.
+ * `companyId` null = the public demo (changes stay in the browser); a real company saves through the actions.
+ */
+export function OperationsView({ data, companyId }: { data: OperationsData; companyId: string | null }) {
   const t = useTranslations("ops");
+  const tErr = useTranslations("auth.errors");
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const [category, setCategory] = useState<OpsCategory | "all">("all");
   const [notice, setNotice] = useState<string | null>(null);
-  const [allRows, setAllRows] = useState<WorkflowRow[]>(workflowRows);
+  const [source, setSource] = useState(data);
+  const [allRows, setAllRows] = useState<WorkflowRow[]>(data.rows);
+  if (data !== source) {
+    setSource(data);
+    setAllRows(data.rows);
+  }
   const [adding, setAdding] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
-  const [notes, setNotes] = useState<Note[]>(demoNotes);
   const [tasksOpen, setTasksOpen] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>(demoTasks);
-  const openTasks = tasks.filter((task) => task.status !== "done").length;
-  // Built on first open (in the browser), so dates follow the viewer's own clock
-  const [schedule, setSchedule] = useState<ScheduleItem[] | null>(null);
+  const openTasks = data.tasks.tasks.filter((task) => task.status !== "done").length;
+  const operations = allRows.map((r) => ({ id: r.id, code: r.code, title: r.title }));
   const [scheduleOpen, setScheduleOpen] = useState(false);
-  const toggleSchedule = () => {
-    if (!schedule) setSchedule(demoSchedule());
-    setScheduleOpen((open) => !open);
-  };
+  const toggleSchedule = () => setScheduleOpen((open) => !open);
   const locale = useLocale() as "ar" | "en";
 
   useEffect(() => {
@@ -46,31 +50,41 @@ export function OperationsView() {
   }, [notice]);
 
   const rows = category === "all" ? allRows : allRows.filter((row) => row.category === category);
-  // Rows added in this session on top of the demo totals
-  const added = allRows.length - workflowRows.length;
-  const addedIn = (key: OpsCategory) => allRows.filter((row) => row.category === key).length - workflowRows.filter((row) => row.category === key).length;
-  const total = kpis.activeWorkflows.value + added;
+  // Per category: the saved count, plus rows added in this session (the demo keeps them in the browser)
+  const countOf = (key: OpsCategory) => (data.counts[key] ?? 0) + allRows.filter((r) => r.category === key).length - data.rows.filter((r) => r.category === key).length;
+  const total = OPS_CATEGORIES.reduce((sum, key) => sum + countOf(key), 0);
 
   const addOperation = ({ name, category: newCategory, nature }: NewOperation) => {
-    // TODO(backend): create the workflow instance on the server
-    const me = members.find((m) => m.id === currentUserId)!;
+    const done = () => {
+      setAdding(false);
+      setCategory("all");
+      setNotice(t("add.added", { name }));
+    };
+    if (companyId) {
+      startTransition(async () => {
+        const res = await startOperation({ companyId, subject: { ar: name, en: name }, category: newCategory, nature });
+        if (!res.ok) return setNotice(res.error === "forbidden" ? t("add.forbidden") : tErr(res.error));
+        done();
+        router.refresh();
+      });
+      return;
+    }
+    const me = data.people.find((m) => m.id === data.meId);
     const both = (text: string) => ({ ar: text, en: text });
     const row: WorkflowRow = {
       id: `new-${Date.now()}`,
-      code: `OP-${1048 + added}`,
+      code: `OP-${1048 + allRows.length - data.rows.length}`,
       category: newCategory,
       title: both(name),
       categoryLabel: both(t(`tabs.${newCategory}`)),
-      owner: { name: me.name, role: me.title },
+      owner: { name: me?.name ?? both("—"), role: me?.title ?? both("") },
       step: { title: both(t("add.firstStep")), by: both(t("add.firstStepBy")), tone: "muted" },
       nature,
-      deciders: nature === "human" ? [me.name[locale].charAt(0)] : both(t("add.noHuman")),
+      deciders: nature === "human" ? [(me?.name[locale] ?? "—").charAt(0)] : both(t("add.noHuman")),
       status: nature === "human" ? "pending" : "processing",
     };
     setAllRows((prev) => [row, ...prev]);
-    setAdding(false);
-    setCategory("all");
-    setNotice(t("add.added", { name }));
+    done();
   };
 
   return (
@@ -129,7 +143,7 @@ export function OperationsView() {
             >
               <StickyNote className="size-4" aria-hidden />
               {t("notes.title")}
-              <span className="rounded-sm bg-surface-container px-1.5 text-xs">{notes.length}</span>
+              <span className="rounded-sm bg-surface-container px-1.5 text-xs">{data.notes.length}</span>
               <ChevronDown className={cn("size-4 transition-transform", notesOpen && "rotate-180")} aria-hidden />
             </button>
             <button
@@ -166,25 +180,25 @@ export function OperationsView() {
 
         {analysisOpen && (
           <section id="ops-analysis" aria-label={t("analysis")}>
-            <KpiCards />
+            <KpiCards kpis={data.kpis} />
           </section>
         )}
 
         {notesOpen && (
           <div id="ops-notes">
-            <NotesSection notes={notes} setNotes={setNotes} operations={allRows} onNotice={setNotice} />
+            <NotesSection notes={data.notes} meId={data.meId} people={data.people} departments={data.departments} operations={operations} companyId={companyId} onNotice={setNotice} />
           </div>
         )}
 
         {tasksOpen && (
           <div id="ops-tasks">
-            <TasksSection tasks={tasks} setTasks={setTasks} operations={allRows} onNotice={setNotice} />
+            <TasksSection board={data.tasks} companyId={companyId} onNotice={setNotice} />
           </div>
         )}
 
-        {scheduleOpen && schedule && (
+        {scheduleOpen && (
           <div id="ops-schedule">
-            <ScheduleSection items={schedule} setItems={setSchedule as React.Dispatch<React.SetStateAction<ScheduleItem[]>>} onNotice={setNotice} />
+            <ScheduleSection board={data.schedule} companyId={companyId} onNotice={setNotice} />
           </div>
         )}
 
@@ -194,9 +208,9 @@ export function OperationsView() {
             <CategoryTab active={category === "all"} onClick={() => setCategory("all")}>
               {t("tabs.all")} ({total})
             </CategoryTab>
-            {categories.map((key) => (
+            {OPS_CATEGORIES.map((key) => (
               <CategoryTab key={key} active={category === key} onClick={() => setCategory(key)}>
-                {t(`tabs.${key}`)} ({categoryCounts[key] + addedIn(key)})
+                {t(`tabs.${key}`)} ({countOf(key)})
               </CategoryTab>
             ))}
           </nav>
@@ -205,7 +219,7 @@ export function OperationsView() {
         <WorkflowsTable rows={rows} onNotice={setNotice} />
       </div>
 
-      {adding && <AddOperationDialog onClose={() => setAdding(false)} onAdd={addOperation} />}
+      {adding && <AddOperationDialog onClose={() => setAdding(false)} onAdd={(op) => !pending && addOperation(op)} />}
 
       {notice && (
         <p

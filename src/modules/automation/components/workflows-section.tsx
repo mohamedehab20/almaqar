@@ -2,10 +2,11 @@
 
 import { ArrowLeft, ArrowRight, Check, Paperclip, CornerUpLeft, GitBranch, Pencil, Play, Undo2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Fragment, useState, type Dispatch, type SetStateAction } from "react";
+import { Fragment, useState, useTransition, type Dispatch, type SetStateAction } from "react";
 import { Avatar } from "@/components/shared/avatar";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { currentUserId, memberRole, members } from "@/modules/hq/mock";
+import { actOnRun, startRun as startRunAction } from "../actions";
 import { applyRunAction, type RunStatus, type Workflow, type WorkflowRun } from "../workflows";
 import { AttachmentChip } from "./attachment-chip";
 
@@ -17,10 +18,16 @@ const statusStyle: Record<RunStatus, string> = {
 };
 
 /** Approval workflows as a flowchart: each step is owned by an employee; runs move forward on approval and back on rejection. */
+type Localized = { ar: string; en: string };
+
 type WorkflowsSectionProps = {
   workflows: Workflow[];
   runs: WorkflowRun[];
   setRuns: Dispatch<SetStateAction<WorkflowRun[]>>;
+  meId: string;
+  people: { id: string; name: Localized; title: Localized | null }[];
+  /** null: the public demo (runs move in the browser, anyone can act) */
+  companyId: string | null;
   /** Run to show first (e.g. when opened from a task) */
   initialRunId?: string;
   /** Workflow to show first (e.g. one just created from a template) */
@@ -28,9 +35,29 @@ type WorkflowsSectionProps = {
   onNotice: (message: string) => void;
 };
 
-export function WorkflowsSection({ workflows, runs, setRuns, initialRunId, initialWorkflowId, onNotice }: WorkflowsSectionProps) {
+export function WorkflowsSection(props: WorkflowsSectionProps) {
   const t = useTranslations("automation.workflows");
+  if (props.workflows.length === 0) {
+    return (
+      <section className="flex flex-col gap-3">
+        <h3 className="flex items-center gap-2 text-lg font-extrabold">
+          <GitBranch className="size-5 text-tertiary" aria-hidden />
+          {t("title")}
+        </h3>
+        <p className="rounded-lg bg-surface-container-lowest p-8 text-center text-sm text-on-surface-variant shadow-ambient ghost-border">{t("none")}</p>
+      </section>
+    );
+  }
+  return <WorkflowsBoard {...props} />;
+}
+
+function WorkflowsBoard({ workflows, runs, setRuns, meId, people: members, companyId, initialRunId, initialWorkflowId, onNotice }: WorkflowsSectionProps) {
+  const t = useTranslations("automation.workflows");
+  const tErr = useTranslations("auth.errors");
   const locale = useLocale() as "ar" | "en";
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const memberRole = (m: (typeof members)[number]) => m.title?.[locale] ?? "";
   const Forward = locale === "ar" ? ArrowLeft : ArrowRight;
   const Back = locale === "ar" ? ArrowRight : ArrowLeft;
 
@@ -50,17 +77,42 @@ export function WorkflowsSection({ workflows, runs, setRuns, initialRunId, initi
 
   const act = (action: "approve" | "reject" | "request_changes") => {
     if (!run) return;
-    const next = applyRunAction(run, workflow, action, currentUserId, note.trim() || undefined);
+    const before = runs;
+    const next = applyRunAction(run, workflow, action, meId, note.trim() || undefined);
     setRuns((prev) => prev.map((r) => (r.id === run.id ? next : r)));
     setNote("");
     const subjectText = run.subject[locale];
-    if (next.status === "completed") onNotice(t("notices.completed", { subject: subjectText }));
-    else if (next.status === "closed") onNotice(t("notices.closed", { subject: subjectText }));
-    else onNotice(t(`notices.${action}`, { subject: subjectText, name: name(workflow.steps[next.currentStep].assigneeId) }));
+    const success =
+      next.status === "completed"
+        ? t("notices.completed", { subject: subjectText })
+        : next.status === "closed"
+          ? t("notices.closed", { subject: subjectText })
+          : t(`notices.${action}`, { subject: subjectText, name: name(workflow.steps[next.currentStep].assigneeId) });
+    if (!companyId) return onNotice(success);
+    startTransition(async () => {
+      const res = await actOnRun({ runId: run.id, action, note: note.trim() || undefined });
+      if (!res.ok) {
+        setRuns(before);
+        return onNotice(res.error === "forbidden" ? t("notices.notYourStep") : tErr(res.error));
+      }
+      onNotice(success);
+      router.refresh();
+    });
   };
 
   const startRun = () => {
     const text = subject.trim() || t("defaultSubject", { workflow: workflow.name[locale] });
+    if (companyId) {
+      startTransition(async () => {
+        const res = await startRunAction({ companyId, workflowId: workflow.id, subject: { ar: text, en: text } });
+        if (!res.ok) return onNotice(res.error === "forbidden" ? t("notices.cannotStart") : tErr(res.error));
+        setSubject("");
+        setRunId(res.data.id);
+        onNotice(t("notices.started", { subject: text, name: name(meId) }));
+        router.refresh();
+      });
+      return;
+    }
     const requester = workflow.steps[0].assigneeId;
     const created: WorkflowRun = {
       id: `run-${Date.now()}`,
@@ -77,6 +129,8 @@ export function WorkflowsSection({ workflows, runs, setRuns, initialRunId, initi
   };
 
   const active = run && (run.status === "in_progress" || run.status === "changes_requested");
+  // A real company: only the person at the current step acts (the server checks it too)
+  const myTurn = !companyId || (run ? workflow.steps[run.currentStep]?.assigneeId === meId : false);
   const atFirst = run?.currentStep === 0;
   const stepState = (index: number) => {
     if (!run) return "idle";
@@ -170,7 +224,7 @@ export function WorkflowsSection({ workflows, runs, setRuns, initialRunId, initi
                       <Avatar name={assignee.name[locale]} size="sm" />
                       <span className="min-w-0">
                         <span className="block truncate text-xs font-semibold">{assignee.name[locale]}</span>
-                        <span className="block truncate text-[10px] text-muted" title={memberRole(assignee, locale)}>{memberRole(assignee, locale)}</span>
+                        <span className="block truncate text-[10px] text-muted" title={memberRole(assignee)}>{memberRole(assignee)}</span>
                       </span>
                     </div>
                   )}
@@ -216,7 +270,7 @@ export function WorkflowsSection({ workflows, runs, setRuns, initialRunId, initi
               aria-label={t("runs.subject")}
               className="h-10 min-w-0 flex-1 rounded-sm bg-surface-container-low px-3 text-sm outline-none placeholder:text-muted focus:ring-2 focus:ring-primary/20"
             />
-            <button type="submit" className="flex h-10 shrink-0 items-center gap-1.5 rounded-sm bg-tertiary px-3 text-sm font-bold text-on-tertiary hover:brightness-110">
+            <button type="submit" disabled={pending} className="flex h-10 shrink-0 items-center gap-1.5 rounded-sm bg-tertiary px-3 text-sm font-bold text-on-tertiary hover:brightness-110">
               <Play className="size-4" aria-hidden />
               {t("runs.start")}
             </button>
@@ -269,7 +323,12 @@ export function WorkflowsSection({ workflows, runs, setRuns, initialRunId, initi
               <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", statusStyle[run.status])}>{t(`runs.status.${run.status}`)}</span>
             </div>
 
-            {active && (
+            {active && !myTurn && (
+              <p className="rounded-md bg-surface-container-low p-4 text-sm text-on-surface-variant">
+                {t("runs.waitingFor", { name: name(workflow.steps[run.currentStep].assigneeId) })}
+              </p>
+            )}
+            {active && myTurn && (
               <div className="flex flex-col gap-3 rounded-md bg-surface-container-low p-4">
                 <textarea
                   value={note}

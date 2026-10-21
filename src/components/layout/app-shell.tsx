@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { TimeZoneProvider } from "@/lib/time-zone";
+import { DEFAULT_WORK_SETTINGS } from "@/modules/hours/calc";
 import { AppSidebar } from "./app-sidebar";
 import { AppTopbar } from "./app-topbar";
 import { GuestBanner } from "./guest-banner";
@@ -13,11 +15,13 @@ type AppShellProps = {
   signedIn?: boolean;
   /** Rooms the member may open (null: the demo, everything open) */
   access?: RoomAccess;
+  /** The company's time zone for dates on screen (the demo: the default) */
+  timeZone?: string;
   children: React.ReactNode;
 };
 
 /** Signed-in layout: dark sidebar on the start side (a drawer on small screens), top bar, page content. */
-export function AppShell({ companySlug, userName, signedIn = false, access = null, children }: AppShellProps) {
+export function AppShell({ companySlug, userName, signedIn = false, access = null, timeZone = DEFAULT_WORK_SETTINGS.timeZone, children }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -45,7 +49,9 @@ export function AppShell({ companySlug, userName, signedIn = false, access = nul
         {/* The public demo (not signed in): make clear nothing is saved */}
         {!signedIn && <GuestBanner />}
         <AppTopbar userName={userName} signedIn={signedIn} onMenu={() => setMenuOpen(true)} />
-        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <TimeZoneProvider timeZone={timeZone}>{children}</TimeZoneProvider>
+        </div>
       </div>
     </div>
   );

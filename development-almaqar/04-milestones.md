@@ -14,6 +14,22 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-21 — No more demo data inside a real company (QA-001…004)
+The four problems from the end-to-end run on production are fixed:
+- **QA-001 Main hall:** shows the company's real people with their live presence, its departments, and the latest activity in company time. A company that has not drawn its office yet gets a starting office built from its departments, with a desk per person (`hq/layout.ts` `defaultOffice`). Changing my status is saved (`setMyStatus`).
+- **QA-002 Visitor portal:** a signed-in client user sees their own client and briefs (`getMyClients`, `listClientBriefs`). Sending a brief and answering a question are saved (`sendBrief`, `replyToBrief`). «خروج» signs out. Anyone else still sees the demo client.
+- **QA-003 Operations, tasks, schedule, notes, automation:** all read and write the database for a real company.
+  - **Operations room:** the operations table is built from `workflow_runs` (`operations/rows.ts` `runToRow`); the Analysis cards and the category counts come from real figures; «إضافة عملية» uses `startOperation`.
+  - **Notes:** saved, with their files uploaded straight to storage.
+  - **Tasks:** both the meetings room and the operations room use `createTask`, `updateTask` and `deleteTask`.
+  - **Schedule:** list, create, update and delete are saved, shown in the company's time zone.
+  - **Automation:** workflows (builder with uploaded files, templates), runs (only the person at the current step acts), flows (create, template, on/off) and the header figures are real. With no workflows, the room shows an empty state instead of crashing.
+  - **Errors:** each change shows at once, is put back if the server refuses it, and a refusal says why.
+- **QA-004 Times:** every page now formats times in the company's time zone (`TimeZoneProvider` in the company layout, `useTimeZone()`). Server and browser render the same text, so the hydration error (#418) on approvals, the client portal and recruitment is gone.
+- The public demo (`/c/demo`) is unchanged and still runs on sample data.
+
+Files: `src/lib/time-zone.tsx`, `src/modules/hq/{layout,service,queries}.ts`, `src/modules/hq/components/hq-view.tsx`, `src/modules/operations/{rows,demo,service,queries}.ts`, `src/modules/operations/components/{operations-view,tasks-section,notes-section,schedule-section,kpi-cards,meetings-room}.tsx`, `src/modules/automation/{demo,service,queries}.ts`, `src/modules/automation/components/{automation-view,workflows-section,workflow-builder-dialog}.tsx`, `src/modules/marketing/components/client-home.tsx`, the pages of the main hall, operations, automation, meetings and client portal, `tests/db/wiring.test.ts`.
+
 ### 2026-10-19 — «التحليلات» room (release 1)
 - New room in the sidebar (`/c/<slug>/analytics`), on/off from «إدارة الأقسام». For one month it puts the departments side by side: delivery, on-time completion, overdue work (and how old), median cycle time, open work per person, hours logged vs expected (after approved leave), approvals waiting and operations stuck at a step. Summary tiles, a status per department (on target / below / little data), «محتاج متابعة» with evidence and neutral advice, per-person details, and «إزاي بنحسب؟».
 - **Permissions** (migration `0036_analytics`): `analytics.view` opens the room; `analytics.departments` (scoped) chooses which departments' totals appear; `analytics.members` (scoped) shows people. The default Admin role has all three; Employee none.

@@ -2,18 +2,20 @@
 
 import { AlertTriangle, ArrowLeft, ArrowRight, CalendarDays, Check, ListTodo, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useState, useTransition } from "react";
 import { Avatar } from "@/components/shared/avatar";
 import { Select } from "@/components/ui/select";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { currentUserId, members } from "@/modules/hq/mock";
-import type { WorkflowRow } from "../mock";
+import type { ActionResult } from "@/server/action";
+import { createTask, deleteTask, updateTask } from "../actions";
+import type { TaskBoard } from "../service";
 import { isOverdue, taskPriorities, taskStatuses, type Task, type TaskPriority, type TaskStatus } from "../tasks";
 
 type TasksSectionProps = {
-  tasks: Task[];
-  setTasks: Dispatch<SetStateAction<Task[]>>;
-  operations: WorkflowRow[];
+  board: TaskBoard;
+  /** null: the public demo (changes stay in the browser) */
+  companyId: string | null;
   onNotice: (message: string) => void;
 };
 
@@ -31,22 +33,35 @@ const columnStyle: Record<TaskStatus, string> = {
 
 const priorityRank: Record<TaskPriority, number> = { high: 0, medium: 1, low: 2 };
 
-/** Team tasks: add, assign, move through to do → in progress → done, with overdue and priority at a glance. */
-export function TasksSection({ tasks, setTasks, operations, onNotice }: TasksSectionProps) {
+/**
+ * Team tasks: add, assign, move through to do → in progress → done, with overdue and priority at a glance.
+ * A real company saves every change (createTask / updateTask / deleteTask); the demo keeps them in the browser.
+ */
+export function TasksSection({ board, companyId, onNotice }: TasksSectionProps) {
   const t = useTranslations("ops.tasks");
+  const tErr = useTranslations("auth.errors");
   const locale = useLocale() as "ar" | "en";
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const Forward = locale === "ar" ? ArrowLeft : ArrowRight;
   const Backward = locale === "ar" ? ArrowRight : ArrowLeft;
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
+  const [source, setSource] = useState(board);
+  const [tasks, setTasks] = useState<Task[]>(board.tasks);
+  if (board !== source) {
+    setSource(board);
+    setTasks(board.tasks);
+  }
+  const { meId, members, operations } = board;
   const [title, setTitle] = useState("");
-  const [assigneeId, setAssigneeId] = useState(currentUserId);
+  const [assigneeId, setAssigneeId] = useState(meId);
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [operationId, setOperationId] = useState("");
   const [onlyMine, setOnlyMine] = useState(false);
 
   const memberName = (id: string) => members.find((m) => m.id === id)?.name[locale] ?? "—";
-  const visible = tasks.filter((task) => !onlyMine || task.assigneeId === currentUserId);
+  const visible = tasks.filter((task) => !onlyMine || task.assigneeId === meId);
   const column = (status: TaskStatus) =>
     visible
       .filter((task) => task.status === status)
@@ -57,42 +72,60 @@ export function TasksSection({ tasks, setTasks, operations, onNotice }: TasksSec
           (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
       );
 
+  /** Shows the change at once; a real company then saves it, and puts it back if the server says no. */
+  function save(change: (prev: Task[]) => Task[], remote: () => Promise<ActionResult<unknown>>, success: string) {
+    const before = tasks;
+    setTasks(change);
+    if (!companyId) return onNotice(success);
+    startTransition(async () => {
+      const result = await remote();
+      if (!result.ok) {
+        setTasks(before);
+        return onNotice(result.error === "forbidden" ? t("notices.forbidden") : tErr(result.error));
+      }
+      onNotice(success);
+      router.refresh();
+    });
+  }
+
   const addTask = () => {
     const body = title.trim();
     if (!body) return onNotice(t("notices.empty"));
-    // TODO(backend): createTask (operations/actions.ts)
-    setTasks((prev) => [
-      {
-        id: `t-${Date.now()}`,
-        title: body,
-        assigneeId,
-        createdById: currentUserId,
-        dueDate: dueDate || undefined,
-        priority,
-        status: "todo",
-        operationId: operationId || undefined,
-        createdAt: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
+    const task: Task = {
+      id: `t-${Date.now()}`,
+      title: body,
+      assigneeId,
+      createdById: meId,
+      dueDate: dueDate || undefined,
+      priority,
+      status: "todo",
+      operationId: operationId || undefined,
+      createdAt: new Date().toISOString(),
+    };
+    save(
+      (prev) => [task, ...prev],
+      () => createTask({ companyId: companyId!, title: body, assigneeId, dueDate: dueDate || null, priority, operationId: operationId || null }),
+      t("notices.added"),
+    );
     setTitle("");
     setDueDate("");
     setPriority("medium");
     setOperationId("");
-    onNotice(t("notices.added"));
   };
 
-  const move = (task: Task, status: TaskStatus) => {
-    // TODO(backend): updateTask({ taskId, status })
-    setTasks((prev) => prev.map((x) => (x.id === task.id ? { ...x, status } : x)));
-    if (status === "done") onNotice(t("notices.done"));
-  };
+  const move = (task: Task, status: TaskStatus) =>
+    save(
+      (prev) => prev.map((x) => (x.id === task.id ? { ...x, status } : x)),
+      () => updateTask({ taskId: task.id, status }),
+      status === "done" ? t("notices.done") : t("notices.moved"),
+    );
 
-  const remove = (task: Task) => {
-    // TODO(backend): deleteTask({ taskId })
-    setTasks((prev) => prev.filter((x) => x.id !== task.id));
-    onNotice(t("notices.deleted"));
-  };
+  const remove = (task: Task) =>
+    save(
+      (prev) => prev.filter((x) => x.id !== task.id),
+      () => deleteTask({ taskId: task.id }),
+      t("notices.deleted"),
+    );
 
   return (
     <section className="flex flex-col gap-4">
@@ -180,6 +213,7 @@ export function TasksSection({ tasks, setTasks, operations, onNotice }: TasksSec
         </label>
         <button
           type="submit"
+          disabled={pending}
           className="flex h-11 items-center justify-center gap-2 rounded-sm bg-primary px-4 text-sm font-bold text-on-primary hover:brightness-110"
         >
           <Plus className="size-4" aria-hidden />

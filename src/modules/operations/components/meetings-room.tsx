@@ -6,9 +6,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { ApprovalsSection } from "@/modules/approvals/components/approvals-section";
 import type { ApprovalsData } from "@/modules/approvals/service";
-import { workflowRows } from "../mock";
-import { demoSchedule, type ScheduleItem } from "../schedule";
-import { tasks as demoTasks, type Task } from "../tasks";
+import type { ScheduleBoard, TaskBoard } from "../service";
 import { ScheduleSection } from "./schedule-section";
 import { TasksSection } from "./tasks-section";
 
@@ -21,7 +19,7 @@ const subscribe = () => () => {};
  * task management (demo data, built in the browser so dates follow the viewer's clock), and «الاعتماد»
  * (approval requests between colleagues, saved for a real company; `companyId` null = the public demo).
  */
-export function MeetingsRoom({ initialTab = "schedule", approvals, companyId }: { initialTab?: MeetingsTab; approvals: ApprovalsData; companyId: string | null }) {
+export function MeetingsRoom({ initialTab = "schedule", approvals, tasks, schedule, companyId }: { initialTab?: MeetingsTab; approvals: ApprovalsData; tasks: TaskBoard; schedule: ScheduleBoard; companyId: string | null }) {
   const t = useTranslations("meetings");
   const mounted = useSyncExternalStore(subscribe, () => true, () => false);
   const [tab, setTab] = useState<MeetingsTab>(initialTab);
@@ -69,7 +67,7 @@ export function MeetingsRoom({ initialTab = "schedule", approvals, companyId }: 
         {tab === "approvals" ? (
           <ApprovalsSection data={approvals} companyId={companyId} onNotice={setNotice} />
         ) : mounted ? (
-          <RoomContent tab={tab} onNotice={setNotice} />
+          <RoomContent tab={tab} tasks={tasks} schedule={schedule} companyId={companyId} onNotice={setNotice} />
         ) : (
           <div className="h-64 animate-pulse rounded-lg bg-surface-container-low" aria-busy="true" />
         )}
@@ -85,12 +83,10 @@ export function MeetingsRoom({ initialTab = "schedule", approvals, companyId }: 
 }
 
 /** Mounted only in the browser: the demo schedule is built from the viewer's own date. */
-function RoomContent({ tab, onNotice }: { tab: "schedule" | "tasks"; onNotice: (message: string) => void }) {
-  const [schedule, setSchedule] = useState<ScheduleItem[]>(() => demoSchedule());
-  const [tasks, setTasks] = useState<Task[]>(demoTasks);
+function RoomContent({ tab, tasks, schedule, companyId, onNotice }: { tab: "schedule" | "tasks"; tasks: TaskBoard; schedule: ScheduleBoard; companyId: string | null; onNotice: (message: string) => void }) {
   return tab === "schedule" ? (
-    <ScheduleSection items={schedule} setItems={setSchedule} onNotice={onNotice} />
+    <ScheduleSection board={schedule} companyId={companyId} onNotice={onNotice} />
   ) : (
-    <TasksSection tasks={tasks} setTasks={setTasks} operations={workflowRows} onNotice={onNotice} />
+    <TasksSection board={tasks} companyId={companyId} onNotice={onNotice} />
   );
 }

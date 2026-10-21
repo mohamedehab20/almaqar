@@ -4,6 +4,8 @@ import { demoApprovalsData } from "@/modules/approvals/demo";
 import { getApprovalsData } from "@/modules/approvals/queries";
 import { getSignedInCompany } from "@/modules/hq/queries";
 import { MeetingsRoom } from "@/modules/operations/components/meetings-room";
+import { demoScheduleBoard, demoTaskBoard } from "@/modules/operations/demo";
+import { getScheduleBoard, getTaskBoard } from "@/modules/operations/queries";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/c/[companySlug]/meetings">): Promise<Metadata> {
   const { locale } = await params;
@@ -17,7 +19,9 @@ export default async function MeetingsPage({ params, searchParams }: PageProps<"
   const { tab } = await searchParams;
   setRequestLocale(locale);
   const current = await getSignedInCompany(companySlug);
-  const approvals = current ? await getApprovalsData(current.company.id) : demoApprovalsData(undefined, locale === "en" ? "en" : "ar");
+  const [approvals, tasks, schedule] = current
+    ? await Promise.all([getApprovalsData(current.company.id), getTaskBoard(current.company.id), getScheduleBoard(current.company.id)])
+    : [demoApprovalsData(undefined, locale === "en" ? "en" : "ar"), demoTaskBoard(), demoScheduleBoard()];
   const initialTab = tab === "tasks" || tab === "approvals" ? tab : "schedule";
-  return <MeetingsRoom initialTab={initialTab} approvals={approvals} companyId={current?.company.id ?? null} />;
+  return <MeetingsRoom initialTab={initialTab} approvals={approvals} tasks={tasks} schedule={schedule} companyId={current?.company.id ?? null} />;
 }

@@ -2,29 +2,50 @@
 
 import { Building, Check, Link2, Pin, PinOff, StickyNote, Trash2, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useState, useTransition } from "react";
 import { Avatar } from "@/components/shared/avatar";
 import { Select } from "@/components/ui/select";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { uploadFile } from "@/modules/files/upload";
 import { FileList, FilePicker } from "@/modules/approvals/components/approvals-section";
-import { currentUserId, departments, memberRole, members } from "@/modules/hq/mock";
-import type { WorkflowRow } from "../mock";
+import { createNote, deleteNote, setNotePinned } from "../actions";
 import { noteConcernsDepartment, type Note, type NoteAudience } from "../notes";
+
+type Localized = { ar: string; en: string };
 
 type NotesSectionProps = {
   notes: Note[];
-  setNotes: Dispatch<SetStateAction<Note[]>>;
-  operations: WorkflowRow[];
+  meId: string;
+  people: { id: string; name: Localized; title: Localized | null; departmentId: string | null }[];
+  departments: { id: string; name: Localized }[];
+  operations: { id: string; code: string; title: Localized }[];
+  /** null: the public demo (notes stay in the browser) */
+  companyId: string | null;
   onNotice: (message: string) => void;
 };
 
 const toggle = (list: string[], id: string) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
-const memberDepartment = (memberId: string) => members.find((m) => m.id === memberId)?.departmentId;
 
-/** Team notes addressed to the whole company or to departments / employees, optionally attached to an operation. */
-export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSectionProps) {
+/**
+ * Team notes addressed to the whole company or to departments / employees, optionally attached to an operation.
+ * A real company saves notes and their files (uploaded straight to storage); the demo keeps them in the browser.
+ */
+export function NotesSection({ notes: initial, meId, people: members, departments, operations, companyId, onNotice }: NotesSectionProps) {
   const t = useTranslations("ops.notes");
+  const tApp = useTranslations("approvals");
+  const tErr = useTranslations("auth.errors");
   const locale = useLocale() as "ar" | "en";
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [source, setSource] = useState(initial);
+  const [notes, setNotes] = useState<Note[]>(initial);
+  if (initial !== source) {
+    setSource(initial);
+    setNotes(initial);
+  }
+  const memberDepartment = (memberId: string) => members.find((m) => m.id === memberId)?.departmentId ?? undefined;
+  const memberRole = (m: (typeof members)[number]) => m.title?.[locale] ?? "";
   const [text, setText] = useState("");
   const [operationId, setOperationId] = useState("");
   const [audienceType, setAudienceType] = useState<NoteAudience["type"]>("company");
@@ -34,7 +55,7 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
   const [files, setFiles] = useState<File[]>([]);
 
   // Picking departments narrows the employee list to those departments
-  const pickableMembers = departmentIds.length ? members.filter((m) => departmentIds.includes(m.departmentId)) : members;
+  const pickableMembers = departmentIds.length ? members.filter((m) => m.departmentId && departmentIds.includes(m.departmentId)) : members;
   const deptName = (id: string) => departments.find((d) => d.id === id)?.name[locale] ?? "—";
   const memberName = (id: string) => members.find((m) => m.id === id)?.name[locale] ?? "—";
 
@@ -53,20 +74,47 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
       return;
     }
     const audience: NoteAudience = audienceType === "company" ? { type: "company" } : { type: "custom", departmentIds, memberIds };
-    // TODO(backend): save the note (createNote takes attachments uploaded with uploadFile, folder "notes") and notify its audience.
-    // Until then the files stay in this browser as local previews.
-    const attachments = files.map((f) => ({ path: `local/${f.name}`, name: f.name, size: f.size, type: f.type, url: URL.createObjectURL(f) }));
-    setNotes((prev) => [
-      { id: `n-${Date.now()}`, text: body, authorId: currentUserId, createdAt: new Date().toISOString(), operationId: operationId || undefined, audience, pinned: false, attachments },
-      ...prev,
-    ]);
-    setText("");
-    setFiles([]);
-    setOperationId("");
-    setAudienceType("company");
-    setDepartmentIds([]);
-    setMemberIds([]);
-    onNotice(t("notices.added"));
+    const reset = () => {
+      setText("");
+      setFiles([]);
+      setOperationId("");
+      setAudienceType("company");
+      setDepartmentIds([]);
+      setMemberIds([]);
+      onNotice(t("notices.added"));
+    };
+    if (!companyId) {
+      const attachments = files.map((f) => ({ path: `local/${f.name}`, name: f.name, size: f.size, type: f.type, url: URL.createObjectURL(f) }));
+      setNotes((prev) => [{ id: `n-${Date.now()}`, text: body, authorId: meId, createdAt: new Date().toISOString(), operationId: operationId || undefined, audience, pinned: false, attachments }, ...prev]);
+      return reset();
+    }
+    startTransition(async () => {
+      const attachments = [];
+      for (const f of files) {
+        const up = await uploadFile(companyId, "notes", f);
+        if (!up.ok) return onNotice(up.error === "not_configured" ? tApp("notices.storageOff") : tApp("notices.uploadFailed", { name: f.name }));
+        attachments.push(up.file);
+      }
+      const res = await createNote({ companyId, text: body, audience, operationId: operationId || null, attachments });
+      if (!res.ok) return onNotice(res.error === "forbidden" ? t("notices.forbidden") : tErr(res.error));
+      reset();
+      router.refresh();
+    });
+  };
+
+  /** Pin or delete: shown at once, saved for a real company, put back if the server says no. */
+  const change = (next: (prev: Note[]) => Note[], remote: () => Promise<{ ok: boolean; error?: string }>) => {
+    const before = notes;
+    setNotes(next);
+    if (!companyId) return;
+    startTransition(async () => {
+      const res = await remote();
+      if (!res.ok) {
+        setNotes(before);
+        return onNotice(res.error === "forbidden" ? t("notices.forbidden") : tErr(res.error ?? "server_error"));
+      }
+      router.refresh();
+    });
   };
 
   const audienceLabel = (audience: NoteAudience) =>
@@ -162,7 +210,7 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
                           </span>
                           <span className="min-w-0">
                             <span className="block truncate text-sm">{member.name[locale]}</span>
-                            <span className="block truncate text-[11px] text-muted">{memberRole(member, locale)}</span>
+                            <span className="block truncate text-[11px] text-muted">{memberRole(member)}</span>
                           </span>
                         </button>
                       </li>
@@ -194,7 +242,7 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
               ))}
             </Select>
           </div>
-          <button type="submit" className="h-10 rounded-sm bg-tertiary px-5 text-sm font-bold text-on-tertiary hover:brightness-110">
+          <button type="submit" disabled={pending} className="h-10 rounded-sm bg-tertiary px-5 text-sm font-bold text-on-tertiary hover:brightness-110">
             {t("add")}
           </button>
         </div>
@@ -250,7 +298,7 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
                   </span>
                   <button
                     type="button"
-                    onClick={() => setNotes((prev) => prev.map((n) => (n.id === note.id ? { ...n, pinned: !n.pinned } : n)))}
+                    onClick={() => change((prev) => prev.map((n) => (n.id === note.id ? { ...n, pinned: !n.pinned } : n)), () => setNotePinned({ noteId: note.id, pinned: !note.pinned }))}
                     aria-label={t(note.pinned ? "unpin" : "pin")}
                     title={t(note.pinned ? "unpin" : "pin")}
                     className="grid size-8 place-items-center rounded-full text-muted hover:bg-surface-container hover:text-tertiary"
@@ -259,7 +307,7 @@ export function NotesSection({ notes, setNotes, operations, onNotice }: NotesSec
                   </button>
                   <button
                     type="button"
-                    onClick={() => setNotes((prev) => prev.filter((n) => n.id !== note.id))}
+                    onClick={() => change((prev) => prev.filter((n) => n.id !== note.id), () => deleteNote({ noteId: note.id }))}
                     aria-label={t("delete")}
                     title={t("delete")}
                     className="grid size-8 place-items-center rounded-full text-muted hover:bg-danger-container hover:text-danger"

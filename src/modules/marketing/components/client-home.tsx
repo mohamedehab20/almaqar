@@ -2,18 +2,22 @@
 
 import { CalendarDays, CheckCircle2, Clock, LogOut, MessageCircleQuestion, Send, Wallet } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { SignOutButton } from "@clerk/nextjs";
+import { useEffect, useState, useTransition } from "react";
 import { Logo } from "@/components/layout/logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { Brief, BriefStatus } from "../briefs-mock";
+import { replyToBrief, sendBrief } from "../actions";
 import { updateBriefs, useBriefs } from "../briefs-store";
 import { clients } from "../sections-mock";
 import { BriefForm, type NewBrief } from "./client-portal";
 
-/** The client signed in through visitor login. TODO(backend): resolve from the invite code / session. */
+/** The demo client (public demo). A signed-in client user gets their own client from the page. */
 export const DEMO_CLIENT_ID = "c1";
+
+type Localized = { ar: string; en: string };
 
 const statusStyle: Record<BriefStatus, { className: string; icon: typeof Clock }> = {
   new: { className: "bg-primary-fixed text-primary", icon: Clock },
@@ -21,14 +25,21 @@ const statusStyle: Record<BriefStatus, { className: string; icon: typeof Clock }
   clarification: { className: "bg-tertiary-fixed text-tertiary", icon: MessageCircleQuestion },
 };
 
-/** The client's side of the portal: send briefs and follow their status. */
-export function ClientHome({ clientId = DEMO_CLIENT_ID }: { clientId?: string }) {
+/**
+ * The client's side of the portal: send briefs and follow their status. `real`: a signed-in client user
+ * (their client and briefs, saved through the actions); without it, the demo client.
+ */
+export function ClientHome({ real }: { real?: { client: { id: string; name: Localized }; briefs: Brief[] } }) {
   const t = useTranslations("clientPortal");
   const tp = useTranslations("marketing.portal");
   const tm = useTranslations("marketing");
+  const tErr = useTranslations("auth.errors");
   const locale = useLocale() as "ar" | "en";
-  const client = clients.find((c) => c.id === clientId) ?? clients[0];
-  const myBriefs = useBriefs().filter((brief) => brief.clientId === client.id);
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const demoBriefs = useBriefs();
+  const client = real?.client ?? clients.find((c) => c.id === DEMO_CLIENT_ID) ?? clients[0];
+  const myBriefs = real ? real.briefs : demoBriefs.filter((brief) => brief.clientId === client.id);
   const [replies, setReplies] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -39,6 +50,16 @@ export function ClientHome({ clientId = DEMO_CLIENT_ID }: { clientId?: string })
   }, [notice]);
 
   const submit = (brief: NewBrief) => {
+    if (real) {
+      if (pending) return;
+      startTransition(async () => {
+        const res = await sendBrief({ clientId: client.id, type: brief.type, objective: brief.objective, audience: brief.audience, details: brief.details, budget: brief.budget, deadline: brief.deadline || null });
+        if (!res.ok) return setNotice(tErr(res.error));
+        setNotice(t("notices.sent"));
+        router.refresh();
+      });
+      return;
+    }
     updateBriefs((prev) => [{ ...brief, id: `br-${Date.now()}`, receivedOn: new Date().toISOString().slice(0, 10), status: "new" }, ...prev]);
     setNotice(t("notices.sent"));
   };
@@ -47,6 +68,16 @@ export function ClientHome({ clientId = DEMO_CLIENT_ID }: { clientId?: string })
     const text = (replies[brief.id] ?? "").trim();
     if (!text) {
       setNotice(t("notices.emptyReply"));
+      return;
+    }
+    if (real) {
+      startTransition(async () => {
+        const res = await replyToBrief({ briefId: brief.id, reply: text });
+        if (!res.ok) return setNotice(tErr(res.error));
+        setReplies((prev) => ({ ...prev, [brief.id]: "" }));
+        setNotice(t("notices.replied"));
+        router.refresh();
+      });
       return;
     }
     // The answer goes back to the team as a new request
@@ -66,10 +97,19 @@ export function ClientHome({ clientId = DEMO_CLIENT_ID }: { clientId?: string })
           <div className="flex items-center gap-4 text-sm">
             <LocaleSwitcher />
             <span className="hidden font-semibold sm:inline">{client.name[locale]}</span>
-            <Link href="/" className="flex items-center gap-1.5 text-on-surface-variant hover:text-danger">
-              <LogOut className="size-4" aria-hidden />
-              {t("logout")}
-            </Link>
+            {real ? (
+              <SignOutButton redirectUrl="/visitor-login">
+                <button type="button" className="flex items-center gap-1.5 text-on-surface-variant hover:text-danger">
+                  <LogOut className="size-4" aria-hidden />
+                  {t("logout")}
+                </button>
+              </SignOutButton>
+            ) : (
+              <Link href="/" className="flex items-center gap-1.5 text-on-surface-variant hover:text-danger">
+                <LogOut className="size-4" aria-hidden />
+                {t("logout")}
+              </Link>
+            )}
           </div>
         </div>
       </header>

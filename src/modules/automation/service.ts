@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, gte, isNotNull, sql, sum } from "drizzle-orm";
-import { automationFlows, events, workflowRuns, workflows, type Localized, type WorkflowAttachment } from "@/db/schema";
+import { automationFlows, events, members, workflowRuns, workflows, type Localized, type WorkflowAttachment } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
@@ -335,3 +335,26 @@ export async function getAutomationStats(ctx: Ctx, companyId: string) {
   };
 }
 
+// ---------- The room ----------
+
+export type AutomationData = {
+  meId: string;
+  people: { id: string; name: Localized; title: Localized | null }[];
+  workflows: Workflow[];
+  runs: WorkflowRun[];
+  flows: AutomationFlow[];
+  stats: { automationRate: number; perWeek: number; hoursSaved: number };
+};
+
+/** The Automation room of a real company: approval workflows and their runs, automated flows, header figures. */
+export async function getAutomationData(ctx: Ctx, companyId: string): Promise<AutomationData> {
+  const me = await requireMember(ctx, companyId);
+  const [people, workflowList, runs, flows, stats] = await Promise.all([
+    ctx.tx.select({ id: members.id, name: members.name, title: members.title }).from(members).where(eq(members.companyId, companyId)).orderBy(asc(members.createdAt)),
+    listWorkflows(ctx, companyId),
+    listRuns(ctx, companyId),
+    listFlows(ctx, companyId),
+    getAutomationStats(ctx, companyId),
+  ]);
+  return { meId: me.id, people: people.map((p) => ({ ...p, title: p.title ?? null })), workflows: workflowList, runs, flows, stats };
+}

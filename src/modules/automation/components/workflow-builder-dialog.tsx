@@ -7,7 +7,6 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { memberLabel, members } from "@/modules/hq/mock";
 import type { Workflow, WorkflowAttachment } from "../workflows";
 import { AttachmentChip } from "./attachment-chip";
 
@@ -15,17 +14,32 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPT = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt";
 
 type DraftStep = { title: string; assigneeId: string };
+type Localized = { ar: string; en: string };
+type Person = { id: string; name: Localized; title: Localized | null };
 
 /** Build a new approval workflow: ordered steps, each owned by an employee. */
-export function WorkflowBuilderDialog({ onClose, onCreate }: { onClose: () => void; onCreate: (workflow: Workflow) => void }) {
+export function WorkflowBuilderDialog({
+  people: members,
+  meId,
+  onClose,
+  onCreate,
+}: {
+  people: Person[];
+  meId: string;
+  onClose: () => void;
+  /** `files`: the picked files by attachment id (a real company uploads them before saving) */
+  onCreate: (workflow: Workflow, files: Map<string, File>) => void;
+}) {
   const t = useTranslations("automation.workflows.builder");
   const locale = useLocale() as "ar" | "en";
+  const memberLabel = (m: Person) => (m.title?.[locale] ? `${m.name[locale]} — ${m.title[locale]}` : m.name[locale]);
+  const [picked] = useState(() => new Map<string, File>());
   const [name, setName] = useState("");
   const [attachments, setAttachments] = useState<WorkflowAttachment[]>([]);
   const [dragging, setDragging] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
 
-  // TODO(backend): upload files to storage; for now they are local previews (object URLs)
+  // Local previews until saved; a real company uploads the files when the workflow is created
   const addFiles = (files: FileList | null) => {
     if (!files) return;
     const accepted: WorkflowAttachment[] = [];
@@ -35,7 +49,9 @@ export function WorkflowBuilderDialog({ onClose, onCreate }: { onClose: () => vo
         tooLarge.push(file.name);
         continue;
       }
-      accepted.push({ id: `att-${Date.now()}-${accepted.length}`, name: file.name, size: file.size, type: file.type, url: URL.createObjectURL(file) });
+      const id = `att-${Date.now()}-${accepted.length}`;
+      picked.set(id, file);
+      accepted.push({ id, name: file.name, size: file.size, type: file.type, url: URL.createObjectURL(file) });
     }
     setFileError(tooLarge.length ? t("tooLarge", { names: tooLarge.join("، ") }) : null);
     setAttachments((prev) => [...prev, ...accepted]);
@@ -52,8 +68,8 @@ export function WorkflowBuilderDialog({ onClose, onCreate }: { onClose: () => vo
     addFiles(event.dataTransfer.files);
   };
   const [steps, setSteps] = useState<DraftStep[]>([
-    { title: "", assigneeId: members[1].id },
-    { title: "", assigneeId: members[0].id },
+    { title: "", assigneeId: meId },
+    { title: "", assigneeId: (members.find((m) => m.id !== meId) ?? members[0]).id },
   ]);
 
   useEffect(() => {
@@ -84,7 +100,7 @@ export function WorkflowBuilderDialog({ onClose, onCreate }: { onClose: () => vo
       name: text(name.trim() || t("defaultName")),
       steps: steps.map((s, i) => ({ id: `st-${stamp}-${i}`, title: text(s.title.trim() || t("defaultStep", { n: i + 1 })), assigneeId: s.assigneeId })),
       attachments,
-    });
+    }, picked);
   };
 
   return (
@@ -123,7 +139,7 @@ export function WorkflowBuilderDialog({ onClose, onCreate }: { onClose: () => vo
                 <div className="w-80 shrink-0">
                   <Select aria-label={t("assignee")} value={s.assigneeId} onChange={(event) => update(index, { assigneeId: event.target.value })} className="h-11 bg-surface-container-lowest">
                     {members.map((m) => (
-                      <option key={m.id} value={m.id}>{memberLabel(m, locale)}</option>
+                      <option key={m.id} value={m.id}>{memberLabel(m)}</option>
                     ))}
                   </Select>
                 </div>
@@ -149,7 +165,7 @@ export function WorkflowBuilderDialog({ onClose, onCreate }: { onClose: () => vo
           </ol>
           <button
             type="button"
-            onClick={() => setSteps((prev) => [...prev, { title: "", assigneeId: members[0].id }])}
+            onClick={() => setSteps((prev) => [...prev, { title: "", assigneeId: meId }])}
             className="mt-3 flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
           >
             <Plus className="size-4" aria-hidden />

@@ -28,6 +28,7 @@ import { Select } from "@/components/ui/select";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { ActionResult } from "@/server/action";
+import { useTimeZone } from "@/lib/time-zone";
 import { addCandidate, createJob, deleteCandidate, deleteJob, hireCandidate, moveCandidate, scheduleInterview, updateCandidate, updateJob } from "../actions";
 import {
   ACTIVE_STAGES,
@@ -100,7 +101,8 @@ export function RecruitmentView({ data, companyId, companySlug }: { data: Recrui
   const jobById = useMemo(() => new Map(state.jobs.map((j) => [j.id, j])), [state.jobs]);
   const memberName = (id: string | null) => (id ? (state.members.find((m) => m.id === id)?.name[locale] ?? "—") : null);
   const deptName = (id: string | null) => (id ? (state.departments.find((d) => d.id === id)?.name[locale] ?? "") : "");
-  const fmtDate = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }), [locale]);
+  const timeZone = useTimeZone();
+  const fmtDate = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone }), [locale, timeZone]);
 
   function run(local: () => string | null, remote: () => Promise<ActionResult<unknown>>, success: string, after?: () => void) {
     if (demo) {

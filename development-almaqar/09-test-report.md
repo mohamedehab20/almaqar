@@ -2,6 +2,14 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-21 — Fixes for QA-001…004
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 92/92. 8 new in `tests/db/wiring.test.ts`: starting office (sections, a desk per person, inside the floor); operation rows (step, status, deciders, standalone, system owner); main hall data (real people, desks, activity at company time, outsiders refused); tasks saved / moved / refused for others; operations room data; schedule saved in UTC and shown at 10:30 Cairo; automation data (empty, then workflow + run + flow); visitor reads their client, sends a brief, an outsider sees none. |
+| `tsc`, `lint`, `build`, `check:routes` | Pass. |
+| Demo in a real browser | Main hall, operations (tasks, notes, schedule, analysis panels opened), automation, meetings tabs, client portal, recruitment: no page errors; demo data still shows in the demo. |
+
 ## 2026-10-19 — Full end-to-end run on production (owner, employee, visitor)
 
 Real browser (headless Edge over CDP) on https://almaqar-theta.vercel.app, three new Clerk accounts signed in through the real login form, every action through the UI, then checked in the live database. A temporary company was created by the owner's first sign-in and deleted at the end with the three accounts.

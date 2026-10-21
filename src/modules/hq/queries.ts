@@ -11,6 +11,7 @@ export const listMembers = cache((companyId: string) => withUser((ctx) => svc.li
 export const listDepartments = cache((companyId: string) => withUser((ctx) => svc.listDepartments(ctx, companyId)));
 /** Main hall activity panel */
 export const listActivity = cache((companyId: string, limit?: number) => withUser((ctx) => listActivitySvc(ctx, companyId, limit)));
+export const getMainHall = cache((companyId: string) => withUser((ctx) => svc.getMainHall(ctx, companyId)));
 export const getFloorPlan = cache((companyId: string) => withUser((ctx) => svc.getFloorPlan(ctx, companyId)));
 
 /**

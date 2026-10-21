@@ -19,17 +19,21 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Avatar } from "@/components/shared/avatar";
 import { Select } from "@/components/ui/select";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { currentUserId, members } from "@/modules/hq/mock";
-import { clients } from "@/modules/marketing/sections-mock";
-import { conflicts, scheduleKinds, transports, type ScheduleItem, type ScheduleKind, type Transport } from "../schedule";
+import { zonedToUtc } from "@/modules/hours/calc";
+import type { ActionResult } from "@/server/action";
+import { createScheduleItem, deleteScheduleItem, updateScheduleItem } from "../actions";
+import { conflicts, demoSchedule, scheduleKinds, transports, type ScheduleItem, type ScheduleKind, type Transport } from "../schedule";
+import type { ScheduleBoard } from "../service";
 
 type ScheduleSectionProps = {
-  items: ScheduleItem[];
-  setItems: Dispatch<SetStateAction<ScheduleItem[]>>;
+  board: ScheduleBoard;
+  /** null: the public demo (built in the browser from today, changes stay in the browser) */
+  companyId: string | null;
   onNotice: (message: string) => void;
 };
 
@@ -51,10 +55,20 @@ const localDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad
  * Company schedule: meetings, appointments, trips outside the office and interviews, grouped by day,
  * with full details per item (place, people, client, contact, purpose, transport) and double-booking warnings.
  */
-export function ScheduleSection({ items, setItems, onNotice }: ScheduleSectionProps) {
+export function ScheduleSection({ board, companyId, onNotice }: ScheduleSectionProps) {
   const t = useTranslations("ops.schedule");
+  const tErr = useTranslations("auth.errors");
   const locale = useLocale() as "ar" | "en";
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const { meId, members, clients } = board;
   const [[today, tomorrow]] = useState(() => [localDay(new Date()), localDay(new Date(Date.now() + 86_400_000))]);
+  const [source, setSource] = useState(board);
+  const [items, setItems] = useState<ScheduleItem[]>(() => (companyId ? board.items : demoSchedule()));
+  if (companyId && board !== source) {
+    setSource(board);
+    setItems(board.items);
+  }
   const [kindFilter, setKindFilter] = useState<ScheduleKind | "all">("all");
   const [onlyMine, setOnlyMine] = useState(false);
   const [range, setRange] = useState<"upcoming" | "past">("upcoming");
@@ -66,7 +80,7 @@ export function ScheduleSection({ items, setItems, onNotice }: ScheduleSectionPr
 
   const visible = items
     .filter((i) => kindFilter === "all" || i.kind === kindFilter)
-    .filter((i) => !onlyMine || i.organizerId === currentUserId || i.attendeeIds.includes(currentUserId))
+    .filter((i) => !onlyMine || i.organizerId === meId || i.attendeeIds.includes(meId))
     .filter((i) => (range === "upcoming" ? i.startsAt.slice(0, 10) >= today : i.startsAt.slice(0, 10) < today))
     .sort((a, b) => (range === "upcoming" ? a.startsAt.localeCompare(b.startsAt) : b.startsAt.localeCompare(a.startsAt)));
 
@@ -90,16 +104,47 @@ export function ScheduleSection({ items, setItems, onNotice }: ScheduleSectionPr
 
   const counts = scheduleKinds.map((k) => [k, items.filter((i) => i.kind === k && i.status === "scheduled" && i.startsAt.slice(0, 10) >= today).length] as const);
 
-  const setStatus = (item: ScheduleItem, status: ScheduleItem["status"]) => {
-    // TODO(backend): updateScheduleItem({ itemId, status })
-    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, status } : i)));
-    onNotice(t(`notices.${status}`, { title: item.title }));
-  };
-  const remove = (item: ScheduleItem) => {
-    // TODO(backend): deleteScheduleItem({ itemId })
-    setItems((prev) => prev.filter((i) => i.id !== item.id));
-    onNotice(t("notices.deleted"));
-  };
+  /** Shown at once; a real company then saves it and puts it back if the server says no. */
+  function save(change: (prev: ScheduleItem[]) => ScheduleItem[], remote: () => Promise<ActionResult<unknown>>, success: string) {
+    const before = items;
+    setItems(change);
+    if (!companyId) return onNotice(success);
+    startTransition(async () => {
+      const res = await remote();
+      if (!res.ok) {
+        setItems(before);
+        return onNotice(res.error === "forbidden" ? t("notices.forbidden") : tErr(res.error));
+      }
+      onNotice(success);
+      router.refresh();
+    });
+  }
+
+  const setStatus = (item: ScheduleItem, status: ScheduleItem["status"]) =>
+    save((prev) => prev.map((i) => (i.id === item.id ? { ...i, status } : i)), () => updateScheduleItem({ itemId: item.id, status }), t(`notices.${status}`, { title: item.title }));
+  const remove = (item: ScheduleItem) => save((prev) => prev.filter((i) => i.id !== item.id), () => deleteScheduleItem({ itemId: item.id }), t("notices.deleted"));
+  const add = (item: ScheduleItem) =>
+    save(
+      (prev) => [...prev, item],
+      () =>
+        createScheduleItem({
+          companyId: companyId!,
+          kind: item.kind,
+          title: item.title,
+          startsAt: zonedToUtc(item.startsAt.slice(0, 10), item.startsAt.slice(11, 16), board.timeZone),
+          durationMinutes: item.durationMinutes,
+          location: item.location || null,
+          attendeeIds: item.attendeeIds,
+          clientId: item.clientId ?? null,
+          contactName: item.contact?.name ?? null,
+          contactPhone: item.contact?.phone ?? null,
+          contactRole: item.contact?.role ?? null,
+          purpose: item.purpose ?? null,
+          transport: item.transport ?? null,
+          notes: item.notes ?? null,
+        }),
+      t("notices.added", { title: item.title }),
+    );
 
   return (
     <section className="flex flex-col gap-4">
@@ -177,13 +222,14 @@ export function ScheduleSection({ items, setItems, onNotice }: ScheduleSectionPr
 
       {adding && (
         <NewItemForm
+          meId={meId}
+          members={members}
+          clients={clients}
           onCancel={() => setAdding(false)}
           onAdd={(item) => {
-            // TODO(backend): createScheduleItem (operations/actions.ts)
-            setItems((prev) => [...prev, item]);
+            add(item);
             setAdding(false);
             setRange(item.startsAt.slice(0, 10) >= today ? "upcoming" : "past");
-            onNotice(t("notices.added", { title: item.title }));
           }}
         />
       )}
@@ -330,7 +376,19 @@ function Detail({ label, children }: { label: string; children: React.ReactNode 
   );
 }
 
-function NewItemForm({ onAdd, onCancel }: { onAdd: (item: ScheduleItem) => void; onCancel: () => void }) {
+function NewItemForm({
+  meId,
+  members,
+  clients,
+  onAdd,
+  onCancel,
+}: {
+  meId: string;
+  members: ScheduleBoard["members"];
+  clients: ScheduleBoard["clients"];
+  onAdd: (item: ScheduleItem) => void;
+  onCancel: () => void;
+}) {
   const t = useTranslations("ops.schedule");
   const locale = useLocale() as "ar" | "en";
   const [kind, setKind] = useState<ScheduleKind>("meeting");
@@ -353,7 +411,7 @@ function NewItemForm({ onAdd, onCancel }: { onAdd: (item: ScheduleItem) => void;
           startsAt: `${v("date")}T${v("time")}`,
           durationMinutes: Math.max(5, Number(v("duration")) || 60),
           location: v("location"),
-          organizerId: currentUserId,
+          organizerId: meId,
           attendeeIds: attendees,
           clientId: v("clientId") || undefined,
           contact: contactName ? { name: contactName, phone: v("contactPhone") || undefined, role: v("contactRole") || undefined } : undefined,
@@ -446,7 +504,7 @@ function NewItemForm({ onAdd, onCancel }: { onAdd: (item: ScheduleItem) => void;
         <legend className="mb-1.5">{t("attendees")}</legend>
         <div className="flex flex-wrap gap-2">
           {members
-            .filter((m) => m.id !== currentUserId)
+            .filter((m) => m.id !== meId)
             .map((m) => {
               const on = attendees.includes(m.id);
               return (

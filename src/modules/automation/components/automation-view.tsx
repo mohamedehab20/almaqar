@@ -18,33 +18,78 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { members } from "@/modules/hq/mock";
-import { automationStats, flows as demoFlows, templates, type AutomationFlow } from "../mock";
-import { runs as demoRuns, workflowTemplates, workflows as demoWorkflows, type Workflow, type WorkflowRun, type WorkflowTemplate } from "../workflows";
+import { uploadFile } from "@/modules/files/upload";
+import type { ActionResult } from "@/server/action";
+import { createFlow, createFlowFromTemplate, createWorkflow, createWorkflowFromTemplate, updateFlow } from "../actions";
+import { templates, type AutomationFlow } from "../mock";
+import type { AutomationData } from "../service";
+import { workflowTemplates, type Workflow, type WorkflowRun, type WorkflowTemplate } from "../workflows";
 import { WorkflowBuilderDialog } from "./workflow-builder-dialog";
 import { WorkflowsSection } from "./workflows-section";
 
 /** Unique id for items created in the browser (until the backend assigns ids). */
 const uniqueId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-export function AutomationView() {
+/**
+ * Automation room: approval workflows (builder, templates, runs) and automated flows (trigger → action).
+ * `companyId` null = the public demo (changes stay in the browser); a real company saves through the actions.
+ */
+export function AutomationView({ data, companyId }: { data: AutomationData; companyId: string | null }) {
   const t = useTranslations("automation");
+  const tErr = useTranslations("auth.errors");
   const locale = useLocale() as "ar" | "en";
+  const router = useRouter();
+  const [, startTransition] = useTransition();
   const Arrow = locale === "ar" ? ArrowLeft : ArrowRight;
-  const [flows, setFlows] = useState<AutomationFlow[]>(demoFlows);
+  const members = data.people;
+  const automationStats = data.stats;
+  const [source, setSource] = useState(data);
+  const [flows, setFlows] = useState<AutomationFlow[]>(data.flows);
   const [creating, setCreating] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [view, setView] = useState<"all" | "workflows" | "flows" | "templates">("all");
-  const [workflows, setWorkflows] = useState<Workflow[]>(demoWorkflows);
-  const [runs, setRuns] = useState<WorkflowRun[]>(demoRuns);
+  const [workflows, setWorkflows] = useState<Workflow[]>(data.workflows);
+  const [runs, setRuns] = useState<WorkflowRun[]>(data.runs);
+  if (data !== source) {
+    setSource(data);
+    setFlows(data.flows);
+    setWorkflows(data.workflows);
+    setRuns(data.runs);
+  }
+
+  /** A real company: run the action, show the error or the success message, then reload the room's data. */
+  function save<T>(remote: () => Promise<ActionResult<T>>, success: string, after?: (result: T) => void, undo?: () => void) {
+    startTransition(async () => {
+      const res = await remote();
+      if (!res.ok) {
+        undo?.();
+        return setNotice(res.error === "forbidden" ? t("notices.forbidden") : tErr(res.error));
+      }
+      setNotice(success);
+      after?.(res.data);
+      router.refresh();
+    });
+  }
   const [focusWorkflowId, setFocusWorkflowId] = useState<string>();
   const [building, setBuilding] = useState(false);
 
   const applyWorkflowTemplate = (template: WorkflowTemplate) => {
+    if (companyId) {
+      // The template's steps start with the person who adds it; they can be reassigned in the builder later
+      return save(
+        () => createWorkflowFromTemplate({ companyId, templateId: template.id, assigneeIds: template.steps.map(() => data.meId) }),
+        t("templates.workflowAdded", { name: template.name[locale] }),
+        (created) => {
+          setFocusWorkflowId(created.id);
+          setView("workflows");
+        },
+      );
+    }
     const workflowKey = uniqueId("wf");
     const workflow: Workflow = {
       id: workflowKey,
@@ -65,9 +110,22 @@ export function AutomationView() {
   }, [notice]);
 
   const activeCount = flows.filter((flow) => flow.enabled).length;
-  const toggle = (id: string) => setFlows((prev) => prev.map((f) => (f.id === id ? { ...f, enabled: !f.enabled } : f)));
-  const addFlow = (flow: Omit<AutomationFlow, "id" | "runs" | "lastRun" | "enabled">) => {
-    // TODO(backend): save the flow in the automation engine
+  const toggle = (id: string) => {
+    const before = flows;
+    const flow = flows.find((f) => f.id === id);
+    setFlows((prev) => prev.map((f) => (f.id === id ? { ...f, enabled: !f.enabled } : f)));
+    if (companyId && flow) save(() => updateFlow({ flowId: id, enabled: !flow.enabled }), t(flow.enabled ? "flows.off" : "flows.on"), undefined, () => setFlows(before));
+  };
+  const addFlow = (flow: Omit<AutomationFlow, "id" | "runs" | "lastRun" | "enabled">, templateId?: string) => {
+    if (companyId) {
+      return save(
+        () =>
+          templateId
+            ? createFlowFromTemplate({ companyId, templateId })
+            : createFlow({ companyId, name: flow.name, trigger: flow.trigger, condition: flow.condition ?? null, action: flow.action }),
+        t("notices.created", { name: flow.name[locale] }),
+      );
+    }
     setFlows((prev) => [{ ...flow, id: `new-${Date.now()}`, runs: 0, lastRun: { ar: "لسه ما اشتغلش", en: "Not run yet" }, enabled: true }, ...prev]);
     setNotice(t("notices.created", { name: flow.name[locale] }));
   };
@@ -148,8 +206,30 @@ export function AutomationView() {
 
         {building && (
           <WorkflowBuilderDialog
+            people={members}
+            meId={data.meId}
             onClose={() => setBuilding(false)}
-            onCreate={(created) => {
+            onCreate={(created, files) => {
+              if (companyId) {
+                setBuilding(false);
+                startTransition(async () => {
+                  const attachments = [];
+                  for (const a of created.attachments ?? []) {
+                    const file = files.get(a.id);
+                    if (!file) continue;
+                    const up = await uploadFile(companyId, "workflows", file);
+                    if (!up.ok) return setNotice(up.error === "not_configured" ? t("notices.storageOff") : t("notices.uploadFailed", { name: file.name }));
+                    attachments.push({ id: a.id, ...up.file });
+                  }
+                  const res = await createWorkflow({ companyId, name: created.name, steps: created.steps.map((s) => ({ title: s.title, assigneeId: s.assigneeId })), attachments });
+                  if (!res.ok) return setNotice(res.error === "forbidden" ? t("notices.forbidden") : tErr(res.error));
+                  setFocusWorkflowId(res.data.id);
+                  if (view !== "all") setView("workflows");
+                  setNotice(t("workflows.notices.created", { name: created.name[locale] }));
+                  router.refresh();
+                });
+                return;
+              }
               setWorkflows((prev) => [...prev, created]);
               // The workflows section opens on the new workflow
               setFocusWorkflowId(created.id);
@@ -175,6 +255,9 @@ export function AutomationView() {
             workflows={workflows}
             runs={runs}
             setRuns={setRuns}
+            meId={data.meId}
+            people={members}
+            companyId={companyId}
             initialWorkflowId={focusWorkflowId}
             onNotice={setNotice}
           />
@@ -291,7 +374,7 @@ export function AutomationView() {
                   <button
                     type="button"
                     onClick={() => {
-                      addFlow({ name: template.name, trigger: template.trigger, action: template.action });
+                      addFlow({ name: template.name, trigger: template.trigger, action: template.action }, template.id);
                       setView((v) => (v === "templates" ? "all" : v));
                     }}
                     className="mt-4 h-10 rounded-sm bg-tertiary-fixed text-sm font-semibold text-tertiary transition hover:brightness-95"

@@ -1,11 +1,15 @@
 import { and, asc, desc, eq, gte, inArray, lt } from "drizzle-orm";
-import { clients, meetings, members, notes, tasks, workflowRuns, type NoteAudience, type StoredFile } from "@/db/schema";
+import { clients, departments, meetings, members, notes, tasks, workflowRuns, workflows, workSettings, type NoteAudience, type StoredFile } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
 import { departmentOf, requirePermission } from "@/server/permissions";
 import { emitEvent } from "@/modules/events/service";
+import { localParts, readWorkSettings } from "@/modules/hours/calc";
 import { noteConcernsDepartment, type Note } from "./notes";
+import type { ScheduleItem, Transport } from "./schedule";
+import type { WorkflowRow } from "./mock";
+import { OPS_CATEGORIES, runToRow, type OpsKpis } from "./rows";
 import type { Task, TaskPriority, TaskStatus } from "./tasks";
 
 type NoteRow = typeof notes.$inferSelect;
@@ -121,6 +125,50 @@ export async function getOperationsStats(ctx: Ctx, companyId: string, days = 30)
   };
 }
 
+export type OperationsData = {
+  meId: string;
+  people: { id: string; name: { ar: string; en: string }; title: { ar: string; en: string } | null; departmentId: string | null }[];
+  departments: { id: string; name: { ar: string; en: string } }[];
+  rows: WorkflowRow[];
+  counts: Record<string, number>;
+  kpis: OpsKpis;
+  notes: Note[];
+  tasks: TaskBoard;
+  schedule: ScheduleBoard;
+};
+
+/**
+ * The Operations room of a real company: every operation as a table row (newest first), the figures of the
+ * last 30 days, the notes and the task board. Attachment links are added by the query (signed URLs).
+ */
+export async function getOperationsData(ctx: Ctx, companyId: string): Promise<OperationsData> {
+  const me = await requireMember(ctx, companyId);
+  const [people, depts, runs, stats, noteList, board] = await Promise.all([
+    ctx.tx.select({ id: members.id, name: members.name, title: members.title, departmentId: members.departmentId }).from(members).where(eq(members.companyId, companyId)).orderBy(asc(members.createdAt)),
+    ctx.tx.select({ id: departments.id, name: departments.name }).from(departments).where(eq(departments.companyId, companyId)).orderBy(asc(departments.createdAt)),
+    ctx.tx.select({ run: workflowRuns, steps: workflows.steps }).from(workflowRuns).leftJoin(workflows, eq(workflows.id, workflowRuns.workflowId)).where(eq(workflowRuns.companyId, companyId)).orderBy(desc(workflowRuns.createdAt)),
+    getOperationsStats(ctx, companyId),
+    listNotes(ctx, companyId),
+    getTaskBoard(ctx, companyId),
+  ]);
+  const schedule = await getScheduleBoard(ctx, companyId);
+  const persons = people.map((p) => ({ ...p, title: p.title ?? null, departmentId: p.departmentId ?? null }));
+  const rows = runs.map(({ run, steps }) => runToRow({ ...run, steps: run.workflowId ? (steps ?? []) : null }, persons));
+  const counts = Object.fromEntries(OPS_CATEGORIES.map((c) => [c, rows.filter((r) => r.category === c).length]));
+  const oldest = stats.oldestPendingHours === null ? null : { hours: Math.floor(stats.oldestPendingHours), minutes: Math.round((stats.oldestPendingHours % 1) * 60) };
+  return {
+    meId: me.id,
+    people: persons,
+    departments: depts,
+    rows,
+    counts,
+    kpis: { active: stats.activeOperations, total: stats.total, pending: stats.pendingApprovals, oldest, cycleHours: stats.avgCycleHours, periodDays: stats.periodDays },
+    notes: noteList,
+    tasks: board,
+    schedule,
+  };
+}
+
 // ---------- Tasks (Operations room → task management) ----------
 
 type TaskRow = typeof tasks.$inferSelect;
@@ -149,6 +197,25 @@ async function assertMemberOf(ctx: Ctx, companyId: string, memberId: string) {
 async function assertClientOf(ctx: Ctx, companyId: string, clientId: string) {
   const [c] = await ctx.tx.select({ id: clients.id }).from(clients).where(and(eq(clients.id, clientId), eq(clients.companyId, companyId)));
   if (!c) throw new AppError("invalid");
+}
+
+/** Who the board can show and assign to, and which operations a task can be linked to. */
+export type TaskBoard = {
+  meId: string;
+  tasks: Task[];
+  members: { id: string; name: { ar: string; en: string }; title: { ar: string; en: string } | null }[];
+  operations: { id: string; code: string; title: { ar: string; en: string } }[];
+};
+
+/** The task board of a real company: every task (members see all tasks), the members and the operations. */
+export async function getTaskBoard(ctx: Ctx, companyId: string): Promise<TaskBoard> {
+  const me = await requireMember(ctx, companyId);
+  const [list, people, runs] = await Promise.all([
+    listTasks(ctx, companyId),
+    ctx.tx.select({ id: members.id, name: members.name, title: members.title }).from(members).where(eq(members.companyId, companyId)).orderBy(asc(members.createdAt)),
+    ctx.tx.select({ id: workflowRuns.id, code: workflowRuns.code, title: workflowRuns.subject }).from(workflowRuns).where(eq(workflowRuns.companyId, companyId)).orderBy(desc(workflowRuns.createdAt)),
+  ]);
+  return { meId: me.id, tasks: list, members: people.map((m) => ({ ...m, title: m.title ?? null })), operations: runs };
 }
 
 /** Open tasks first by status order, then newest. With `assigneeId`, only that member's tasks. */
@@ -304,6 +371,51 @@ export async function listSchedule(ctx: Ctx, companyId: string, range: { from: s
     .orderBy(asc(meetings.startsAt));
   const list = rows.map(toScheduleItem);
   return range.memberId ? list.filter((i) => i.organizerId === range.memberId || i.attendeeIds.includes(range.memberId!)) : list;
+}
+
+/** What the schedule screen needs: the items (in the company's local time), who can attend, and the clients. */
+export type ScheduleBoard = {
+  meId: string;
+  timeZone: string;
+  items: ScheduleItem[];
+  members: { id: string; name: { ar: string; en: string } }[];
+  clients: { id: string; name: { ar: string; en: string } }[];
+};
+
+/**
+ * The schedule of a real company, from two months back to four months ahead. Times are turned into the
+ * company's local "yyyy-mm-ddThh:mm" (work settings time zone), the shape the screen works with.
+ */
+export async function getScheduleBoard(ctx: Ctx, companyId: string): Promise<ScheduleBoard> {
+  const me = await requireMember(ctx, companyId);
+  const day = 86_400_000;
+  const [list, people, clientRows, [work]] = await Promise.all([
+    listSchedule(ctx, companyId, { from: new Date(Date.now() - 60 * day).toISOString(), to: new Date(Date.now() + 120 * day).toISOString() }),
+    ctx.tx.select({ id: members.id, name: members.name }).from(members).where(eq(members.companyId, companyId)).orderBy(asc(members.createdAt)),
+    ctx.tx.select({ id: clients.id, name: clients.name }).from(clients).where(eq(clients.companyId, companyId)).orderBy(asc(clients.createdAt)),
+    ctx.tx.select({ timeZone: workSettings.timeZone }).from(workSettings).where(eq(workSettings.companyId, companyId)),
+  ]);
+  const timeZone = readWorkSettings(work).timeZone;
+  const items: ScheduleItem[] = list.map((i) => {
+    const local = localParts(i.startsAt, timeZone);
+    return {
+      id: i.id,
+      kind: i.kind,
+      title: i.title,
+      startsAt: `${local.date}T${local.time}`,
+      durationMinutes: i.durationMinutes,
+      location: i.location ?? "",
+      organizerId: i.organizerId ?? "",
+      attendeeIds: i.attendeeIds,
+      clientId: i.clientId ?? undefined,
+      contact: i.contact ? { name: i.contact.name, phone: i.contact.phone ?? undefined, role: i.contact.role ?? undefined } : undefined,
+      purpose: i.purpose ?? undefined,
+      transport: (i.transport as Transport | null) ?? undefined,
+      notes: i.notes ?? undefined,
+      status: i.status,
+    };
+  });
+  return { meId: me.id, timeZone, items, members: people, clients: clientRows };
 }
 
 /** Any member adds to the company schedule; they become its organizer. */

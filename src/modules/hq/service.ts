@@ -1,12 +1,14 @@
 import { and, asc, eq } from "drizzle-orm";
-import { companies, departments, furniture, members, roles, rooms, zones, type Localized } from "@/db/schema";
+import { companies, departments, furniture, members, roles, rooms, workSettings, zones, type Localized } from "@/db/schema";
 import type { Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
 import { requirePermission } from "@/server/permissions";
 import { assertWithinPlan } from "@/server/plans";
-import { emitEvent } from "@/modules/events/service";
-import type { Department, FurnitureItem, Member, PresenceStatus, Room, Zone } from "./mock";
+import { emitEvent, listActivity } from "@/modules/events/service";
+import { localParts, readWorkSettings } from "@/modules/hours/calc";
+import { defaultOffice } from "./layout";
+import type { ActivityItem, Department, FurnitureItem, Member, PresenceStatus, Room, Zone } from "./mock";
 
 const EMPTY: Localized = { ar: "", en: "" };
 
@@ -280,4 +282,45 @@ export async function saveFloorPlan(
       .values(input.zones.map((z) => ({ companyId, roomId: roomId(z.roomIndex), departmentId: z.departmentId, x: z.x, y: z.y, w: z.w, h: z.h })));
   }
   return getFloorPlan(ctx, companyId);
+}
+
+// ---------- Main hall ----------
+
+export type MainHallData = {
+  meId: string;
+  members: Member[];
+  departments: Department[];
+  rooms: Room[];
+  furniture: FurnitureItem[];
+  zones: Zone[];
+  floor: { widthM: number; depthM: number };
+  activity: ActivityItem[];
+};
+
+/**
+ * The main hall of a real company: its people (with live presence), departments, the saved floor plan or,
+ * until one is drawn, a starting office with a desk per person, and the latest activity (company time).
+ */
+export async function getMainHall(ctx: Ctx, companyId: string): Promise<MainHallData> {
+  const me = await requireMember(ctx, companyId);
+  const [people, depts, plan, events, [work]] = await Promise.all([
+    listMembers(ctx, companyId),
+    listDepartments(ctx, companyId),
+    getFloorPlan(ctx, companyId),
+    listActivity(ctx, companyId, 20),
+    ctx.tx.select({ timeZone: workSettings.timeZone }).from(workSettings).where(eq(workSettings.companyId, companyId)),
+  ]);
+  const timeZone = readWorkSettings(work).timeZone;
+  const owner = people.find((p) => p.role === "owner");
+  const office = plan.rooms.length ? plan : defaultOffice(depts, people.map((p) => ({ id: p.id, departmentId: p.departmentId || null })), owner?.id ?? null);
+  return {
+    meId: me.id,
+    members: people.map((p) => ({ id: p.id, name: p.name, title: p.title, departmentId: p.departmentId, status: p.status, currentTask: p.currentTask })),
+    departments: depts,
+    rooms: office.rooms,
+    furniture: office.furniture,
+    zones: office.zones,
+    floor: plan.floor ?? { widthM: 18.5, depthM: 12.2 },
+    activity: events.map((e) => ({ id: e.id, time: localParts(e.time, timeZone).time, text: e.text })),
+  };
 }

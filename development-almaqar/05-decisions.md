@@ -4,6 +4,12 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-21 — A real company never sees demo data; times follow the company's clock
+- **Same screens, two sources:** every room's page loads real data for a signed-in company and the sample data for `/c/demo`. The screens take a `companyId` (null = demo) and save through the actions only for a real company.
+- **Starting office:** a new company has no floor plan, so the main hall builds one from its departments (up to four sections) instead of showing an empty floor or the demo office. A saved plan always wins.
+- **Company time zone for display:** dates and times are formatted in the work-settings time zone on both server and browser. This removes hydration errors and gives everyone the same clock. The schedule is stored in UTC and edited in local "yyyy-mm-ddThh:mm".
+- **Templates start with the person who adds them:** a workflow template's sample assignees do not exist in a real company, so every step is given to the person who adds it.
+
 ### 2026-10-19 — Analytics: departments are the teams; live data first; no single score
 - **No team table:** the PDF's teams are Al Maqr's departments. A manager over several departments is a role scoped to those departments, not a new managerships table.
 - **Release 1 reads live data** (tasks, hours, leave, approvals, runs) inside the normal module pattern. Imports, jobs and reports wait for release 2 (owner's choice).

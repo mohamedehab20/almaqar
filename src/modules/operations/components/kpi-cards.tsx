@@ -3,27 +3,28 @@
 import { ClipboardClock, Network, Timer, TrendingUp, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { kpis } from "../mock";
+import type { OpsKpis } from "../rows";
 
-/** The headline metrics shown behind the Analysis button. */
-export function KpiCards() {
+/** The headline metrics shown behind the Analysis button (last {periodDays} days of operations). */
+export function KpiCards({ kpis }: { kpis: OpsKpis }) {
   const t = useTranslations("ops.kpi");
-  const { activeWorkflows, pendingApprovals, cycleTime } = kpis;
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <KpiCard code="TOTAL_ACTIVE_WORKFLOWS" label={t("active")} icon={Network} iconClass="bg-surface-container-low text-on-surface">
         <div className="flex items-end justify-between gap-2">
           <p className="flex items-baseline gap-2">
-            <span className="text-5xl font-extrabold">{activeWorkflows.value}</span>
+            <span className="text-5xl font-extrabold">{kpis.active}</span>
             <span className="text-sm text-on-surface-variant">{t("activeUnit")}</span>
           </p>
-          <span dir="ltr" className="flex items-center gap-1 rounded-sm bg-primary-fixed/60 px-2 py-1 font-mono text-xs font-semibold text-primary">
-            <TrendingUp className="size-3.5" aria-hidden />
-            {activeWorkflows.trend}
-          </span>
+          {kpis.trend && (
+            <span dir="ltr" className="flex items-center gap-1 rounded-sm bg-primary-fixed/60 px-2 py-1 font-mono text-xs font-semibold text-primary">
+              <TrendingUp className="size-3.5" aria-hidden />
+              {kpis.trend}
+            </span>
+          )}
         </div>
-        <Progress value={activeWorkflows.progress} className="bg-tertiary" />
+        <Progress value={kpis.total ? kpis.active / kpis.total : 0} className="bg-tertiary" />
       </KpiCard>
 
       <KpiCard
@@ -35,28 +36,36 @@ export function KpiCards() {
       >
         <div className="flex items-end justify-between gap-2">
           <p className="flex items-baseline gap-2">
-            <span className="text-5xl font-extrabold text-danger">{pendingApprovals.value}</span>
+            <span className="text-5xl font-extrabold text-danger">{kpis.pending}</span>
             <span className="text-sm text-on-surface-variant">{t("pendingSub")}</span>
           </p>
-          <span className="rounded-sm bg-danger-container px-2 py-1 text-xs font-bold text-danger">{t("critical")}</span>
+          {kpis.pending > 0 && <span className="rounded-sm bg-danger-container px-2 py-1 text-xs font-bold text-danger">{t("critical")}</span>}
         </div>
-        <p className="mt-4 flex items-center gap-2 text-xs text-on-surface-variant">
-          <span className="size-2 shrink-0 animate-pulse rounded-full bg-danger" />
-          {t("oldest", pendingApprovals.oldest)}
-        </p>
+        {kpis.oldest && (
+          <p className="mt-4 flex items-center gap-2 text-xs text-on-surface-variant">
+            <span className="size-2 shrink-0 animate-pulse rounded-full bg-danger" />
+            {t("oldest", kpis.oldest)}
+          </p>
+        )}
       </KpiCard>
 
       <KpiCard code="CYCLE_LATENCY_METRIC" label={t("cycle")} icon={Timer} iconClass="bg-tertiary-fixed text-secondary-container">
         <div className="flex items-end justify-between gap-2">
           <p className="flex items-baseline gap-2">
-            <span className="text-5xl font-extrabold">{cycleTime.hours}</span>
+            <span className="text-5xl font-extrabold">{kpis.cycleHours ?? "—"}</span>
             <span className="text-sm text-on-surface-variant">{t("hours")}</span>
           </p>
-          <span className="text-xs text-muted line-through">
-            {cycleTime.previousHours} {t("hours")} {t("previously")}
-          </span>
+          {kpis.previousHours !== undefined && (
+            <span className="text-xs text-muted line-through">
+              {kpis.previousHours} {t("hours")} {t("previously")}
+            </span>
+          )}
         </div>
-        <p className="mt-4 text-xs font-semibold text-tertiary">{t("saved", { percent: cycleTime.saved })}</p>
+        {kpis.saved !== undefined ? (
+          <p className="mt-4 text-xs font-semibold text-tertiary">{t("saved", { percent: kpis.saved })}</p>
+        ) : (
+          <p className="mt-4 text-xs text-on-surface-variant">{t("period", { days: kpis.periodDays })}</p>
+        )}
       </KpiCard>
     </div>
   );

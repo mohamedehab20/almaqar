@@ -4,6 +4,7 @@ import { Crown, Layers, LocateFixed, MapPin, Minus, Plus, Radio } from "lucide-r
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { setMyStatus as saveMyStatus } from "../actions";
 import type { ActivityItem, Department, FurnitureItem, Member, PresenceStatus, Room, Zone } from "../mock";
 import { ControlBar } from "./control-bar";
 import { FloorPlan } from "./floor-plan";
@@ -11,6 +12,8 @@ import { PremiumLayerDialog } from "./premium-layer-dialog";
 import { ActivityPanel, PresencePanel } from "./side-panel";
 
 type HqViewProps = {
+  /** null: the public demo (my status stays in the browser) */
+  companyId: string | null;
   currentUserId: string;
   members: Member[];
   rooms: Room[];
@@ -25,7 +28,7 @@ const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 1.6;
 
 /** The "main hall": live floor plan + presence panel + personal controls. */
-export function HqView({ currentUserId, members, rooms, furniture, zones, departments, activity, floor }: HqViewProps) {
+export function HqView({ companyId, currentUserId, members, rooms, furniture, zones, departments, activity, floor }: HqViewProps) {
   const t = useTranslations("hq");
   const [zoom, setZoom] = useState(1);
   const [myStatus, setMyStatus] = useState<PresenceStatus>(
@@ -42,6 +45,18 @@ export function HqView({ currentUserId, members, rooms, furniture, zones, depart
     const timer = setTimeout(() => setNotice(null), 3500);
     return () => clearTimeout(timer);
   }, [notice]);
+
+  const changeStatus = (status: PresenceStatus) => {
+    const before = myStatus;
+    setMyStatus(status);
+    if (!companyId) return;
+    saveMyStatus({ companyId, status }).then((res) => {
+      if (!res.ok) {
+        setMyStatus(before);
+        setNotice(t("statusFailed"));
+      }
+    });
+  };
 
   // Reflect my own status change everywhere I appear (desk + presence list)
   const liveMembers = members.map((m) => (m.id === currentUserId ? { ...m, status: myStatus } : m));
@@ -130,7 +145,7 @@ export function HqView({ currentUserId, members, rooms, furniture, zones, depart
 
       <ControlBar
         status={myStatus}
-        onStatusChange={setMyStatus}
+        onStatusChange={changeStatus}
         panelHidden={panel === null}
         onTogglePanel={() => setPanel((p) => (p ? null : "presence"))}
         historyOpen={panel === "history"}
