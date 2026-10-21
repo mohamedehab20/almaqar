@@ -46,6 +46,15 @@ export async function claimInvitesAndListCompanies() {
   });
 }
 
+/**
+ * Where a signed-in person belongs: links pending invites, then returns their first company's slug, or null
+ * when they have no company yet (they then choose on /join: create one, or wait for an invite).
+ */
+export async function homeSlug(): Promise<string | null> {
+  const companies = await claimInvitesAndListCompanies();
+  return companies[0]?.slug ?? null;
+}
+
 /** Client portal: gives this user access to the client with that invite code. */
 export async function redeemClientInvite(code: string) {
   return withUser(({ tx }) => tx.execute(sql`select public.redeem_client_invite(${code})`));

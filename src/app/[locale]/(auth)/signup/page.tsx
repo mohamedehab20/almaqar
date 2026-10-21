@@ -5,7 +5,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { use } from "react";
 import { Logo } from "@/components/layout/logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { getClaims } from "@/server/session";
 import { SignupForm } from "@/modules/auth/components/signup-form";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/signup">): Promise<Metadata> {
@@ -17,6 +18,8 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/signup">
 export default function SignupPage({ params }: PageProps<"/[locale]/signup">) {
   const { locale } = use(params);
   setRequestLocale(locale);
+  // Already signed in: /join opens their company, or lets them create one (no second account)
+  if (use(getClaims())) redirect({ href: "/join", locale });
   const t = useTranslations("auth");
   const s = (key: string) => t(`signup.${key}`);
 

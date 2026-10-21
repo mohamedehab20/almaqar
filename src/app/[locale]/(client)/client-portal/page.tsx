@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ClientHome } from "@/modules/marketing/components/client-home";
 import { getMyClients, listClientBriefs } from "@/modules/marketing/queries";
+import { redirect } from "@/i18n/navigation";
+import { homeSlug } from "@/modules/auth/session";
 import { getClaims } from "@/server/session";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/client-portal">): Promise<Metadata> {
@@ -17,7 +19,13 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/client-p
 export default async function ClientPortalPage({ params }: PageProps<"/[locale]/client-portal">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [client] = (await getClaims()) ? await getMyClients() : [];
+  const signedIn = Boolean(await getClaims());
+  const [client] = signedIn ? await getMyClients() : [];
+  if (!client && signedIn) {
+    // Signed in without a client: never the demo client
+    const slug = await homeSlug();
+    redirect({ href: slug ? `/c/${slug}` : "/join", locale });
+  }
   if (!client) return <ClientHome />;
   const briefs = await listClientBriefs(client.id);
   return <ClientHome real={{ client: { id: client.id, name: client.name }, briefs }} />;

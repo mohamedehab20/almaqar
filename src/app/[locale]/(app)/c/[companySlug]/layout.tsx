@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { AppShell } from "@/components/layout/app-shell";
 import { redirect } from "@/i18n/navigation";
 import { currentUserId, demoCompany, members } from "@/modules/hq/mock";
+import { homeSlug } from "@/modules/auth/session";
 import { getSignedInCompany } from "@/modules/hq/queries";
 import { getCompanyTimeZone } from "@/modules/hours/queries";
 import { getRoomAccess } from "@/modules/permissions/queries";
@@ -21,6 +22,12 @@ export default async function CompanyLayout({ children, params }: LayoutProps<"/
         {children}
       </AppShell>
     );
+  }
+
+  // Signed in but not a member: their own company, or /join to create one. The demo is for guests only.
+  if (current === null && companySlug === demoCompany.slug) {
+    const slug = await homeSlug();
+    redirect({ href: slug ? `/c/${slug}` : "/join", locale });
   }
 
   // Otherwise only the public demo is open (its screens still use mock data)

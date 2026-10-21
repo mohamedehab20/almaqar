@@ -14,6 +14,13 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-21 — Signed in without a company: no demo, a real way forward
+- **Before:** a signed-in person with no company was stuck on `/join` (the sign-up form never draws for someone already signed in, `/login` sent them back, no sign-out), and could open `/c/demo` with its in-browser data.
+- **Now `/join`** links pending invites and opens their company. With none, it shows «لسه مش تابع لشركة»: «أنشئ شركتك» (`createMyCompany` → `create_company` in the database, then opens it), «تحقق تاني» for an invite, and sign out.
+- **`/c/demo`, `/signup`, `/client-portal`:** a signed-in person is sent to their own company or to `/join`. The demo stays for guests only.
+
+Files: `src/app/[locale]/(auth)/join/page.tsx`, `src/modules/auth/components/no-company.tsx`, `src/modules/auth/{actions,session}.ts`, `src/app/[locale]/(auth)/signup/page.tsx`, `src/app/[locale]/(app)/c/[companySlug]/layout.tsx`, `src/app/[locale]/(client)/client-portal/page.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-21 — No more demo data inside a real company (QA-001…004)
 The four problems from the end-to-end run on production are fixed:
 - **QA-001 Main hall:** shows the company's real people with their live presence, its departments, and the latest activity in company time. A company that has not drawn its office yet gets a starting office built from its departments, with a desk per person (`hq/layout.ts` `defaultOffice`). Changing my status is saved (`setMyStatus`).

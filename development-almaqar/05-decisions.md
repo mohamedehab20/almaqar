@@ -4,6 +4,9 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-21 — The demo is for guests only
+- Anyone signed in works on the database: their company, their client, or creating a company. The in-browser demo opens only for people who are not signed in (the guest button).
+
 ### 2026-10-21 — A real company never sees demo data; times follow the company's clock
 - **Same screens, two sources:** every room's page loads real data for a signed-in company and the sample data for `/c/demo`. The screens take a `companyId` (null = demo) and save through the actions only for a real company.
 - **Starting office:** a new company has no floor plan, so the main hall builds one from its departments (up to four sections) instead of showing an empty floor or the demo office. A saved plan always wins.
