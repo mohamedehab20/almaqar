@@ -9,6 +9,7 @@ A complete check of the frontend, the backend and the live Supabase database. Ne
 | `npm run test:db` | 92/92. 8 new in `tests/db/wiring.test.ts`: starting office (sections, a desk per person, inside the floor); operation rows (step, status, deciders, standalone, system owner); main hall data (real people, desks, activity at company time, outsiders refused); tasks saved / moved / refused for others; operations room data; schedule saved in UTC and shown at 10:30 Cairo; automation data (empty, then workflow + run + flow); visitor reads their client, sends a brief, an outsider sees none. |
 | `tsc`, `lint`, `build`, `check:routes` | Pass. |
 | Demo in a real browser | Main hall, operations (tasks, notes, schedule, analysis panels opened), automation, meetings tabs, client portal, recruitment: no page errors; demo data still shows in the demo. |
+| Production, fresh owner / employee / visitor | All 20 checks pass: no demo people in the main hall (owner and employee shown); a task added in the UI is saved for the employee and stays after reload; operations and automation show no demo data or errors; «إضافة عملية» saves OP-1001 and it shows after reload; approvals with a request give no hydration error; the employee sees their task; the visitor's portal shows their own client. Test company and accounts deleted afterwards. |
 
 ## 2026-10-19 — Full end-to-end run on production (owner, employee, visitor)
 
