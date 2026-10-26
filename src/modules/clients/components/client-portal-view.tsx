@@ -7,16 +7,20 @@ import {
   CalendarPlus,
   Check,
   Copy,
+  FileText,
   Handshake,
   KeyRound,
   Mail,
   Pencil,
   Phone,
   Plus,
+  Receipt,
   RefreshCw,
+  Send,
   Trash2,
   UserRound,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -28,9 +32,14 @@ import { cn } from "@/lib/utils";
 import type { ActionResult } from "@/server/action";
 import { ROOMS } from "@/modules/departments/rooms";
 import { regenerateInviteCode } from "@/modules/marketing/actions";
+import { createInvoice, markInvoicePaid } from "@/modules/profitability/actions";
 import { useTimeZone } from "@/lib/time-zone";
 import { bookClientMeeting, createPortalClient, deletePortalClient, updatePortalClient } from "../actions";
-import type { ClientInput, ClientMeeting, ClientPortalData, ClientStatus, PortalClient } from "../service";
+import { defaultAccess, PORTAL_FEATURES, type PortalFeature } from "../access";
+import type { ClientInput, ClientInvoice, ClientMeeting, ClientPortalData, ClientStatus, PortalClient } from "../service";
+
+const featureIcon: Record<PortalFeature, LucideIcon> = { briefs: Send, invoices: Receipt, meetings: CalendarClock, files: FileText };
+const today = () => new Date().toISOString().slice(0, 10);
 
 /** One value for "who the client belongs to": "room:<key>", "dept:<id>", "visitor" or "" (not set yet) */
 type OwnerValue = string;
@@ -60,7 +69,18 @@ const ownerStyle = (v: OwnerValue) =>
         : "bg-surface-container text-muted";
 const inputClass = "h-10 w-full rounded-md bg-surface-container-low px-3 text-sm font-normal outline-none focus:ring-2 focus:ring-primary/40";
 
-type Draft = { name: string; owner: OwnerValue; industry: string; status: ClientStatus; managerId: string; contactName: string; contactPhone: string; contactEmail: string; notes: string };
+type Draft = {
+  name: string;
+  owner: OwnerValue;
+  industry: string;
+  status: ClientStatus;
+  managerId: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  notes: string;
+  portalAccess: PortalFeature[];
+};
 
 /**
  * HR → «بوابة العملاء»: every client and visitor of the company and who they belong to (an HQ room such as
@@ -124,6 +144,7 @@ export function ClientPortalView({ data, companyId, companySlug }: { data: Clien
       contactPhone: d.contactPhone.trim() || null,
       contactEmail: d.contactEmail.trim() || null,
       notes: d.notes.trim() || null,
+      portalAccess: d.portalAccess,
     };
     run(
       () =>
@@ -158,6 +179,26 @@ export function ClientPortalView({ data, companyId, companySlug }: { data: Clien
       () => bookClientMeeting({ clientId: c.id, startsAt, durationMinutes, location: location || null, title: title || null, attendeeIds: c.managerId ? [c.managerId] : [] }),
       t("notices.booked", { name: c.name }),
       () => setBooking(null),
+    );
+
+  // ---------- Invoices (profitability.view): shown to the client when «الفواتير» is allowed ----------
+  const addInvoice = (c: PortalClient, amount: number, dueOn: string) => {
+    const issuedOn = today();
+    run(
+      () =>
+        setState((s) => ({
+          ...s,
+          invoices: [{ id: `demo-inv-${Date.now()}`, clientId: c.id, period: issuedOn.slice(0, 7), amount, issuedOn, dueOn, paidOn: null }, ...s.invoices],
+        })),
+      () => createInvoice({ clientId: c.id, period: issuedOn.slice(0, 7), amount, issuedOn, dueOn }),
+      t("invoices.added", { name: c.name }),
+    );
+  };
+  const markPaid = (inv: ClientInvoice) =>
+    run(
+      () => setState((s) => ({ ...s, invoices: s.invoices.map((i) => (i.id === inv.id ? { ...i, paidOn: today() } : i)) })),
+      () => markInvoicePaid({ invoiceId: inv.id, paidOn: today() }),
+      t("invoices.paidNotice"),
     );
 
   const renewCode = (c: PortalClient) =>
@@ -285,6 +326,10 @@ export function ClientPortalView({ data, companyId, companySlug }: { data: Clien
                   )}
                   {c.notes && <p className="text-sm text-on-surface-variant">{c.notes}</p>}
                   {meeting && <MeetingLine meeting={meeting} fmt={fmt} />}
+                  <AccessChips access={c.portalAccess} />
+                  {state.canMoney && c.portalAccess.includes("invoices") && (
+                    <InvoicesBox invoices={state.invoices.filter((i) => i.clientId === c.id)} pending={pending} onAdd={(amount, dueOn) => addInvoice(c, amount, dueOn)} onPaid={markPaid} />
+                  )}
                   {state.canManage && c.inviteCode && <PortalCode client={c} pending={pending} onRenew={() => renewCode(c)} onCopied={() => setNotice(t("notices.copied"))} />}
                   {booking === c.id && <MeetingForm client={c} pending={pending} managerName={manager} onClose={() => setBooking(null)} onSubmit={(at, minutes, place, title) => book(c, at, minutes, place, title)} />}
                   {state.canManage && (
@@ -338,6 +383,106 @@ function MeetingLine({ meeting, fmt }: { meeting: ClientMeeting; fmt: Intl.DateT
         <span className="block text-xs text-on-surface-variant">{[meeting.title, meeting.location].filter(Boolean).join(" · ")}</span>
       </span>
     </p>
+  );
+}
+
+/** What this client sees in their portal, as small chips. */
+function AccessChips({ access }: { access: PortalFeature[] }) {
+  const t = useTranslations("clientsPortal.access");
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 text-xs">
+      <span className="text-on-surface-variant">{t("label")}</span>
+      {access.length === 0 ? (
+        <span className="rounded-full bg-surface-container px-2 py-0.5 text-muted">{t("nothing")}</span>
+      ) : (
+        access.map((f) => {
+          const Icon = featureIcon[f];
+          return (
+            <span key={f} className="flex items-center gap-1 rounded-full bg-primary-fixed/60 px-2 py-0.5 font-semibold text-primary">
+              <Icon className="size-3" aria-hidden />
+              {t(`features.${f}`)}
+            </span>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
+/** The client's invoices: amount, due date, paid or not; add one, or mark one as paid (recorded by hand). */
+function InvoicesBox({ invoices, pending, onAdd, onPaid }: { invoices: ClientInvoice[]; pending: boolean; onAdd: (amount: number, dueOn: string) => void; onPaid: (i: ClientInvoice) => void }) {
+  const t = useTranslations("clientsPortal.invoices");
+  const [adding, setAdding] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [dueOn, setDueOn] = useState("");
+  const now = today();
+  return (
+    <div className="flex flex-col gap-2 rounded-lg bg-surface-container-low p-3 text-sm">
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-1.5 font-semibold">
+          <Wallet className="size-4 text-primary" aria-hidden />
+          {t("title")}
+        </span>
+        {!adding && (
+          <button type="button" onClick={() => setAdding(true)} className="text-xs font-bold text-primary hover:underline">
+            {t("add")}
+          </button>
+        )}
+      </div>
+      {invoices.length === 0 && !adding && <p className="text-xs text-on-surface-variant">{t("empty")}</p>}
+      <ul className="flex flex-col gap-1.5">
+        {invoices.map((i) => {
+          const late = !i.paidOn && i.dueOn < now;
+          return (
+            <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-surface-container-lowest px-2.5 py-1.5">
+              <span>
+                <bdi dir="ltr" className="font-bold">{i.amount.toLocaleString("en-US")}</bdi> {t("currency")}
+                <span className="ms-2 text-xs text-on-surface-variant">{t("due", { date: i.dueOn })}</span>
+              </span>
+              {i.paidOn ? (
+                <span className="rounded-full bg-success-container px-2 py-0.5 text-xs font-bold text-success">{t("paid")}</span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold", late ? "bg-danger-container text-danger" : "bg-tertiary-fixed text-tertiary")}>{t(late ? "late" : "unpaid")}</span>
+                  <button type="button" disabled={pending} onClick={() => onPaid(i)} className="text-xs font-bold text-primary hover:underline">
+                    {t("markPaid")}
+                  </button>
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {adding && (
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const value = Number(amount);
+            if (!(value > 0) || !dueOn) return;
+            onAdd(value, dueOn);
+            setAmount("");
+            setDueOn("");
+            setAdding(false);
+          }}
+        >
+          <label className="flex flex-col gap-1 text-xs font-semibold">
+            {t("amount")}
+            <input type="number" min={1} step="any" required dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} className={cn(inputClass, "w-32")} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold">
+            {t("dueOn")}
+            <input type="date" required min={now} value={dueOn} onChange={(e) => setDueOn(e.target.value)} className={cn(inputClass, "w-40")} />
+          </label>
+          <Button type="submit" size="sm" disabled={pending} className="h-10">
+            {t("save")}
+          </Button>
+          <Button size="sm" variant="tertiary" className="h-10" onClick={() => setAdding(false)}>
+            {t("close")}
+          </Button>
+        </form>
+      )}
+    </div>
   );
 }
 
@@ -400,8 +545,17 @@ function ClientForm({
     contactPhone: client?.contactPhone ?? "",
     contactEmail: client?.contactEmail ?? "",
     notes: client?.notes ?? "",
+    portalAccess: client?.portalAccess ?? defaultAccess("client"),
   });
   const set = (k: keyof Draft) => (e: { target: { value: string } }) => setD({ ...d, [k]: e.target.value });
+  // A new client starts from the default of its kind; editing keeps what was chosen
+  const setOwner = (e: { target: { value: string } }) => {
+    const owner = e.target.value;
+    const kindChanged = (owner === "visitor") !== (d.owner === "visitor");
+    setD({ ...d, owner, ...(kindChanged && !client && { portalAccess: defaultAccess(owner === "visitor" ? "visitor" : "client") }) });
+  };
+  const toggleFeature = (f: PortalFeature) =>
+    setD({ ...d, portalAccess: d.portalAccess.includes(f) ? d.portalAccess.filter((x) => x !== f) : PORTAL_FEATURES.filter((x) => x === f || d.portalAccess.includes(x)) });
   const visitor = d.owner === "visitor";
 
   return (
@@ -419,7 +573,7 @@ function ClientForm({
       </label>
       <label className="flex flex-col gap-1 text-sm font-semibold sm:col-span-2">
         {t("form.owner")}
-        <Select value={d.owner} onChange={set("owner")} className="h-10 bg-surface-container-low">
+        <Select value={d.owner} onChange={setOwner} className="h-10 bg-surface-container-low">
           <optgroup label={t("form.rooms")}>
             {ROOMS.map((r) => (
               <option key={r.key} value={`room:${r.key}`}>
@@ -489,6 +643,29 @@ function ClientForm({
         {t(visitor ? "form.visitPurpose" : "form.notes")}
         <textarea rows={2} maxLength={2000} value={d.notes} onChange={set("notes")} className="rounded-md bg-surface-container-low p-3 text-sm font-normal outline-none focus:ring-2 focus:ring-primary/40" />
       </label>
+      <fieldset className="flex flex-col gap-2 text-sm font-semibold sm:col-span-2 lg:col-span-4">
+        <legend className="mb-1">{t("access.title")}</legend>
+        <div className="flex flex-wrap gap-2">
+          {PORTAL_FEATURES.map((f) => {
+            const on = d.portalAccess.includes(f);
+            const Icon = featureIcon[f];
+            return (
+              <button
+                key={f}
+                type="button"
+                role="switch"
+                aria-checked={on}
+                onClick={() => toggleFeature(f)}
+                className={cn("flex h-10 items-center gap-2 rounded-md px-3 text-sm transition-colors", on ? "bg-primary-fixed font-bold text-primary ring-2 ring-primary/30" : "bg-surface-container-low text-on-surface-variant")}
+              >
+                <Icon className="size-4" aria-hidden />
+                {t(`access.features.${f}`)}
+              </button>
+            );
+          })}
+        </div>
+        <span className="text-xs font-normal text-on-surface-variant">{t("access.hint")}</span>
+      </fieldset>
       <div className="flex gap-2 sm:col-span-2 lg:col-span-4">
         <Button type="submit" disabled={pending || !d.name.trim()}>
           <Check className="size-4" aria-hidden />

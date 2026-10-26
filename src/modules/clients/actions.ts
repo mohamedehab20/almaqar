@@ -5,6 +5,7 @@ import { action } from "@/server/action";
 import { withUser } from "@/server/session";
 import { companyInput, id } from "@/server/validation";
 import { ROOM_KEYS } from "@/modules/departments/rooms";
+import { PORTAL_FEATURES } from "./access";
 import * as svc from "./service";
 
 const text = (max: number) => z.string().trim().max(max).nullable().optional();
@@ -19,6 +20,7 @@ const fields = {
   contactPhone: text(40),
   contactEmail: z.email().max(200).nullable().optional().or(z.literal("").transform(() => null)),
   notes: text(2000),
+  portalAccess: z.array(z.enum(PORTAL_FEATURES)).max(PORTAL_FEATURES.length).optional(),
 };
 
 /** Invite codes are renewed with marketing's regenerateInviteCode. */

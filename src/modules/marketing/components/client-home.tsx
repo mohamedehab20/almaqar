@@ -13,11 +13,23 @@ import { replyToBrief, sendBrief } from "../actions";
 import { updateBriefs, useBriefs } from "../briefs-store";
 import { clients } from "../sections-mock";
 import { BriefForm, type NewBrief } from "./client-portal";
+import { FilesSection, InvoicesSection, MeetingsSection, type PortalFile, type PortalInvoice, type PortalMeeting } from "./portal-sections";
 
 /** The demo client (public demo). A signed-in client user gets their own client from the page. */
 export const DEMO_CLIENT_ID = "c1";
 
 type Localized = { ar: string; en: string };
+type Feature = "briefs" | "invoices" | "meetings" | "files";
+
+/** A signed-in client user's portal: their client and only what the company allows them (`access`). */
+export type RealPortal = {
+  client: { id: string; name: Localized };
+  access: Feature[];
+  briefs: Brief[];
+  invoices: PortalInvoice[];
+  meetings: PortalMeeting[];
+  files: PortalFile[];
+};
 
 const statusStyle: Record<BriefStatus, { className: string; icon: typeof Clock }> = {
   new: { className: "bg-primary-fixed text-primary", icon: Clock },
@@ -29,7 +41,7 @@ const statusStyle: Record<BriefStatus, { className: string; icon: typeof Clock }
  * The client's side of the portal: send briefs and follow their status. `real`: a signed-in client user
  * (their client and briefs, saved through the actions); without it, the demo client.
  */
-export function ClientHome({ real }: { real?: { client: { id: string; name: Localized }; briefs: Brief[] } }) {
+export function ClientHome({ real, now }: { real?: RealPortal; now: string }) {
   const t = useTranslations("clientPortal");
   const tp = useTranslations("marketing.portal");
   const tm = useTranslations("marketing");
@@ -40,6 +52,9 @@ export function ClientHome({ real }: { real?: { client: { id: string; name: Loca
   const demoBriefs = useBriefs();
   const client = real?.client ?? clients.find((c) => c.id === DEMO_CLIENT_ID) ?? clients[0];
   const myBriefs = real ? real.briefs : demoBriefs.filter((brief) => brief.clientId === client.id);
+  // The demo shows every part of the portal; a real client only what the company allows
+  const access: Feature[] = real ? real.access : ["briefs", "invoices", "meetings", "files"];
+  const allowed = (f: Feature) => access.includes(f);
   const [replies, setReplies] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -120,6 +135,17 @@ export function ClientHome({ real }: { real?: { client: { id: string; name: Loca
           <p className="mt-1 text-on-surface-variant">{t("subtitle")}</p>
         </div>
 
+        {access.length === 0 && <p className="rounded-lg bg-surface-container-lowest p-8 text-center text-muted shadow-ambient ghost-border">{t("nothingAllowed")}</p>}
+
+        {(allowed("invoices") || allowed("meetings") || allowed("files")) && (
+          <div className="grid items-start gap-6 lg:grid-cols-2">
+            {allowed("meetings") && <MeetingsSection meetings={real?.meetings ?? []} now={now} />}
+            {allowed("invoices") && <InvoicesSection invoices={real?.invoices ?? []} today={now.slice(0, 10)} />}
+            {allowed("files") && <FilesSection files={real?.files ?? []} />}
+          </div>
+        )}
+
+        {allowed("briefs") && (
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           {/* My requests */}
           <section className="flex flex-col gap-3">
@@ -199,6 +225,7 @@ export function ClientHome({ real }: { real?: { client: { id: string; name: Loca
             </div>
           </section>
         </div>
+        )}
       </main>
 
       {notice && (

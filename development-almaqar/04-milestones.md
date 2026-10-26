@@ -14,6 +14,14 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-27 — The client portal shows what each client is allowed
+- **Company side («بوابة العملاء»):** every client has switches «مسموح له في البوابة»: الطلبات، الفواتير، المواعيد، الملفات. A new client starts with all four; a meeting visitor with meetings only. The card shows what is on.
+- **Invoices panel:** whoever has profitability.view sees a client's invoices on its card, adds one (amount, due date), and marks it «اتدفعت». There is no online payment yet; payment is recorded by hand.
+- **Visitor side (`/client-portal`):** a signed-in client user sees only the allowed parts: requests (send and follow), «فواتيري» (paid, waiting, late), «مواعيدي» (upcoming and past, company time), «ملفاتي» (the signed contract). With nothing allowed, a short message.
+- **Enforced in the database** (migrations `0037_client_portal_access`, `0038_client_portal_access_rls`, applied): `clients.portal_access` (only known values); briefs RLS needs «briefs» for portal users; invoices and meetings reach portal users only through `private.portal_invoices` / `private.portal_meetings`, which return their own client's rows when allowed.
+
+Files: `src/modules/clients/{access,service,actions,queries,demo}.ts`, `src/modules/clients/components/client-portal-view.tsx`, `src/modules/marketing/components/{client-home,portal-sections}.tsx`, `src/app/[locale]/(client)/client-portal/page.tsx`, `src/db/schema.ts`, `drizzle/0037_client_portal_access.sql`, `drizzle/0038_client_portal_access_rls.sql`, `tests/db/portal-access.test.ts`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-21 — Signed in without a company: no demo, a real way forward
 - **Before:** a signed-in person with no company was stuck on `/join` (the sign-up form never draws for someone already signed in, `/login` sent them back, no sign-out), and could open `/c/demo` with its in-browser data.
 - **Now `/join`** links pending invites and opens their company. With none, it shows «لسه مش تابع لشركة»: «أنشئ شركتك» (`createMyCompany` → `create_company` in the database, then opens it), «تحقق تاني» for an invite, and sign out.

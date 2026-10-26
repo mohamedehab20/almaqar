@@ -2,6 +2,14 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-27 — Client portal access
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 96/96. 4 new in `tests/db/portal-access.test.ts`: defaults (client all four, visitor meetings only) and invoices for profitability.view; each portal shows only what is allowed; turning parts off hides them and the database refuses them (reader returns nothing, sending a brief fails); turning briefs back on works; a portal user never reads another client's invoices or meetings; unknown values are refused. |
+| Migrations 0037–0038 on Supabase | Applied. Existing clients got their defaults; the 3 functions are SECURITY DEFINER for authenticated only; the 3 briefs policies check «briefs»; no duplicate permissive policies; no SECURITY DEFINER in public; RLS smoke test OK. |
+| `tsc`, `lint`, `build` | Pass. |
+
 ## 2026-10-21 — Signed in without a company (production)
 
 | Check | Result |

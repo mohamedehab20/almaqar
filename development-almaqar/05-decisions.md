@@ -4,6 +4,11 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-27 — Portal access per client, set by the company; no online payment yet
+- The company chooses per client what the portal shows (requests, invoices, meetings, files), with defaults by kind. A list on the client row keeps it simple; the database checks it, so a hidden part cannot be reached by calling the data directly.
+- Portal users read invoices and meetings through two narrow readers (own client, a few columns), not table policies, so company-only columns stay private and no second permissive policy is added.
+- Invoices are view-only for the client and marked paid by the company. An online payment provider (Paymob was suggested) can be added later on top of the same invoices.
+
 ### 2026-10-21 — The demo is for guests only
 - Anyone signed in works on the database: their company, their client, or creating a company. The in-browser demo opens only for people who are not signed in (the guest button).
 

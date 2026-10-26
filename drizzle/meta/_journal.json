@@ -260,6 +260,20 @@
       "when": 1792436981302,
       "tag": "0036_analytics",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1792574553720,
+      "tag": "0037_client_portal_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1792574566578,
+      "tag": "0038_client_portal_access_rls",
+      "breakpoints": true
     }
   ]
 }

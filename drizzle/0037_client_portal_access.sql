@@ -1,0 +1,1 @@
+ALTER TABLE "clients" ADD COLUMN "portal_access" text[] DEFAULT '{briefs,invoices,meetings,files}'::text[] NOT NULL;

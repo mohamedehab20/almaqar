@@ -1225,6 +1225,33 @@
       "sent": "Brief sent to the marketing team.",
       "replied": "Clarification sent to the team.",
       "emptyReply": "Write the clarification first."
+    },
+    "nothingAllowed": "Nothing is open in your portal right now. Contact the company if you need something.",
+    "invoices": {
+      "title": "My invoices",
+      "empty": "No invoices yet.",
+      "due": "You owe {amount}",
+      "line": "{period} · issued {issued} · due {due}",
+      "paid": "Paid {date}",
+      "unpaid": "Unpaid",
+      "late": "Overdue",
+      "howToPay": "Payment is made with the company directly; once paid, the invoice is marked «Paid» here."
+    },
+    "meetings": {
+      "title": "My meetings",
+      "none": "No upcoming meetings.",
+      "past": "Past meetings",
+      "minutes": "{n} min",
+      "cancelled": "Cancelled"
+    },
+    "files": {
+      "title": "My files",
+      "empty": "No files shared with you yet.",
+      "open": "Open",
+      "unavailable": "Not available right now",
+      "names": {
+        "contract": "Contract"
+      }
     }
   },
   "pricing": {
@@ -2112,6 +2139,35 @@
       "booked": "Meeting with {name} booked and in the Schedule.",
       "codeRenewed": "New code made. The old one no longer works.",
       "copied": "Code copied."
+    },
+    "access": {
+      "title": "Allowed in the portal",
+      "hint": "The client sees only the parts ticked here. A meeting visitor starts with meetings only.",
+      "label": "Portal:",
+      "nothing": "nothing",
+      "features": {
+        "briefs": "Requests",
+        "invoices": "Invoices",
+        "meetings": "Meetings",
+        "files": "Files"
+      }
+    },
+    "invoices": {
+      "title": "Invoices",
+      "add": "+ invoice",
+      "empty": "No invoices yet.",
+      "currency": "SAR",
+      "due": "due {date}",
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "late": "Overdue",
+      "markPaid": "Mark paid",
+      "amount": "Amount",
+      "dueOn": "Due on",
+      "save": "Add",
+      "close": "Cancel",
+      "added": "Invoice added for {name}.",
+      "paidNotice": "Invoice marked as paid."
     }
   },
   "approvals": {

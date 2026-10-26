@@ -1,6 +1,7 @@
 /** Sample «بوابة العملاء» for the public demo: clients of marketing, sales, operations and a department, and visitors. */
 import { departments, members } from "@/modules/hq/mock";
-import type { ClientMeeting, ClientPortalData, PortalClient } from "./service";
+import { defaultAccess } from "./access";
+import type { ClientInvoice, ClientMeeting, ClientPortalData, PortalClient } from "./service";
 
 const DAY = 86_400_000;
 
@@ -23,7 +24,22 @@ export function demoClientPortalData(now = new Date().toISOString(), locale: "ar
     { id: "cp8", name: ar ? "أ. سامح فؤاد" : "Mr. Sameh Fouad", kind: "visitor", contactName: ar ? "سامح فؤاد" : "Sameh Fouad", contactPhone: "+20 111 987 6543", notes: ar ? "مستثمر، جاي يتعرف على الشركة" : "Investor, coming to meet the team", inviteCode: "VST6J1E" },
     { id: "cp9", name: ar ? "وفد جامعة القاهرة" : "Cairo University delegation", kind: "visitor", contactName: ar ? "د. منى" : "Dr. Mona", notes: ar ? "زيارة لطلبة التدريب" : "Visit about internships", inviteCode: "VST4L5F" },
   ];
-  const clients = rows.map((r, i): PortalClient => ({ ...base, ...r, createdAt: new Date(Date.parse(now) - (i + 1) * 5 * DAY).toISOString() }));
+  const clients = rows.map(
+    (r, i): PortalClient => ({
+      ...base,
+      // Sales clients see invoices and meetings only; the rest start from their kind's default
+      portalAccess: r.room === "sales" ? ["invoices", "meetings"] : defaultAccess(r.kind ?? "client"),
+      hasContract: r.kind !== "visitor" && i % 2 === 0,
+      ...r,
+      createdAt: new Date(Date.parse(now) - (i + 1) * 5 * DAY).toISOString(),
+    }),
+  );
+  const day = (days: number) => new Date(Date.parse(now) + days * DAY).toISOString().slice(0, 10);
+  const invoices: ClientInvoice[] = [
+    { id: "inv1", clientId: "cp1", period: day(-30).slice(0, 7), amount: 18000, issuedOn: day(-30), dueOn: day(-16), paidOn: day(-18) },
+    { id: "inv2", clientId: "cp1", period: day(0).slice(0, 7), amount: 18000, issuedOn: day(-2), dueOn: day(12), paidOn: null },
+    { id: "inv3", clientId: "cp4", period: day(-30).slice(0, 7), amount: 42500, issuedOn: day(-25), dueOn: day(-5), paidOn: null },
+  ];
   const meetings: ClientMeeting[] = [
     { id: "mt1", clientId: "cp8", title: ar ? "تعارف مع المستثمر" : "Meeting the investor", startsAt: at(1, 9), durationMinutes: 60, location: ar ? "غرفة الاجتماعات" : "Meeting room" },
     { id: "mt2", clientId: "cp9", title: ar ? "زيارة وفد الجامعة" : "University visit", startsAt: at(3, 8), durationMinutes: 90, location: ar ? "المكتب الرئيسي" : "Main office" },
@@ -33,6 +49,8 @@ export function demoClientPortalData(now = new Date().toISOString(), locale: "ar
   return {
     now,
     canManage: true,
+    canMoney: true,
+    invoices,
     clients,
     meetings,
     departments,

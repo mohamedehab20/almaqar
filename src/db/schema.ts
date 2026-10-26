@@ -258,6 +258,8 @@ export const clients = pgTable("clients", {
   contactPhone: text("contact_phone"),
   contactEmail: text("contact_email"),
   notes: text("notes"),
+  /** What the client sees in their portal (set by the company): briefs, invoices, meetings, files */
+  portalAccess: text("portal_access").array().notNull().default(sql`'{briefs,invoices,meetings,files}'::text[]`),
   createdAt: createdAt(),
 }, (t) => [
   index("clients_company_id_idx").on(t.companyId),
