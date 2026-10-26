@@ -1,4 +1,4 @@
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { Show } from "@clerk/nextjs";
 import { Bell, LayoutDashboard, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
@@ -34,16 +34,16 @@ export function MarketingHeader() {
         <nav aria-label={t("accountNav")} className="flex items-center gap-2 sm:gap-3">
           {clerkEnabled() ? (
             <>
-              <SignedIn>
+              <Show when="signed-in">
                 {/* Already signed in: back to their HQ (/join opens their company, or lets them create one) */}
                 <Link href="/join" className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}>
                   <LayoutDashboard className="size-4" aria-hidden />
                   {t("myHq")}
                 </Link>
-              </SignedIn>
-              <SignedOut>
+              </Show>
+              <Show when="signed-out">
                 <AccountLinks signup={t("signup")} login={t("login")} />
-              </SignedOut>
+              </Show>
             </>
           ) : (
             <AccountLinks signup={t("signup")} login={t("login")} />
