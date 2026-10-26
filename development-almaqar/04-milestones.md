@@ -14,6 +14,13 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-27 — The logo keeps you in your HQ
+- Inside a company, the logo (sidebar, and top bar on small screens) opens the main hall `/c/<slug>` instead of the public home page, which looked like being signed out. In the public demo it still opens the home page.
+- The home page header knows you are signed in: «ادخل مقرك» (to `/join`, which opens your company) instead of «إنشاء حساب» / «تسجيل الدخول».
+- In the client portal the logo stays in the portal.
+
+Files: `src/components/layout/{app-sidebar,app-topbar,app-shell,logo}.tsx`, `src/components/marketing/marketing-header.tsx`, `src/modules/marketing/components/client-home.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-27 — The client portal shows what each client is allowed
 - **Company side («بوابة العملاء»):** every client has switches «مسموح له في البوابة»: الطلبات، الفواتير، المواعيد، الملفات. A new client starts with all four; a meeting visitor with meetings only. The card shows what is on.
 - **Invoices panel:** whoever has profitability.view sees a client's invoices on its card, adds one (amount, due date), and marks it «اتدفعت». There is no online payment yet; payment is recorded by hand.

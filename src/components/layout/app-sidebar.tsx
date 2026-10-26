@@ -104,9 +104,9 @@ export function AppSidebar({ companySlug, access = null, onClose }: { companySlu
   return (
     <div className="flex h-full flex-col bg-[#1c1d1f] text-white/75">
       <div className="flex items-center gap-3 px-6 pb-6 pt-6">
-        {/* Brand → back to the home page */}
+        {/* Brand → the company's main hall (the first page after signing in); the public demo → the home page */}
         <Link
-          href="/"
+          href={access ? `/c/${companySlug}` : "/"}
           onClick={onClose}
           aria-label={t("backHome")}
           title={t("backHome")}

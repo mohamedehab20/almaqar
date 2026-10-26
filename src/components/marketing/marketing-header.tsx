@@ -1,10 +1,25 @@
-import { Bell, UserRound } from "lucide-react";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { Bell, LayoutDashboard, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
 import { Logo } from "@/components/layout/logo";
 import { Link } from "@/i18n/navigation";
+import { clerkEnabled } from "@/lib/clerk";
 import { cn } from "@/lib/utils";
 import { ExploreMenu } from "./explore-menu";
+
+function AccountLinks({ signup, login }: { signup: string; login: string }) {
+  return (
+    <>
+      <Link href="/signup" className={buttonVariants({ size: "sm" })}>
+        {signup}
+      </Link>
+      <Link href="/login" className={buttonVariants({ variant: "secondary", size: "sm" })}>
+        {login}
+      </Link>
+    </>
+  );
+}
 
 export function MarketingHeader() {
   const t = useTranslations("common");
@@ -17,12 +32,22 @@ export function MarketingHeader() {
           <Logo />
         </div>
         <nav aria-label={t("accountNav")} className="flex items-center gap-2 sm:gap-3">
-          <Link href="/signup" className={buttonVariants({ size: "sm" })}>
-            {t("signup")}
-          </Link>
-          <Link href="/login" className={buttonVariants({ variant: "secondary", size: "sm" })}>
-            {t("login")}
-          </Link>
+          {clerkEnabled() ? (
+            <>
+              <SignedIn>
+                {/* Already signed in: back to their HQ (/join opens their company, or lets them create one) */}
+                <Link href="/join" className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}>
+                  <LayoutDashboard className="size-4" aria-hidden />
+                  {t("myHq")}
+                </Link>
+              </SignedIn>
+              <SignedOut>
+                <AccountLinks signup={t("signup")} login={t("login")} />
+              </SignedOut>
+            </>
+          ) : (
+            <AccountLinks signup={t("signup")} login={t("login")} />
+          )}
           <button
             type="button"
             aria-label={t("notifications")}

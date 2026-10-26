@@ -9,6 +9,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 type AppTopbarProps = {
+  companySlug: string;
   userName: string;
   signedIn?: boolean;
   onMenu: () => void;
@@ -16,7 +17,7 @@ type AppTopbarProps = {
 
 const tabs = ["dashboard", "office", "resources", "settings"] as const;
 
-export function AppTopbar({ userName, signedIn = false, onMenu }: AppTopbarProps) {
+export function AppTopbar({ companySlug, userName, signedIn = false, onMenu }: AppTopbarProps) {
   const t = useTranslations("app");
   const tPage = useTranslations();
   // "/c/<slug>" is the main hall; "/c/<slug>/<section>" are the other pages
@@ -36,8 +37,8 @@ export function AppTopbar({ userName, signedIn = false, onMenu }: AppTopbarProps
         <Menu className="size-5" aria-hidden />
       </button>
 
-      {/* Logo → home page (the sidebar logo is hidden on small screens) */}
-      <Link href="/" aria-label={t("backHome")} title={t("backHome")} className="shrink-0 lg:hidden">
+      {/* Logo → the main hall (the sidebar logo is hidden on small screens) */}
+      <Link href={signedIn ? `/c/${companySlug}` : "/"} aria-label={t("backHome")} title={t("backHome")} className="shrink-0 lg:hidden">
         <Image src="/brand/logo.png" alt="" width={36} height={36} className="size-9 object-contain" />
       </Link>
 

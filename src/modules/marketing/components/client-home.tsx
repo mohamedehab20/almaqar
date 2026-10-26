@@ -106,7 +106,7 @@ export function ClientHome({ real, now }: { real?: RealPortal; now: string }) {
       <header className="sticky top-0 z-30 glass shadow-[0_1px_0_rgba(195,198,215,0.35)]">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <Logo />
+            <Logo href={real ? "/client-portal" : "/"} />
             <span className="hidden rounded-full bg-tertiary-fixed px-3 py-1 text-xs font-semibold text-tertiary sm:inline">{t("badge")}</span>
           </div>
           <div className="flex items-center gap-4 text-sm">

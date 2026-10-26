@@ -56,7 +56,8 @@
       "close": "Close",
       "brand": "Al Maqr"
     },
-    "backHome": "Back to the home page"
+    "backHome": "Back to the home page",
+    "myHq": "Go to your HQ"
   },
   "landing": {
     "badge": "Your digital headquarters awaits",
@@ -378,7 +379,7 @@
     "expandGroup": "Show {name} items",
     "collapseGroup": "Hide {name} items",
     "comingSoonItem": "{name} — coming soon",
-    "backHome": "Back to the home page",
+    "backHome": "Back to the main hall",
     "signOut": "Sign out",
     "guestBanner": "You are browsing as a guest: this is a demo company and nothing is saved.",
     "guestCta": "Create your free account",

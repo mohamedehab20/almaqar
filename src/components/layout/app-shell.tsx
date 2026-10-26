@@ -48,7 +48,7 @@ export function AppShell({ companySlug, userName, signedIn = false, access = nul
       <div className="flex min-w-0 flex-1 flex-col">
         {/* The public demo (not signed in): make clear nothing is saved */}
         {!signedIn && <GuestBanner />}
-        <AppTopbar userName={userName} signedIn={signedIn} onMenu={() => setMenuOpen(true)} />
+        <AppTopbar companySlug={companySlug} userName={userName} signedIn={signedIn} onMenu={() => setMenuOpen(true)} />
         <div className="flex min-h-0 flex-1 flex-col">
           <TimeZoneProvider timeZone={timeZone}>{children}</TimeZoneProvider>
         </div>
