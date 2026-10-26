@@ -41,10 +41,10 @@ export function InvoicesSection({ invoices, today }: { invoices: PortalInvoice[]
                     <span className="font-bold">
                       <bdi dir="ltr">{i.amount.toLocaleString("en-US")}</bdi> {tm("currency")}
                     </span>
-                    <span className="block text-xs text-on-surface-variant">{t("line", { period: i.period, issued: i.issuedOn, due: i.dueOn })}</span>
+                    <span className="block text-xs text-on-surface-variant">{t.rich("line", { period: i.period, issued: i.issuedOn, due: i.dueOn, d: (c) => <bdi dir="ltr">{c}</bdi> })}</span>
                   </span>
                   <span className={cn("rounded-full px-2.5 py-1 text-xs font-bold", i.paidOn ? "bg-success-container text-success" : late ? "bg-danger-container text-danger" : "bg-tertiary-fixed text-tertiary")}>
-                    {i.paidOn ? t("paid", { date: i.paidOn }) : t(late ? "late" : "unpaid")}
+                    {i.paidOn ? t.rich("paid", { date: i.paidOn, d: (c) => <bdi dir="ltr">{c}</bdi> }) : t(late ? "late" : "unpaid")}
                   </span>
                 </li>
               );

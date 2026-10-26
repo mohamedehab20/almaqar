@@ -9,6 +9,7 @@ A complete check of the frontend, the backend and the live Supabase database. Ne
 | `npm run test:db` | 96/96. 4 new in `tests/db/portal-access.test.ts`: defaults (client all four, visitor meetings only) and invoices for profitability.view; each portal shows only what is allowed; turning parts off hides them and the database refuses them (reader returns nothing, sending a brief fails); turning briefs back on works; a portal user never reads another client's invoices or meetings; unknown values are refused. |
 | Migrations 0037–0038 on Supabase | Applied. Existing clients got their defaults; the 3 functions are SECURITY DEFINER for authenticated only; the 3 briefs policies check «briefs»; no duplicate permissive policies; no SECURITY DEFINER in public; RLS smoke test OK. |
 | `tsc`, `lint`, `build` | Pass. |
+| Production, fresh owner and visitor | 12/12: the form has «مسموح له في البوابة»; a client saved with invoices + meetings only; an invoice of 2,500 added from the card; the visitor sees «فواتيري» (2,500 waiting) and «مواعيدي», no requests or files, no page errors; after the owner marks it paid the portal says «اتدفعت». Afterwards: dates kept left-to-right in Arabic text, and the subtitle no longer mentions briefs when they are off. Test data deleted. |
 
 ## 2026-10-21 — Signed in without a company (production)
 

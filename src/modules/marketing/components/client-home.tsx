@@ -132,7 +132,7 @@ export function ClientHome({ real, now }: { real?: RealPortal; now: string }) {
       <main className="mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-8">
         <div>
           <h1 className="text-3xl font-extrabold">{t("welcome", { name: client.name[locale] })}</h1>
-          <p className="mt-1 text-on-surface-variant">{t("subtitle")}</p>
+          <p className="mt-1 text-on-surface-variant">{t(allowed("briefs") ? "subtitle" : "subtitleNoBriefs")}</p>
         </div>
 
         {access.length === 0 && <p className="rounded-lg bg-surface-container-lowest p-8 text-center text-muted shadow-ambient ghost-border">{t("nothingAllowed")}</p>}

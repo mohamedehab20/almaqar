@@ -437,7 +437,7 @@ function InvoicesBox({ invoices, pending, onAdd, onPaid }: { invoices: ClientInv
             <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-surface-container-lowest px-2.5 py-1.5">
               <span>
                 <bdi dir="ltr" className="font-bold">{i.amount.toLocaleString("en-US")}</bdi> {t("currency")}
-                <span className="ms-2 text-xs text-on-surface-variant">{t("due", { date: i.dueOn })}</span>
+                <span className="ms-2 text-xs text-on-surface-variant">{t.rich("due", { date: i.dueOn, d: (c) => <bdi dir="ltr">{c}</bdi> })}</span>
               </span>
               {i.paidOn ? (
                 <span className="rounded-full bg-success-container px-2 py-0.5 text-xs font-bold text-success">{t("paid")}</span>

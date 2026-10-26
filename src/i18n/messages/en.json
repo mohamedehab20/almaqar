@@ -1231,8 +1231,8 @@
       "title": "My invoices",
       "empty": "No invoices yet.",
       "due": "You owe {amount}",
-      "line": "{period} · issued {issued} · due {due}",
-      "paid": "Paid {date}",
+      "line": "<d>{period}</d> · issued <d>{issued}</d> · due <d>{due}</d>",
+      "paid": "Paid <d>{date}</d>",
       "unpaid": "Unpaid",
       "late": "Overdue",
       "howToPay": "Payment is made with the company directly; once paid, the invoice is marked «Paid» here."
@@ -1252,7 +1252,8 @@
       "names": {
         "contract": "Contract"
       }
-    }
+    },
+    "subtitleNoBriefs": "Follow your account with the company here."
   },
   "pricing": {
     "metaTitle": "Pricing",
@@ -2157,7 +2158,7 @@
       "add": "+ invoice",
       "empty": "No invoices yet.",
       "currency": "SAR",
-      "due": "due {date}",
+      "due": "due <d>{date}</d>",
       "paid": "Paid",
       "unpaid": "Unpaid",
       "late": "Overdue",
