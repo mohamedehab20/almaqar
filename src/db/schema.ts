@@ -125,6 +125,8 @@ export const members = pgTable(
     userId: text("user_id"),
     /** Invite address: an invited member is linked to the auth user with this email on first sign-in */
     email: text("email"),
+    /** WhatsApp number the invite was sent to (international digits, e.g. 201012345678) */
+    phone: text("phone"),
     /** "owner" marks the company owner (all permissions). Everyone else gets permissions from roleId + overrides. */
     role: memberRole("role").notNull().default("employee"),
     /** Permission role (roles table); null = no permissions beyond what overrides grant */

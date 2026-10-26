@@ -10,7 +10,7 @@ import { FormStatus } from "@/components/ui/form-status";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useRouter } from "@/i18n/navigation";
-import { inviteMember, removeMember } from "@/modules/hq/actions";
+import { inviteMember, removeMember, resendInviteEmail } from "@/modules/hq/actions";
 import type { Department, PresenceStatus } from "@/modules/hq/mock";
 
 type Localized = { ar: string; en: string };
@@ -23,6 +23,8 @@ export type EmployeeRow = {
   role: "owner" | "admin" | "employee";
   roleId: string | null;
   email: string | null;
+  /** WhatsApp number the invite went to (international digits) */
+  phone?: string | null;
   linked: boolean;
 };
 
@@ -161,7 +163,24 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
                   {!m.linked && m.email && canInvite && (
                     <button
                       type="button"
-                      onClick={() => sendOnWhatsApp({ name: text(m.name), email: m.email! })}
+                      disabled={pending}
+                      onClick={() =>
+                        startTransition(async () => {
+                          const result = await resendInviteEmail({ companyId, memberId: m.id, locale: lang });
+                          setMessage(!result.ok ? (result.error === "forbidden" ? t("noPermission") : tErr(result.error)) : result.data.emailed ? t("emailResent", { email: m.email! }) : t("emailFailed"));
+                        })
+                      }
+                      title={t("resendEmail")}
+                      aria-label={t("resendEmail")}
+                      className="ms-2 inline-grid size-7 place-items-center rounded-full text-primary hover:bg-primary-fixed disabled:opacity-50"
+                    >
+                      <Mail className="size-4" aria-hidden />
+                    </button>
+                  )}
+                  {!m.linked && m.email && canInvite && (
+                    <button
+                      type="button"
+                      onClick={() => sendOnWhatsApp({ name: text(m.name), email: m.email!, phone: m.phone ?? undefined })}
                       title={t("resendWhatsapp")}
                       aria-label={t("resendWhatsapp")}
                       className="ms-2 inline-grid size-7 place-items-center rounded-full text-success hover:bg-success-container"
@@ -212,14 +231,16 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
               const result = await inviteMember({
                 companyId,
                 email: value("email"),
+                phone: value("phone"),
+                locale: lang,
                 name: { ar: name, en: name },
                 title: title ? { ar: title, en: title } : undefined,
                 departmentId: value("departmentId") || null,
                 roleId: meRole === "owner" ? value("roleId") || null : undefined,
               });
               if (!result.ok) return setMessage(result.error === "forbidden" ? t("noPermission") : tErr(result.error));
-              setMessage(result.data.emailed ? t("addedEmailed", { name }) : t("addedShare", { name }));
-              setLastInvite({ name, email: value("email").toLowerCase(), phone: value("phone") || undefined });
+              setMessage(result.data.emailed ? t("addedEmailed", { name }) : t("addedEmailFailed", { name }));
+              setLastInvite({ name, email: value("email").toLowerCase(), phone: value("phone") });
               form.reset();
               router.refresh();
             });
@@ -232,7 +253,7 @@ export function EmployeesPanel({ companyId, companyName, companyCode, meId, meRo
             <Input id="emp-email" name="email" type="email" icon={Mail} placeholder="name@company.com" required />
           </Field>
           <Field label={t("phone")} htmlFor="emp-phone">
-            <Input id="emp-phone" name="phone" type="tel" inputMode="tel" dir="ltr" icon={Phone} placeholder={t("phonePlaceholder")} autoComplete="off" />
+            <Input id="emp-phone" name="phone" type="tel" inputMode="tel" dir="ltr" icon={Phone} placeholder={t("phonePlaceholder")} autoComplete="off" required minLength={8} pattern="[+0-9 ()-]{8,25}" />
           </Field>
           <Field label={t("jobTitle")} htmlFor="emp-title">
             <Input id="emp-title" name="jobTitle" placeholder={t("jobTitlePlaceholder")} />

@@ -1,7 +1,12 @@
 "use server";
 
+import { clerkClient } from "@clerk/nextjs/server";
+import { headers } from "next/headers";
 import { z } from "zod";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { clerkEnabled } from "@/lib/clerk";
+import { normalizePhone } from "@/lib/phone";
+import { AppError } from "@/server/errors";
+import { requirePermission } from "@/server/permissions";
 import { action } from "@/server/action";
 import { withUser } from "@/server/session";
 import { companyInput, id, localized, optionalLocalized } from "@/server/validation";
@@ -26,26 +31,56 @@ export const updateMyProfile = action(companyInput.extend({ name: localized(80).
   withUser((ctx) => svc.updateMyProfile(ctx, input)),
 );
 
-/** Adds the member, then emails them an invite when SUPABASE_SECRET_KEY is set (otherwise they just sign up with that email). */
+/**
+ * Emails a Clerk invitation: a link to create the account with this address, which lands on /join and
+ * opens the company. false when it could not be sent (Clerk off, or the address already has an account:
+ * they simply sign in and the invite is linked).
+ */
+async function emailInvite(email: string, locale: "ar" | "en") {
+  if (!clerkEnabled()) return false;
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  if (!host) return false;
+  const origin = `${h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")}://${host}`;
+  try {
+    const client = await clerkClient();
+    await client.invitations.createInvitation({ emailAddress: email, redirectUrl: `${origin}${locale === "en" ? "/en" : ""}/join`, ignoreExisting: true, notify: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Adds the member, then sends the invite by email (Clerk). The screen then offers WhatsApp to the number given. */
 export const inviteMember = action(
   companyInput.extend({
     email: z.email(),
+    phone: z.string().trim().min(8).max(25).refine((v) => normalizePhone(v) !== null),
+    locale: z.enum(["ar", "en"]).optional(),
     name: localized(80),
     title: optionalLocalized(80).optional(),
     departmentId: id.nullable().optional(),
     roleId: id.nullable().optional(),
   }),
-  async (input) => {
+  async ({ locale, ...input }) => {
     const member = await withUser((ctx) => svc.inviteMember(ctx, input));
-    const admin = createAdminClient();
-    let emailed = false;
-    if (admin) {
-      const { error } = await admin.auth.admin.inviteUserByEmail(member.email!);
-      emailed = !error; // an existing account gets no invite email; it is linked on next sign-in
-    }
+    const emailed = await emailInvite(member.email!, locale ?? "ar");
     return { member, emailed };
   },
 );
+
+/** Sends the invite email again to someone who has not activated their account yet (members.invite). */
+export const resendInviteEmail = action(companyInput.extend({ memberId: id, locale: z.enum(["ar", "en"]).optional() }), async ({ companyId, memberId, locale }) => {
+  const member = await withUser(async (ctx) => {
+    const list = await svc.listMembers(ctx, companyId);
+    const m = list.find((x) => x.id === memberId);
+    if (!m || !m.email) throw new AppError("not_found");
+    if (m.linked) throw new AppError("invalid");
+    await requirePermission(ctx, companyId, "members.invite", m.departmentId || null);
+    return m;
+  });
+  return { emailed: await emailInvite(member.email!, locale ?? "ar") };
+});
 
 export const updateMember = action(
   companyInput.extend({

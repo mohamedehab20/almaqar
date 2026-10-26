@@ -145,3 +145,9 @@ test("client portal: a visitor reads their own client and briefs, and sends one"
   assert.equal((await t.as(visitor, (ctx) => marketing.listBriefs(ctx, { clientId: client.id }))).length, 1);
   assert.equal((await t.as(outsider, (ctx) => marketing.getMyClients(ctx))).length, 0);
 });
+
+test("invites keep the WhatsApp number in international form; a wrong number is refused", async () => {
+  const m = await t.as(owner, (ctx) => hq.inviteMember(ctx, { companyId, email: "new@wire.test", phone: "010 1234 5678", name: L("New") }));
+  assert.equal(m.phone, "201012345678");
+  await failsWith("invalid", t.as(owner, (ctx) => hq.inviteMember(ctx, { companyId, email: "bad@wire.test", phone: "12ab", name: L("Bad") })));
+});

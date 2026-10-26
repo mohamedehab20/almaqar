@@ -14,6 +14,14 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-27 — Employee invites by email and WhatsApp
+- «رقم الواتساب» is required (no «اختياري») and saved on the member (`members.phone`, migration `0039_member_phone`, applied), in international form (01xxxxxxxxx → 2010…).
+- **Email:** the invite is now a Clerk invitation (a link to create the account, landing on `/join`). Before, it used Supabase Auth, which the app no longer uses, so no email was ever sent.
+- **WhatsApp:** after adding, one tap opens the chat with the invite message.
+- **Pending members:** two buttons, one to email the invite again (`resendInviteEmail`) and one for WhatsApp to the saved number.
+
+Files: `src/modules/hq/{actions,service}.ts`, `src/modules/hr/components/employees-panel.tsx`, `src/lib/phone.ts`, `src/db/schema.ts`, `drizzle/0039_member_phone.sql`, `tests/db/wiring.test.ts`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-27 — The logo keeps you in your HQ
 - Inside a company, the logo (sidebar, and top bar on small screens) opens the main hall `/c/<slug>` instead of the public home page, which looked like being signed out. In the public demo it still opens the home page.
 - The home page header knows you are signed in: «ادخل مقرك» (to `/join`, which opens your company) instead of «إنشاء حساب» / «تسجيل الدخول».

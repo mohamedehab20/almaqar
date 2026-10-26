@@ -274,6 +274,13 @@
       "when": 1792574566578,
       "tag": "0038_client_portal_access_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793056066919,
+      "tag": "0039_member_phone",
+      "breakpoints": true
     }
   ]
 }

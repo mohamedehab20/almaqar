@@ -7,6 +7,7 @@ import { requirePermission } from "@/server/permissions";
 import { assertWithinPlan } from "@/server/plans";
 import { emitEvent, listActivity } from "@/modules/events/service";
 import { localParts, readWorkSettings } from "@/modules/hours/calc";
+import { normalizePhone } from "@/lib/phone";
 import { defaultOffice } from "./layout";
 import type { ActivityItem, Department, FurnitureItem, Member, PresenceStatus, Room, Zone } from "./mock";
 
@@ -15,7 +16,7 @@ const EMPTY: Localized = { ar: "", en: "" };
 type MemberRow = typeof members.$inferSelect;
 type MemberRole = MemberRow["role"];
 
-export function toMember(r: MemberRow): Member & { role: MemberRole; roleId: string | null; email: string | null; linked: boolean } {
+export function toMember(r: MemberRow): Member & { role: MemberRole; roleId: string | null; email: string | null; phone: string | null; linked: boolean } {
   return {
     id: r.id,
     name: r.name,
@@ -26,6 +27,7 @@ export function toMember(r: MemberRow): Member & { role: MemberRole; roleId: str
     role: r.role,
     roleId: r.roleId,
     email: r.email,
+    phone: r.phone,
     linked: r.userId !== null,
   };
 }
@@ -107,10 +109,12 @@ async function assertRoleInCompany(ctx: Ctx, companyId: string, roleId: string) 
  */
 export async function inviteMember(
   ctx: Ctx,
-  input: { companyId: string; email: string; name: Localized; title?: Localized; departmentId?: string | null; roleId?: string | null },
+  input: { companyId: string; email: string; phone?: string | null; name: Localized; title?: Localized; departmentId?: string | null; roleId?: string | null },
 ) {
   const me = await requireMember(ctx, input.companyId);
   await requirePermission(ctx, input.companyId, "members.invite", input.departmentId);
+  const phone = input.phone === undefined || input.phone === null ? null : normalizePhone(input.phone);
+  if (input.phone && !phone) throw new AppError("invalid");
   if (input.roleId && me.role !== "owner") throw new AppError("forbidden");
   if (input.roleId) await assertRoleInCompany(ctx, input.companyId, input.roleId);
   await assertWithinPlan(ctx, input.companyId, "members");
@@ -126,6 +130,7 @@ export async function inviteMember(
     .values({
       companyId: input.companyId,
       email,
+      phone,
       name: input.name,
       title: input.title,
       departmentId: input.departmentId ?? null,
