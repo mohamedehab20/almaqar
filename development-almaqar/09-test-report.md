@@ -2,6 +2,12 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-28 — Portal invites (production)
+
+| Check | Result |
+|---|---|
+| Fresh owner + visitor | 9/9: the card has both invite buttons; «بوابة العملاء» is in the sidebar (seen from its page; the earlier miss was the collapsed group); WhatsApp opens wa.me/201012345678 with the company, the link `/visitor-login?invite=CODE` and the code; the email button confirms and a Clerk invitation exists for the address; the link fills the code and shows the sign-in form; the visitor signs in and lands in the invited client's portal. Test data and the invitation removed. |
+
 ## 2026-10-27 — «بوابة العملاء» as its own room, four kinds
 
 | Check | Result |
