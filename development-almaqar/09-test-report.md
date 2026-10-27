@@ -2,6 +2,14 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-10-27 — «بوابة العملاء» as its own room, four kinds
+
+| Check | Result |
+|---|---|
+| `npm run test:db` | 99/99. 2 new in `tests/db/portal-access.test.ts`: an operation follower sees their operation (code, current step 1 of 2) and a candidate their application (job, stage applied); a link is required; fields that do not fit the kind are refused; neither reaches the other's data; turning a part off hides it. The room is `clients.view` for Admin and Employee, and marketing lists only real clients. |
+| `tsc`, `lint`, `build`, `check:routes` | Pass; the old `/hr/client-portal` forwards to `/clients`. |
+| Migrations 0040–0041 on Supabase | Applied. Kinds client/visitor/operation/candidate; `run_id`, `candidate_id`; `permission_keys()` = catalog (36); all 8 Admin/Employee roles have `clients.view`; the 2 readers are definer for authenticated only; no duplicate policies; no SECURITY DEFINER in public; smoke test OK. |
+
 ## 2026-10-27 — Client portal access
 
 | Check | Result |

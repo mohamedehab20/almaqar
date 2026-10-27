@@ -4,6 +4,11 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-10-27 — One portal for everyone outside the company
+- Clients, meeting visitors, operation followers (suppliers, contractors) and job candidates all enter through the visitor login with a code made in «بوابة العملاء». It is a room of its own (`clients.view`), no longer part of HR.
+- The company creates each one by hand and links them (an operation, a candidate). Creating them automatically from Recruitment or Operations can come later.
+- Candidates see only the job, their stage and the interview time; operation followers only the code, status and step titles. Notes, ratings and reasons stay inside.
+
 ### 2026-10-27 — Portal access per client, set by the company; no online payment yet
 - The company chooses per client what the portal shows (requests, invoices, meetings, files), with defaults by kind. A list on the client row keeps it simple; the database checks it, so a hidden part cannot be reached by calling the data directly.
 - Portal users read invoices and meetings through two narrow readers (own client, a few columns), not table policies, so company-only columns stay private and no second permissive policy is added.
