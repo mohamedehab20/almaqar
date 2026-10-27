@@ -6,6 +6,7 @@ A complete check of the frontend, the backend and the live Supabase database. Ne
 
 | Check | Result |
 |---|---|
+| Production, owner + supplier + candidate | 16/17: the old HR address forwards to `/clients`; the HR tile is gone; an operation follower (OP-1001) and a candidate were created from the form with their links and default parts; the cards say «بيتابع OP-1001» and «مرشّح: مصمم جرافيك»; the supplier sees «متابعة العملية» and «مواعيدي» only, the candidate «طلب التوظيف» (job, interview stage and time) only; no page errors. One check on the sidebar link was inconclusive (the group was collapsed); rechecked from the room page. |
 | `npm run test:db` | 99/99. 2 new in `tests/db/portal-access.test.ts`: an operation follower sees their operation (code, current step 1 of 2) and a candidate their application (job, stage applied); a link is required; fields that do not fit the kind are refused; neither reaches the other's data; turning a part off hides it. The room is `clients.view` for Admin and Employee, and marketing lists only real clients. |
 | `tsc`, `lint`, `build`, `check:routes` | Pass; the old `/hr/client-portal` forwards to `/clients`. |
 | Migrations 0040–0041 on Supabase | Applied. Kinds client/visitor/operation/candidate; `run_id`, `candidate_id`; `permission_keys()` = catalog (36); all 8 Admin/Employee roles have `clients.view`; the 2 readers are definer for authenticated only; no duplicate policies; no SECURITY DEFINER in public; smoke test OK. |

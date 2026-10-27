@@ -51,6 +51,7 @@ export function demoClientPortalData(now = new Date().toISOString(), locale: "ar
   ];
   return {
     now,
+    companyName: { ar: "شركة المقر التجريبية", en: "Al Maqr Demo Co." },
     canManage: true,
     canMoney: true,
     invoices,

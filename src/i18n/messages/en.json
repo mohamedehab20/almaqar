@@ -2213,6 +2213,16 @@
       "close": "Cancel",
       "added": "Invoice added for {name}.",
       "paidNotice": "Invoice marked as paid."
+    },
+    "invite": {
+      "whatsapp": "Send the invite on WhatsApp",
+      "email": "Email the invite",
+      "noPhone": "Add a mobile number to send on WhatsApp.",
+      "noEmail": "Add an email address to send to it.",
+      "addBoth": "Add the mobile and email in «Edit» to send the invite.",
+      "emailed": "The invite was sent to {email}.",
+      "emailFailed": "Could not send the email. They may already have an account: they enter from the visitor login with the code.",
+      "message": "Hello {name} 👋\n“{company}” invites you to your portal on Al Maqr.\nOpen this link: {link}\nPortal code: {code}"
     }
   },
   "approvals": {

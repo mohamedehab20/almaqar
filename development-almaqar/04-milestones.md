@@ -14,6 +14,16 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-28 — Portal invites by WhatsApp and email
+- On each card in «بوابة العملاء» (clients.manage) there are two buttons:
+  - **«ابعت الدعوة على واتساب»** opens the chat to the contact's mobile with the company name, a link and the portal code.
+  - **«ابعت الدعوة على الإيميل»** sends a Clerk invitation to the contact's email.
+- Without a mobile or an email the button is off, with a hint to add it.
+- The link opens `/visitor-login?invite=CODE`: the code is checked at once and the sign-in / sign-up form shows; after it they land in their portal.
+- The Clerk email helper is shared with employee invites (`src/server/invite-email.ts`).
+
+Files: `src/modules/clients/{actions,service,demo}.ts`, `src/modules/clients/components/client-portal-view.tsx`, `src/modules/auth/components/visitor-login-form.tsx`, `src/app/[locale]/(auth)/visitor-login/page.tsx`, `src/server/invite-email.ts`, `src/modules/hq/actions.ts`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-27 — «بوابة العملاء» is its own room, for every kind of outside person
 - **Moved:** out of HR into the sidebar (`/c/<slug>/clients`, permission `clients.view` for Admin and Employee, on/off from «إدارة الأقسام»). The old `/hr/client-portal` address forwards there.
 - **Four kinds, one door** (visitor login + portal code):

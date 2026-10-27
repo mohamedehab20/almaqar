@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
-import { candidates, clients, clientUsers, departments, invoices, jobOpenings, meetings, workflowRuns } from "@/db/schema";
+import { candidates, clients, clientUsers, companies, departments, invoices, jobOpenings, meetings, workflowRuns } from "@/db/schema";
 import { rowsOf, type Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
@@ -110,10 +110,12 @@ export async function getClientPortalData(ctx: Ctx, companyId: string) {
       .orderBy(desc(candidates.createdAt))
       .limit(300),
   ]);
+  const [company] = await ctx.tx.select({ name: companies.name }).from(companies).where(eq(companies.id, companyId));
   // Invoices: RLS shows them only with profitability.view
   const invoiceRows = canMoney ? await ctx.tx.select().from(invoices).where(eq(invoices.companyId, companyId)).orderBy(desc(invoices.issuedOn)) : [];
   return {
     now: new Date().toISOString(),
+    companyName: company?.name ?? { ar: "", en: "" },
     canManage,
     canMoney,
     invoices: invoiceRows.map(
@@ -214,6 +216,15 @@ export async function updatePortalClient(ctx: Ctx, input: { clientId: string } &
     .where(eq(clients.id, client.id))
     .returning();
   return row.id;
+}
+
+/** For an invite: the person's email and portal code (clients.manage). */
+export async function getInviteTarget(ctx: Ctx, clientId: string) {
+  const [current] = await ctx.tx.select().from(clients).where(eq(clients.id, clientId));
+  const client = found(current);
+  await requirePermission(ctx, client.companyId, "clients.manage");
+  if (!client.contactEmail || !client.inviteCode) throw new AppError("invalid");
+  return { email: client.contactEmail, code: client.inviteCode };
 }
 
 /** Removes the client with everything attached to it (briefs, portal users); its meetings stay in the schedule. */

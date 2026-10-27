@@ -6,6 +6,7 @@ import { withUser } from "@/server/session";
 import { companyInput, id } from "@/server/validation";
 import { ROOM_KEYS } from "@/modules/departments/rooms";
 import { CLIENT_KINDS, PORTAL_FEATURES } from "./access";
+import { emailInvite } from "@/server/invite-email";
 import * as svc from "./service";
 
 const text = (max: number) => z.string().trim().max(max).nullable().optional();
@@ -33,6 +34,15 @@ export const createPortalClient = action(companyInput.extend({ name: z.string().
 export const updatePortalClient = action(z.object({ clientId: id, name: z.string().trim().min(1).max(120).optional(), ...fields }), (input) =>
   withUser((ctx) => svc.updatePortalClient(ctx, input)),
 );
+
+/**
+ * Emails the portal invite to the person's address: a link to create their account that opens the visitor
+ * login with their code already filled in. Returns whether it was sent.
+ */
+export const sendPortalInviteEmail = action(z.object({ clientId: id, locale: z.enum(["ar", "en"]).optional() }), async ({ clientId, locale }) => {
+  const target = await withUser((ctx) => svc.getInviteTarget(ctx, clientId));
+  return { emailed: await emailInvite(target.email, `/visitor-login?invite=${encodeURIComponent(target.code)}`, locale ?? "ar") };
+});
 
 export const deletePortalClient = action(z.object({ clientId: id }), (input) => withUser((ctx) => svc.deletePortalClient(ctx, input)));
 

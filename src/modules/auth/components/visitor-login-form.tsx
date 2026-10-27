@@ -2,7 +2,7 @@
 
 import { ArrowLeft, ArrowRight, Link2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import { Field } from "@/components/ui/field";
@@ -18,13 +18,24 @@ import { QrScanBox } from "./qr-scan-box";
  * 2) sign in or sign up with Clerk (email code or password). after-sign-in then links them to that
  * client and opens /client-portal.
  */
-export function VisitorLoginForm({ badInvite = false }: { badInvite?: boolean }) {
+export function VisitorLoginForm({ badInvite = false, initialCode }: { badInvite?: boolean; initialCode?: string }) {
   const t = useTranslations("auth");
   const v = (key: string, values?: Record<string, string | number>) => t(`visitor.${key}`, values);
   const Arrow = useLocale() === "ar" ? ArrowLeft : ArrowRight;
   const [status, setStatus] = useState<string | null>(badInvite ? v("badInvite") : null);
   const [code, setCode] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  // From an invite link (WhatsApp or email): check the code right away and go on to sign in / sign up
+  useEffect(() => {
+    if (!initialCode || badInvite) return;
+    startTransition(async () => {
+      const result = await checkInviteCode({ inviteCode: initialCode });
+      if (result.ok) setCode(result.data.inviteCode);
+      else setStatus(v("badInvite"));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialCode, badInvite]);
 
   if (!clerkEnabled()) return <AuthNotConfigured />;
 
@@ -58,7 +69,7 @@ export function VisitorLoginForm({ badInvite = false }: { badInvite?: boolean })
         }}
       >
         <Field label={v("invite")} htmlFor="invite">
-          <Input id="invite" name="invite" icon={Link2} placeholder={v("invitePlaceholder")} autoComplete="off" required minLength={4} />
+          <Input id="invite" name="invite" defaultValue={initialCode} icon={Link2} placeholder={v("invitePlaceholder")} autoComplete="off" required minLength={4} />
         </Field>
         <Button type="submit" size="lg" className="mt-2 h-14 text-base" disabled={pending}>
           {pending ? v("checking") : v("next")}

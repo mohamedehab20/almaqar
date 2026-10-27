@@ -1,11 +1,9 @@
 "use server";
 
-import { clerkClient } from "@clerk/nextjs/server";
-import { headers } from "next/headers";
 import { z } from "zod";
-import { clerkEnabled } from "@/lib/clerk";
 import { normalizePhone } from "@/lib/phone";
 import { AppError } from "@/server/errors";
+import { emailInvite } from "@/server/invite-email";
 import { requirePermission } from "@/server/permissions";
 import { action } from "@/server/action";
 import { withUser } from "@/server/session";
@@ -31,26 +29,6 @@ export const updateMyProfile = action(companyInput.extend({ name: localized(80).
   withUser((ctx) => svc.updateMyProfile(ctx, input)),
 );
 
-/**
- * Emails a Clerk invitation: a link to create the account with this address, which lands on /join and
- * opens the company. false when it could not be sent (Clerk off, or the address already has an account:
- * they simply sign in and the invite is linked).
- */
-async function emailInvite(email: string, locale: "ar" | "en") {
-  if (!clerkEnabled()) return false;
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  if (!host) return false;
-  const origin = `${h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")}://${host}`;
-  try {
-    const client = await clerkClient();
-    await client.invitations.createInvitation({ emailAddress: email, redirectUrl: `${origin}${locale === "en" ? "/en" : ""}/join`, ignoreExisting: true, notify: true });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /** Adds the member, then sends the invite by email (Clerk). The screen then offers WhatsApp to the number given. */
 export const inviteMember = action(
   companyInput.extend({
@@ -64,7 +42,7 @@ export const inviteMember = action(
   }),
   async ({ locale, ...input }) => {
     const member = await withUser((ctx) => svc.inviteMember(ctx, input));
-    const emailed = await emailInvite(member.email!, locale ?? "ar");
+    const emailed = await emailInvite(member.email!, "/join", locale ?? "ar");
     return { member, emailed };
   },
 );
@@ -79,7 +57,7 @@ export const resendInviteEmail = action(companyInput.extend({ memberId: id, loca
     await requirePermission(ctx, companyId, "members.invite", m.departmentId || null);
     return m;
   });
-  return { emailed: await emailInvite(member.email!, locale ?? "ar") };
+  return { emailed: await emailInvite(member.email!, "/join", locale ?? "ar") };
 });
 
 export const updateMember = action(

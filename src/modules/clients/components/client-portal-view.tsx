@@ -11,6 +11,7 @@ import {
   Handshake,
   KeyRound,
   Mail,
+  MessageCircle,
   Pencil,
   Phone,
   Plus,
@@ -36,7 +37,8 @@ import { ROOMS } from "@/modules/departments/rooms";
 import { regenerateInviteCode } from "@/modules/marketing/actions";
 import { createInvoice, markInvoicePaid } from "@/modules/profitability/actions";
 import { useTimeZone } from "@/lib/time-zone";
-import { bookClientMeeting, createPortalClient, deletePortalClient, updatePortalClient } from "../actions";
+import { normalizePhone } from "@/lib/phone";
+import { bookClientMeeting, createPortalClient, deletePortalClient, sendPortalInviteEmail, updatePortalClient } from "../actions";
 import { defaultAccess, FEATURES_BY_KIND, PORTAL_FEATURES, type ClientKind, type PortalFeature } from "../access";
 import type { ClientInput, ClientInvoice, ClientMeeting, ClientPortalData, ClientStatus, PortalClient } from "../service";
 
@@ -208,6 +210,22 @@ export function ClientPortalView({ data, companyId, companySlug }: { data: Clien
       t("invoices.paidNotice"),
     );
 
+  // ---------- Invite: WhatsApp (opens the chat with the message) and email (an invitation link) ----------
+  const inviteLink = (c: PortalClient) => `${window.location.origin}${locale === "en" ? "/en" : ""}/visitor-login?invite=${encodeURIComponent(c.inviteCode ?? "")}`;
+  const inviteOnWhatsApp = (c: PortalClient) => {
+    const phone = normalizePhone(c.contactPhone);
+    const message = t("invite.message", { name: c.contactName || c.name, company: state.companyName[locale] || state.companyName.ar, link: inviteLink(c), code: c.inviteCode ?? "" });
+    window.open(`https://wa.me/${phone ?? ""}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+  };
+  const inviteByEmail = (c: PortalClient) => {
+    if (demo) return setNotice(t("invite.emailed", { email: c.contactEmail ?? "" }));
+    startTransition(async () => {
+      const res = await sendPortalInviteEmail({ clientId: c.id, locale });
+      if (!res.ok) return setNotice(tErr(res.error));
+      setNotice(res.data.emailed ? t("invite.emailed", { email: c.contactEmail ?? "" }) : t("invite.emailFailed"));
+    });
+  };
+
   const renewCode = (c: PortalClient) =>
     run(
       () => setState((s) => ({ ...s, clients: s.clients.map((x) => (x.id === c.id ? { ...x, inviteCode: Math.random().toString(36).slice(2, 9).toUpperCase() } : x)) })),
@@ -346,6 +364,19 @@ export function ClientPortalView({ data, companyId, companySlug }: { data: Clien
                     <InvoicesBox invoices={state.invoices.filter((i) => i.clientId === c.id)} pending={pending} onAdd={(amount, dueOn) => addInvoice(c, amount, dueOn)} onPaid={markPaid} />
                   )}
                   {state.canManage && c.inviteCode && <PortalCode client={c} pending={pending} onRenew={() => renewCode(c)} onCopied={() => setNotice(t("notices.copied"))} />}
+                  {state.canManage && c.inviteCode && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button size="sm" disabled={!c.contactPhone} onClick={() => inviteOnWhatsApp(c)} className="bg-success bg-none text-white hover:bg-success/90" title={c.contactPhone ? undefined : t("invite.noPhone")}>
+                        <MessageCircle className="size-4" aria-hidden />
+                        {t("invite.whatsapp")}
+                      </Button>
+                      <Button size="sm" variant="secondary" disabled={!c.contactEmail || pending} onClick={() => inviteByEmail(c)} title={c.contactEmail ? undefined : t("invite.noEmail")}>
+                        <Mail className="size-4" aria-hidden />
+                        {t("invite.email")}
+                      </Button>
+                      {(!c.contactPhone || !c.contactEmail) && <span className="text-xs text-on-surface-variant">{t(!c.contactPhone && !c.contactEmail ? "invite.addBoth" : !c.contactPhone ? "invite.noPhone" : "invite.noEmail")}</span>}
+                    </div>
+                  )}
                   {booking === c.id && <MeetingForm client={c} pending={pending} managerName={manager} onClose={() => setBooking(null)} onSubmit={(at, minutes, place, title) => book(c, at, minutes, place, title)} />}
                   {state.canManage && (
                     <div className="mt-auto flex flex-wrap gap-2 pt-1">
