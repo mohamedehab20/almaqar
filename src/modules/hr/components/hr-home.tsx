@@ -9,7 +9,6 @@ import {
   CalendarPlus,
   Clock,
   FolderOpen,
-  Handshake,
   MessagesSquare,
   ReceiptText,
   Timer,
@@ -34,7 +33,6 @@ const ready: { key: string; icon: LucideIcon; page: string }[] = [
   { key: "workHours", icon: Timer, page: "work-hours" },
   { key: "departments", icon: Users, page: "departments" },
   { key: "recruitment", icon: UserSearch, page: "recruitment" },
-  { key: "clientPortal", icon: Handshake, page: "client-portal" },
 ];
 
 /** Tools still to come: marked «قريباً». Permissions live in the sidebar («الصلاحيات»), not here. */

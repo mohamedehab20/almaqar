@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, Download, FileText, MapPin, Receipt } from "lucide-react";
+import { CalendarClock, Check, Download, FileText, MapPin, Receipt, UserSearch, Workflow } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { useTimeZone } from "@/lib/time-zone";
@@ -132,6 +132,103 @@ export function FilesSection({ files }: { files: PortalFile[] }) {
             </li>
           ))}
         </ul>
+      )}
+    </section>
+  );
+}
+
+export type PortalOperation = { code: string; subject: { ar: string; en: string }; status: string; currentStep: number; steps: { title: { ar: string; en: string } }[]; updatedAt: string };
+export type PortalApplication = { jobTitle: string; stage: string; interviewAt: string | null; stageChangedAt: string };
+
+/** The one operation this person follows: where it stands, step by step. */
+export function OperationSection({ operation }: { operation: PortalOperation | null }) {
+  const t = useTranslations("clientPortal.operation");
+  const locale = useLocale() as "ar" | "en";
+  const timeZone = useTimeZone();
+  const fmt = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZone }), [locale, timeZone]);
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="flex items-center gap-2 text-lg font-extrabold">
+        <Workflow className="size-5 text-primary" aria-hidden />
+        {t("title")}
+      </h2>
+      {!operation ? (
+        <p className={cn(card, "text-center text-muted")}>{t("none")}</p>
+      ) : (
+        <div className={cn(card, "flex flex-col gap-4")}>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="font-mono text-xs text-on-surface-variant" dir="ltr">
+                {operation.code}
+              </p>
+              <p className="text-lg font-bold">{operation.subject[locale]}</p>
+            </div>
+            <span className={cn("rounded-full px-3 py-1 text-xs font-bold", operation.status === "completed" ? "bg-success-container text-success" : operation.status === "closed" ? "bg-surface-container text-muted" : operation.status === "changes_requested" ? "bg-tertiary-fixed text-tertiary" : "bg-primary-fixed text-primary")}>
+              {t(`status.${operation.status}`)}
+            </span>
+          </div>
+          {operation.steps.length > 0 && (
+            <ol className="flex flex-col gap-2">
+              {operation.steps.map((s, i) => {
+                const done = operation.status === "completed" || i < operation.currentStep;
+                const now = operation.status !== "completed" && operation.status !== "closed" && i === operation.currentStep;
+                return (
+                  <li key={i} className="flex items-center gap-3 text-sm">
+                    <span className={cn("grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold", done ? "bg-success text-white" : now ? "bg-primary text-on-primary" : "bg-surface-container text-on-surface-variant")}>
+                      {done ? <Check className="size-4" aria-hidden /> : i + 1}
+                    </span>
+                    <span className={cn(now && "font-bold")}>{s.title[locale]}</span>
+                    {now && <span className="rounded-full bg-primary-fixed px-2 py-0.5 text-[11px] font-bold text-primary">{t("now")}</span>}
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+          <p className="text-xs text-on-surface-variant">{t("updated", { date: fmt.format(new Date(operation.updatedAt)) })}</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+const STAGES = ["applied", "screening", "interview", "offer", "hired"] as const;
+
+/** The candidate's application: the job, the stage reached, and the interview time. */
+export function ApplicationSection({ application }: { application: PortalApplication | null }) {
+  const t = useTranslations("clientPortal.application");
+  const locale = useLocale();
+  const timeZone = useTimeZone();
+  const fmt = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZone }), [locale, timeZone]);
+  const reached = application ? STAGES.indexOf(application.stage as (typeof STAGES)[number]) : -1;
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="flex items-center gap-2 text-lg font-extrabold">
+        <UserSearch className="size-5 text-primary" aria-hidden />
+        {t("title")}
+      </h2>
+      {!application ? (
+        <p className={cn(card, "text-center text-muted")}>{t("none")}</p>
+      ) : (
+        <div className={cn(card, "flex flex-col gap-4")}>
+          <p className="text-lg font-bold">{application.jobTitle}</p>
+          {application.stage === "rejected" ? (
+            <p className="rounded-md bg-surface-container-low px-3 py-2 text-sm">{t("rejected")}</p>
+          ) : (
+            <ol className="flex flex-wrap items-center gap-2 text-xs">
+              {STAGES.map((s, i) => (
+                <li key={s} className={cn("rounded-full px-3 py-1 font-bold", i < reached ? "bg-success-container text-success" : i === reached ? "bg-primary text-on-primary" : "bg-surface-container text-on-surface-variant")}>
+                  {t(`stages.${s}`)}
+                </li>
+              ))}
+            </ol>
+          )}
+          {application.interviewAt && application.stage === "interview" && (
+            <p className="flex items-center gap-2 rounded-md bg-tertiary-fixed px-3 py-2 text-sm font-semibold text-tertiary">
+              <CalendarClock className="size-4" aria-hidden />
+              {t("interview", { date: fmt.format(new Date(application.interviewAt)) })}
+            </p>
+          )}
+        </div>
       )}
     </section>
   );

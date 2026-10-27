@@ -11,6 +11,7 @@ import {
   Contact,
   DoorOpen,
   ExternalLink,
+  Handshake,
   LayoutGrid,
   Megaphone,
   Pencil,
@@ -41,6 +42,7 @@ type Dept = DepartmentsData["departments"][number];
 
 const roomIcon: Record<RoomKey, LucideIcon> = {
   hr: Contact,
+  clients: Handshake,
   operations: Workflow,
   automation: Zap,
   marketing: Megaphone,
@@ -52,7 +54,7 @@ const roomIcon: Record<RoomKey, LucideIcon> = {
   archive: Archive,
 };
 /** Room → its page under /c/<slug> */
-const roomPath: Partial<Record<RoomKey, string>> = { hr: "hr", operations: "operations", automation: "automation", marketing: "marketing", analytics: "analytics", meetings: "meetings" };
+const roomPath: Partial<Record<RoomKey, string>> = { hr: "hr", clients: "clients", operations: "operations", automation: "automation", marketing: "marketing", analytics: "analytics", meetings: "meetings" };
 const COLORS: DepartmentColor[] = ["blue", "violet", "amber", "emerald"];
 const colorDot: Record<DepartmentColor, string> = { blue: "bg-[#2563eb]", violet: "bg-[#7c3aed]", amber: "bg-[#d97706]", emerald: "bg-[#059669]" };
 

@@ -4,8 +4,8 @@
 const base = process.env.BASE_URL ?? "http://localhost:3123";
 const pages = [
   ["/", "هنا يبدأ"], ["/pricing", "300"], ["/compass", "بوصلة"], ["/login", "افتح أبواب"], ["/employee-login", ""],
-  ["/visitor-login", ""], ["/signup", ""], ["/join", "فعّل حسابك"], ["/client-portal", ""], ["/c/demo", ""], ["/c/demo/hr/employees", "إدارة الموظفين"], ["/c/demo/hr", "قريباً"], ["/c/demo/hr/leave", "الإجازات"], ["/c/demo/hr/client-portal", "زائر اجتماع"], ["/c/demo/hr/recruitment", "مسار المرشحين"], ["/c/demo/hr/departments", "أقسام المقر"], ["/c/demo/hr/work-hours", "ساعات العمل"],
-  ["/c/demo/operations", ""], ["/c/demo/automation", ""], ["/c/demo/marketing", ""], ["/c/demo/permissions", "الصلاحيات"], ["/c/demo/meetings", "غرفة الاجتماعات"], ["/c/demo/meetings?tab=tasks", "إدارة المهام"], ["/c/demo/meetings?tab=approvals", "اعتماد شراء كاميرا"], ["/c/demo/analytics", "مقارنة الأقسام"],
+  ["/visitor-login", ""], ["/signup", ""], ["/join", "فعّل حسابك"], ["/client-portal", ""], ["/c/demo", ""], ["/c/demo/hr/employees", "إدارة الموظفين"], ["/c/demo/hr", "قريباً"], ["/c/demo/hr/leave", "الإجازات"], ["/c/demo/hr/recruitment", "مسار المرشحين"], ["/c/demo/hr/departments", "أقسام المقر"], ["/c/demo/hr/work-hours", "ساعات العمل"],
+  ["/c/demo/operations", ""], ["/c/demo/automation", ""], ["/c/demo/marketing", ""], ["/c/demo/permissions", "الصلاحيات"], ["/c/demo/meetings", "غرفة الاجتماعات"], ["/c/demo/meetings?tab=tasks", "إدارة المهام"], ["/c/demo/meetings?tab=approvals", "اعتماد شراء كاميرا"], ["/c/demo/analytics", "مقارنة الأقسام"], ["/c/demo/clients", "بوابة العملاء"],
 ];
 let failures = 0;
 const rows = [];
@@ -38,6 +38,13 @@ for (const [query, expected] of [["", "/login"], ["?locale=en", "/en/login"]]) {
   const ok = res.status === 307 && loc.endsWith(expected);
   if (!ok) failures++;
   console.log(`${ok ? "PASS" : "FAIL"} /api/auth/after-sign-in${query} signed out → ${res.status} ${loc}`);
+}
+// «بوابة العملاء» moved from HR to its own room: the old address forwards there
+for (const [path, expected] of [["/c/demo/hr/client-portal", "/c/demo/clients"], ["/en/c/demo/hr/client-portal", "/en/c/demo/clients"]]) {
+  const res = await fetch(base + path, { redirect: "manual", headers: { cookie: "almaqr_guest=1" } });
+  const ok = [307, 308].includes(res.status) && (res.headers.get("location") ?? "").endsWith(expected);
+  if (!ok) failures++;
+  console.log(`${ok ? "PASS" : "FAIL"} ${path} → ${expected}`);
 }
 // Clerk default paths go to our own pages
 for (const [path, expected] of [["/sign-in", "/login"], ["/sign-up", "/signup"]]) {

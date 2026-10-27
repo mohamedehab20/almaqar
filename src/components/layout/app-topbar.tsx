@@ -23,7 +23,7 @@ export function AppTopbar({ companySlug, userName, signedIn = false, onMenu }: A
   // "/c/<slug>" is the main hall; "/c/<slug>/<section>" are the other pages
   const section = usePathname().split("/")[3];
   const isHall = !section;
-  const sectionTitles: Record<string, string> = { operations: "ops.navTitle", hr: "hr.navTitle", marketing: "marketing.navTitle", automation: "automation.navTitle", sales: "sales.navTitle", agents: "agents.navTitle", permissions: "permissions.title", meetings: "meetings.title", analytics: "analytics.title" };
+  const sectionTitles: Record<string, string> = { operations: "ops.navTitle", hr: "hr.navTitle", marketing: "marketing.navTitle", automation: "automation.navTitle", sales: "sales.navTitle", agents: "agents.navTitle", permissions: "permissions.title", meetings: "meetings.title", analytics: "analytics.title", clients: "clientsPortal.title" };
   const title = tPage(sectionTitles[section] ?? "hq.title");
 
   return (

@@ -368,7 +368,8 @@
       "tasks": "Tasks",
       "permissions": "Permissions",
       "agents": "Al Jarab",
-      "analytics": "Analytics"
+      "analytics": "Analytics",
+      "clients": "Client portal"
     },
     "tabs": {
       "dashboard": "Dashboard",
@@ -1258,7 +1259,33 @@
         "contract": "Contract"
       }
     },
-    "subtitleNoBriefs": "Follow your account with the company here."
+    "subtitleNoBriefs": "Follow your account with the company here.",
+    "operation": {
+      "title": "Your operation",
+      "none": "The operation is not available right now.",
+      "now": "Now here",
+      "updated": "Last update {date}",
+      "status": {
+        "in_progress": "In progress",
+        "changes_requested": "Changes requested",
+        "completed": "Completed",
+        "closed": "Closed"
+      }
+    },
+    "application": {
+      "title": "Your application",
+      "none": "Your application is not available right now.",
+      "rejected": "Thank you for your interest. The company decided not to continue with this application for now.",
+      "interview": "Interview: {date}",
+      "stages": {
+        "applied": "Applied",
+        "screening": "Screening",
+        "interview": "Interview",
+        "offer": "Offer",
+        "hired": "Hired"
+      }
+    },
+    "subtitleOther": "Follow what concerns you with the company here."
   },
   "pricing": {
     "metaTitle": "Pricing",
@@ -2083,7 +2110,11 @@
     "owner": {
       "visitor": "Meeting visitor",
       "none": "Not set",
-      "belongsTo": "Belongs to {name}"
+      "belongsTo": "Belongs to {name}",
+      "operation": "Following an operation",
+      "candidate": "Job candidate",
+      "follows": "Follows {code}",
+      "appliedFor": "Candidate: {job}"
     },
     "status": {
       "active": "Active",
@@ -2123,7 +2154,13 @@
       "notes": "Notes",
       "visitPurpose": "Reason for the visit",
       "save": "Save",
-      "close": "Cancel"
+      "close": "Cancel",
+      "operationHint": "A supplier, contractor or anyone following one operation: they see its status and current step.",
+      "candidateHint": "Applied for a job: they see their recruitment stage and interview time.",
+      "run": "The operation they follow",
+      "candidate": "Candidate",
+      "noRuns": "No operations yet. Add one in the Operations room first.",
+      "noCandidates": "No candidates you can see. Candidates are visible with «Manage recruitment»."
     },
     "meeting": {
       "title": "Meeting title",
@@ -2155,7 +2192,9 @@
         "briefs": "Requests",
         "invoices": "Invoices",
         "meetings": "Meetings",
-        "files": "Files"
+        "files": "Files",
+        "operation": "Operation",
+        "application": "Application"
       }
     },
     "invoices": {

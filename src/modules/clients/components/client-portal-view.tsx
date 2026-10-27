@@ -20,7 +20,9 @@ import {
   Trash2,
   UserRound,
   Users,
+  UserSearch,
   Wallet,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -35,24 +37,24 @@ import { regenerateInviteCode } from "@/modules/marketing/actions";
 import { createInvoice, markInvoicePaid } from "@/modules/profitability/actions";
 import { useTimeZone } from "@/lib/time-zone";
 import { bookClientMeeting, createPortalClient, deletePortalClient, updatePortalClient } from "../actions";
-import { defaultAccess, PORTAL_FEATURES, type PortalFeature } from "../access";
+import { defaultAccess, FEATURES_BY_KIND, PORTAL_FEATURES, type ClientKind, type PortalFeature } from "../access";
 import type { ClientInput, ClientInvoice, ClientMeeting, ClientPortalData, ClientStatus, PortalClient } from "../service";
 
-const featureIcon: Record<PortalFeature, LucideIcon> = { briefs: Send, invoices: Receipt, meetings: CalendarClock, files: FileText };
+const featureIcon: Record<PortalFeature, LucideIcon> = { briefs: Send, invoices: Receipt, meetings: CalendarClock, files: FileText, operation: Workflow, application: UserSearch };
 const today = () => new Date().toISOString().slice(0, 10);
 
-/** One value for "who the client belongs to": "room:<key>", "dept:<id>", "visitor" or "" (not set yet) */
+/** One value for who the person is: "room:<key>", "dept:<id>", "visitor", "operation", "candidate" or "" (a client not placed yet) */
 type OwnerValue = string;
+const SPECIAL_KINDS = ["visitor", "operation", "candidate"] as const;
 const ownerOf = (c: Pick<PortalClient, "kind" | "room" | "departmentId">): OwnerValue =>
-  c.kind === "visitor" ? "visitor" : c.room ? `room:${c.room}` : c.departmentId ? `dept:${c.departmentId}` : "";
+  c.kind !== "client" ? c.kind : c.room ? `room:${c.room}` : c.departmentId ? `dept:${c.departmentId}` : "";
+const kindOf = (v: OwnerValue): ClientKind => ((SPECIAL_KINDS as readonly string[]).includes(v) ? (v as ClientKind) : "client");
 const ownerInput = (v: OwnerValue): Pick<ClientInput, "kind" | "room" | "departmentId"> =>
-  v === "visitor"
-    ? { kind: "visitor", room: null, departmentId: null }
-    : v.startsWith("room:")
-      ? { kind: "client", room: v.slice(5), departmentId: null }
-      : v.startsWith("dept:")
-        ? { kind: "client", room: null, departmentId: v.slice(5) }
-        : { kind: "client", room: null, departmentId: null };
+  v.startsWith("room:")
+    ? { kind: "client", room: v.slice(5), departmentId: null }
+    : v.startsWith("dept:")
+      ? { kind: "client", room: null, departmentId: v.slice(5) }
+      : { kind: kindOf(v), room: null, departmentId: null };
 
 const statusStyle: Record<ClientStatus, string> = {
   active: "bg-success-container text-success",
@@ -60,7 +62,7 @@ const statusStyle: Record<ClientStatus, string> = {
   paused: "bg-surface-container text-muted",
 };
 const ownerStyle = (v: OwnerValue) =>
-  v === "visitor"
+  v === "visitor" || v === "operation" || v === "candidate"
     ? "bg-tertiary-fixed text-tertiary"
     : v.startsWith("room:")
       ? "bg-primary-fixed text-primary"
@@ -80,6 +82,8 @@ type Draft = {
   contactEmail: string;
   notes: string;
   portalAccess: PortalFeature[];
+  runId: string;
+  candidateId: string;
 };
 
 /**
@@ -113,7 +117,7 @@ export function ClientPortalView({ data, companyId, companySlug }: { data: Clien
   }, [notice]);
 
   const ownerLabel = (v: OwnerValue) =>
-    v === "visitor" ? t("owner.visitor") : v.startsWith("room:") ? tNav(v.slice(5)) : v.startsWith("dept:") ? (state.departments.find((d) => d.id === v.slice(5))?.name[locale] ?? "—") : t("owner.none");
+    v === "visitor" || v === "operation" || v === "candidate" ? t(`owner.${v}`) : v.startsWith("room:") ? tNav(v.slice(5)) : v.startsWith("dept:") ? (state.departments.find((d) => d.id === v.slice(5))?.name[locale] ?? "—") : t("owner.none");
   const memberName = (id: string | null) => (id ? state.members.find((m) => m.id === id)?.name[locale] : undefined);
   const timeZone = useTimeZone();
   const fmt = useMemo(() => new Intl.DateTimeFormat(`${locale}-u-nu-latn`, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone }), [locale, timeZone]);
@@ -145,6 +149,9 @@ export function ClientPortalView({ data, companyId, companySlug }: { data: Clien
       contactEmail: d.contactEmail.trim() || null,
       notes: d.notes.trim() || null,
       portalAccess: d.portalAccess,
+      // Only the link that fits the kind (switching kinds in the form leaves the other one behind)
+      runId: kindOf(d.owner) === "operation" ? d.runId || null : null,
+      candidateId: kindOf(d.owner) === "candidate" ? d.candidateId || null : null,
     };
     run(
       () =>
@@ -295,7 +302,15 @@ export function ClientPortalView({ data, companyId, companySlug }: { data: Clien
                     {c.kind === "client" && <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold", statusStyle[c.status])}>{t(`status.${c.status}`)}</span>}
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className={cn("rounded-full px-2.5 py-1 font-bold", ownerStyle(owner))}>{owner === "visitor" ? t("owner.visitor") : t("owner.belongsTo", { name: ownerLabel(owner) })}</span>
+                    <span className={cn("rounded-full px-2.5 py-1 font-bold", ownerStyle(owner))}>
+                      {owner === "visitor"
+                        ? t("owner.visitor")
+                        : owner === "operation"
+                          ? t("owner.follows", { code: state.runs.find((r) => r.id === c.runId)?.code ?? "—" })
+                          : owner === "candidate"
+                            ? t("owner.appliedFor", { job: state.candidates.find((x) => x.id === c.candidateId)?.job ?? "—" })
+                            : t("owner.belongsTo", { name: ownerLabel(owner) })}
+                    </span>
                     {manager && <span className="text-on-surface-variant">{t("manager", { name: manager })}</span>}
                   </div>
                   {(c.contactName || c.contactPhone || c.contactEmail) && (
@@ -546,24 +561,31 @@ function ClientForm({
     contactEmail: client?.contactEmail ?? "",
     notes: client?.notes ?? "",
     portalAccess: client?.portalAccess ?? defaultAccess("client"),
+    runId: client?.runId ?? "",
+    candidateId: client?.candidateId ?? "",
   });
+  const kind = kindOf(d.owner);
+  const offered = FEATURES_BY_KIND[kind];
   const set = (k: keyof Draft) => (e: { target: { value: string } }) => setD({ ...d, [k]: e.target.value });
   // A new client starts from the default of its kind; editing keeps what was chosen
   const setOwner = (e: { target: { value: string } }) => {
     const owner = e.target.value;
-    const kindChanged = (owner === "visitor") !== (d.owner === "visitor");
-    setD({ ...d, owner, ...(kindChanged && !client && { portalAccess: defaultAccess(owner === "visitor" ? "visitor" : "client") }) });
+    const next = kindOf(owner);
+    if (next === kind) return setD({ ...d, owner });
+    // Another kind: a new person starts from its defaults; an existing one keeps only the parts that still fit
+    const access = client ? d.portalAccess.filter((f) => FEATURES_BY_KIND[next].includes(f)) : defaultAccess(next);
+    setD({ ...d, owner, portalAccess: access });
   };
   const toggleFeature = (f: PortalFeature) =>
     setD({ ...d, portalAccess: d.portalAccess.includes(f) ? d.portalAccess.filter((x) => x !== f) : PORTAL_FEATURES.filter((x) => x === f || d.portalAccess.includes(x)) });
-  const visitor = d.owner === "visitor";
+  const visitor = kind !== "client";
 
   return (
     <form
       className="grid gap-4 rounded-xl bg-surface-container-lowest p-5 shadow-ambient sm:grid-cols-2 lg:grid-cols-4"
       onSubmit={(e) => {
         e.preventDefault();
-        if (d.name.trim()) onSubmit(d);
+        if (d.name.trim() && !(kind === "operation" && !d.runId) && !(kind === "candidate" && !d.candidateId)) onSubmit(d);
       }}
     >
       <h3 className="text-lg font-bold sm:col-span-2 lg:col-span-4">{t(client ? "form.editTitle" : "form.newTitle")}</h3>
@@ -575,7 +597,7 @@ function ClientForm({
         {t("form.owner")}
         <Select value={d.owner} onChange={setOwner} className="h-10 bg-surface-container-low">
           <optgroup label={t("form.rooms")}>
-            {ROOMS.map((r) => (
+            {ROOMS.filter((r) => r.key !== "clients").map((r) => (
               <option key={r.key} value={`room:${r.key}`}>
                 {ownerLabel(`room:${r.key}`)}
               </option>
@@ -594,11 +616,41 @@ function ClientForm({
           )}
           <optgroup label={t("form.other")}>
             <option value="visitor">{t("owner.visitor")}</option>
+            <option value="operation">{t("owner.operation")}</option>
+            <option value="candidate">{t("owner.candidate")}</option>
           </optgroup>
         </Select>
-        <span className="text-xs font-normal text-on-surface-variant">{t(visitor ? "form.visitorHint" : "form.ownerHint")}</span>
+        <span className="text-xs font-normal text-on-surface-variant">{t(kind === "client" ? "form.ownerHint" : `form.${kind}Hint`)}</span>
       </label>
-      {!visitor && (
+      {kind === "operation" && (
+        <label className="flex flex-col gap-1 text-sm font-semibold sm:col-span-2">
+          {t("form.run")}
+          <Select required value={d.runId} onChange={set("runId")} className="h-10 bg-surface-container-low">
+            <option value="">—</option>
+            {state.runs.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.code} · {r.subject[locale]}
+              </option>
+            ))}
+          </Select>
+          {state.runs.length === 0 && <span className="text-xs font-normal text-on-surface-variant">{t("form.noRuns")}</span>}
+        </label>
+      )}
+      {kind === "candidate" && (
+        <label className="flex flex-col gap-1 text-sm font-semibold sm:col-span-2">
+          {t("form.candidate")}
+          <Select required value={d.candidateId} onChange={set("candidateId")} className="h-10 bg-surface-container-low">
+            <option value="">—</option>
+            {state.candidates.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name} · {c.job}
+              </option>
+            ))}
+          </Select>
+          {state.candidates.length === 0 && <span className="text-xs font-normal text-on-surface-variant">{t("form.noCandidates")}</span>}
+        </label>
+      )}
+      {kind === "client" && (
         <>
           <label className="flex flex-col gap-1 text-sm font-semibold">
             {t("form.industry")}
@@ -646,7 +698,7 @@ function ClientForm({
       <fieldset className="flex flex-col gap-2 text-sm font-semibold sm:col-span-2 lg:col-span-4">
         <legend className="mb-1">{t("access.title")}</legend>
         <div className="flex flex-wrap gap-2">
-          {PORTAL_FEATURES.map((f) => {
+          {PORTAL_FEATURES.filter((f) => offered.includes(f)).map((f) => {
             const on = d.portalAccess.includes(f);
             const Icon = featureIcon[f];
             return (

@@ -42,7 +42,8 @@ export const roomType = pgEnum("room_type", ["meeting", "ceo", "open"]);
 export const furnitureKind = pgEnum("furniture_kind", ["desk", "meetingTable"]);
 export const clientStatus = pgEnum("client_status", ["active", "onboarding", "paused"]);
 /** client = an account a room or department works for; visitor = someone who only comes for a meeting */
-export const clientKind = pgEnum("client_kind", ["client", "visitor"]);
+/** client: a customer of a room or department; visitor: comes to a meeting; operation: follows one operation (supplier, contractor); candidate: applied for a job */
+export const clientKind = pgEnum("client_kind", ["client", "visitor", "operation", "candidate"]);
 /** action = approve something someone did or will do; position = approve a stance or decision */
 export const approvalKind = pgEnum("approval_kind", ["action", "position"]);
 export const approvalStatus = pgEnum("approval_status", ["pending", "approved", "rejected", "cancelled"]);
@@ -260,7 +261,11 @@ export const clients = pgTable("clients", {
   contactPhone: text("contact_phone"),
   contactEmail: text("contact_email"),
   notes: text("notes"),
-  /** What the client sees in their portal (set by the company): briefs, invoices, meetings, files */
+  /** operation: the operation this person follows (Operations room) */
+  runId: uuid("run_id").references((): AnyPgColumn => workflowRuns.id, { onDelete: "set null" }),
+  /** candidate: their application (Recruitment) */
+  candidateId: uuid("candidate_id").references((): AnyPgColumn => candidates.id, { onDelete: "set null" }),
+  /** What the client sees in their portal (set by the company): briefs, invoices, meetings, files, operation, application */
   portalAccess: text("portal_access").array().notNull().default(sql`'{briefs,invoices,meetings,files}'::text[]`),
   createdAt: createdAt(),
 }, (t) => [

@@ -11,6 +11,7 @@ import {
   Circle,
   CircleCheck,
   Contact,
+  Handshake,
   DoorOpen,
   LayoutDashboard,
   Megaphone,
@@ -72,6 +73,7 @@ export function AppSidebar({ companySlug, access = null, onClose }: { companySlu
       icon: Users,
       children: [
         { key: "hr", icon: Contact, href: `${base}/hr` },
+        { key: "clients", icon: Handshake, href: `${base}/clients` },
         { key: "operations", icon: Workflow, href: `${base}/operations` },
         { key: "automation", icon: Zap, href: `${base}/automation` },
         { key: "accounts", icon: Banknote },

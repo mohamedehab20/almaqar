@@ -1,5 +1,6 @@
 /** Sample «بوابة العملاء» for the public demo: clients of marketing, sales, operations and a department, and visitors. */
 import { departments, members } from "@/modules/hq/mock";
+import { workflowRows } from "@/modules/operations/mock";
 import { defaultAccess } from "./access";
 import type { ClientInvoice, ClientMeeting, ClientPortalData, PortalClient } from "./service";
 
@@ -12,7 +13,7 @@ export function demoClientPortalData(now = new Date().toISOString(), locale: "ar
     d.setUTCHours(utcHour, 0, 0, 0);
     return d.toISOString();
   };
-  const base = { industry: null, status: "active", managerId: null, contactName: null, contactPhone: null, contactEmail: null, notes: null, inviteCode: null, portalUsers: 0, kind: "client", room: null, departmentId: null } as const;
+  const base = { industry: null, status: "active", managerId: null, contactName: null, contactPhone: null, contactEmail: null, notes: null, inviteCode: null, portalUsers: 0, kind: "client", room: null, departmentId: null, runId: null, candidateId: null } as const;
   const rows: (Partial<PortalClient> & { id: string; name: string })[] = [
     { id: "cp1", name: ar ? "مطاعم السرايا" : "Al Saraya Restaurants", industry: ar ? "مطاعم" : "Restaurants", room: "marketing", managerId: "m5", contactName: ar ? "أ. هشام" : "Mr. Hesham", contactPhone: "+20 100 123 4567", inviteCode: "SRY4K9P", portalUsers: 2 },
     { id: "cp2", name: ar ? "عيادات نور" : "Nour Clinics", industry: ar ? "صحة" : "Health", room: "marketing", managerId: "m2", status: "onboarding", inviteCode: "NUR7Q2M", portalUsers: 1 },
@@ -22,6 +23,8 @@ export function demoClientPortalData(now = new Date().toISOString(), locale: "ar
     { id: "cp6", name: ar ? "مصنع الشروق" : "El Shorouk Factory", industry: ar ? "صناعة" : "Manufacturing", room: "operations", managerId: "m2", inviteCode: "SHR2N7C" },
     { id: "cp7", name: ar ? "تطبيق مشوار" : "Mishwar App", industry: ar ? "تقنية" : "Tech", departmentId: "d-tech", managerId: "m3", inviteCode: "MSH8H3D", portalUsers: 1 },
     { id: "cp8", name: ar ? "أ. سامح فؤاد" : "Mr. Sameh Fouad", kind: "visitor", contactName: ar ? "سامح فؤاد" : "Sameh Fouad", contactPhone: "+20 111 987 6543", notes: ar ? "مستثمر، جاي يتعرف على الشركة" : "Investor, coming to meet the team", inviteCode: "VST6J1E" },
+    { id: "cp10", name: ar ? "م. وائل (مقاول التشطيب)" : "Eng. Wael (finishing contractor)", kind: "operation", runId: "w1", contactName: ar ? "وائل سمير" : "Wael Samir", contactPhone: "+20 109 222 3344", inviteCode: "OPR3Z8K", portalUsers: 1 },
+    { id: "cp11", name: ar ? "مريم عادل" : "Mariam Adel", kind: "candidate", candidateId: "cand-1", contactEmail: "mariam@example.com", inviteCode: "CND5P2Q" },
     { id: "cp9", name: ar ? "وفد جامعة القاهرة" : "Cairo University delegation", kind: "visitor", contactName: ar ? "د. منى" : "Dr. Mona", notes: ar ? "زيارة لطلبة التدريب" : "Visit about internships", inviteCode: "VST4L5F" },
   ];
   const clients = rows.map(
@@ -55,5 +58,10 @@ export function demoClientPortalData(now = new Date().toISOString(), locale: "ar
     meetings,
     departments,
     members: members.map((m) => ({ id: m.id, name: m.name, title: m.title, departmentId: m.departmentId })),
+    runs: workflowRows.map((w) => ({ id: w.id, code: w.code, subject: w.title })),
+    candidates: [
+      { id: "cand-1", name: ar ? "مريم عادل" : "Mariam Adel", job: ar ? "مصممة جرافيك" : "Graphic designer" },
+      { id: "cand-2", name: ar ? "أحمد سامي" : "Ahmed Samy", job: ar ? "مندوب مبيعات" : "Sales representative" },
+    ],
   };
 }

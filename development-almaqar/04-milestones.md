@@ -14,6 +14,19 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-10-27 — «بوابة العملاء» is its own room, for every kind of outside person
+- **Moved:** out of HR into the sidebar (`/c/<slug>/clients`, permission `clients.view` for Admin and Employee, on/off from «إدارة الأقسام»). The old `/hr/client-portal` address forwards there.
+- **Four kinds, one door** (visitor login + portal code):
+  - **Client:** of an HQ room or a company department, as before.
+  - **Meeting visitor:** as before.
+  - **Following an operation:** a supplier or contractor linked to one operation. They see its code, status and steps («دلوقتي هنا»).
+  - **Job candidate:** linked to their application. They see the job, their stage, and the interview time.
+- **Portal parts per kind:** «متابعة العملية» and «طلب التوظيف» are new parts, each read through a narrow reader (`private.portal_operation` / `portal_application`, no notes or ratings). Fields that do not fit a kind are refused.
+- **Marketing and profitability:** both now list real clients only; meeting visitors, operation followers and candidates are no longer included.
+- **Migrations:** `0040_portal_kinds` and `0041_portal_kinds_rls` are written and tested, but **not yet applied on Supabase**, so this is not pushed yet.
+
+Files: `src/app/[locale]/(app)/c/[companySlug]/clients/{layout,page}.tsx`, `hr/client-portal/page.tsx` (forward), `src/modules/clients/{access,service,actions,demo}.ts`, `src/modules/clients/components/client-portal-view.tsx`, `src/modules/marketing/components/{client-home,portal-sections}.tsx`, `src/modules/permissions/catalog.ts`, `src/modules/departments/{rooms.ts,components/departments-view.tsx}`, `src/components/layout/{app-sidebar,app-topbar}.tsx`, `src/modules/hr/components/hr-home.tsx`, `src/modules/{marketing,profitability}/service.ts`, `src/db/schema.ts`, `drizzle/0040_portal_kinds.sql`, `drizzle/0041_portal_kinds_rls.sql`, `tests/db/{portal-access,client-portal}.test.ts`, `scripts/check-routes.mjs`.
+
 ### 2026-10-27 — Employee invites by email and WhatsApp
 - «رقم الواتساب» is required (no «اختياري») and saved on the member (`members.phone`, migration `0039_member_phone`, applied), in international form (01xxxxxxxxx → 2010…).
 - **Email:** the invite is now a Clerk invitation (a link to create the account, landing on `/join`). Before, it used Supabase Auth, which the app no longer uses, so no email was ever sent.

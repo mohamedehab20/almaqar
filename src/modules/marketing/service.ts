@@ -66,7 +66,8 @@ export async function listClients(ctx: Ctx, companyId: string) {
       .select({ client: clients, manager: members.name })
       .from(clients)
       .leftJoin(members, eq(members.id, clients.managerId))
-      .where(eq(clients.companyId, companyId))
+      // Clients only: meeting visitors, operation followers and candidates are not marketing clients
+      .where(and(eq(clients.companyId, companyId), eq(clients.kind, "client")))
       .orderBy(asc(clients.createdAt)),
     ctx.tx
       .select({ clientId: marketingIdeas.clientId })
@@ -479,7 +480,7 @@ export async function getClientBudgets(ctx: Ctx, companyId: string, month = new 
   const from = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1)).toISOString().slice(0, 10);
   const to = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 0)).toISOString().slice(0, 10);
   const [clientRows, campaignRows] = await Promise.all([
-    ctx.tx.select({ id: clients.id, allocated: clients.monthlyBudget }).from(clients).where(eq(clients.companyId, companyId)).orderBy(asc(clients.createdAt)),
+    ctx.tx.select({ id: clients.id, allocated: clients.monthlyBudget }).from(clients).where(and(eq(clients.companyId, companyId), eq(clients.kind, "client"))).orderBy(asc(clients.createdAt)),
     ctx.tx.select().from(campaigns).where(eq(campaigns.companyId, companyId)),
   ]);
   return clientRows.map((c) => ({

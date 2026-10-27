@@ -13,22 +13,35 @@ import { replyToBrief, sendBrief } from "../actions";
 import { updateBriefs, useBriefs } from "../briefs-store";
 import { clients } from "../sections-mock";
 import { BriefForm, type NewBrief } from "./client-portal";
-import { FilesSection, InvoicesSection, MeetingsSection, type PortalFile, type PortalInvoice, type PortalMeeting } from "./portal-sections";
+import {
+  ApplicationSection,
+  FilesSection,
+  InvoicesSection,
+  MeetingsSection,
+  OperationSection,
+  type PortalApplication,
+  type PortalFile,
+  type PortalInvoice,
+  type PortalMeeting,
+  type PortalOperation,
+} from "./portal-sections";
 
 /** The demo client (public demo). A signed-in client user gets their own client from the page. */
 export const DEMO_CLIENT_ID = "c1";
 
 type Localized = { ar: string; en: string };
-type Feature = "briefs" | "invoices" | "meetings" | "files";
+type Feature = "briefs" | "invoices" | "meetings" | "files" | "operation" | "application";
 
 /** A signed-in client user's portal: their client and only what the company allows them (`access`). */
 export type RealPortal = {
-  client: { id: string; name: Localized };
+  client: { id: string; name: Localized; kind: "client" | "visitor" | "operation" | "candidate" };
   access: Feature[];
   briefs: Brief[];
   invoices: PortalInvoice[];
   meetings: PortalMeeting[];
   files: PortalFile[];
+  operation: PortalOperation | null;
+  application: PortalApplication | null;
 };
 
 const statusStyle: Record<BriefStatus, { className: string; icon: typeof Clock }> = {
@@ -54,6 +67,7 @@ export function ClientHome({ real, now }: { real?: RealPortal; now: string }) {
   const myBriefs = real ? real.briefs : demoBriefs.filter((brief) => brief.clientId === client.id);
   // The demo shows every part of the portal; a real client only what the company allows
   const access: Feature[] = real ? real.access : ["briefs", "invoices", "meetings", "files"];
+  const isClient = !real || real.client.kind === "client";
   const allowed = (f: Feature) => access.includes(f);
   const [replies, setReplies] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<string | null>(null);
@@ -132,10 +146,17 @@ export function ClientHome({ real, now }: { real?: RealPortal; now: string }) {
       <main className="mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-8">
         <div>
           <h1 className="text-3xl font-extrabold">{t("welcome", { name: client.name[locale] })}</h1>
-          <p className="mt-1 text-on-surface-variant">{t(allowed("briefs") ? "subtitle" : "subtitleNoBriefs")}</p>
+          <p className="mt-1 text-on-surface-variant">{t(allowed("briefs") ? "subtitle" : isClient ? "subtitleNoBriefs" : "subtitleOther")}</p>
         </div>
 
         {access.length === 0 && <p className="rounded-lg bg-surface-container-lowest p-8 text-center text-muted shadow-ambient ghost-border">{t("nothingAllowed")}</p>}
+
+        {(allowed("operation") || allowed("application")) && (
+          <div className="grid items-start gap-6 lg:grid-cols-2">
+            {allowed("operation") && <OperationSection operation={real?.operation ?? null} />}
+            {allowed("application") && <ApplicationSection application={real?.application ?? null} />}
+          </div>
+        )}
 
         {(allowed("invoices") || allowed("meetings") || allowed("files")) && (
           <div className="grid items-start gap-6 lg:grid-cols-2">

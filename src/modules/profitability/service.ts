@@ -139,7 +139,7 @@ export async function getProfitabilityReport(ctx: Ctx, companyId: string, option
 
   const [settings, clientRows, taskRows, meetingRows, invoiceRows, freelancerRows] = await Promise.all([
     getProfitabilitySettings(ctx, companyId),
-    ctx.tx.select().from(clients).where(eq(clients.companyId, companyId)),
+    ctx.tx.select().from(clients).where(and(eq(clients.companyId, companyId), eq(clients.kind, "client"))),
     ctx.tx
       .select()
       .from(tasks)

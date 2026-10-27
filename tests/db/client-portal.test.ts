@@ -48,7 +48,7 @@ before(async () => {
 
 test("demo: clients of marketing, sales, operations and a department, plus visitors with meetings", () => {
   const demo = demoClientPortalData("2026-10-15T10:00:00Z");
-  assert.deepEqual(new Set(demo.clients.map((c) => c.room ?? c.departmentId ?? c.kind)), new Set(["marketing", "sales", "operations", "d-tech", "visitor"]));
+  assert.deepEqual(new Set(demo.clients.map((c) => c.room ?? c.departmentId ?? c.kind)), new Set(["marketing", "sales", "operations", "d-tech", "visitor", "operation", "candidate"]));
   assert.ok(demo.clients.filter((c) => c.kind === "visitor").every((v) => demo.meetings.some((m) => m.clientId === v.id)));
 });
 

@@ -5,6 +5,7 @@
  */
 export const ROOMS = [
   { key: "hr", soon: false, locked: true },
+  { key: "clients", soon: false },
   { key: "operations", soon: false },
   { key: "automation", soon: false },
   { key: "marketing", soon: false },

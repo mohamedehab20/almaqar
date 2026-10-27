@@ -5,12 +5,14 @@ import { action } from "@/server/action";
 import { withUser } from "@/server/session";
 import { companyInput, id } from "@/server/validation";
 import { ROOM_KEYS } from "@/modules/departments/rooms";
-import { PORTAL_FEATURES } from "./access";
+import { CLIENT_KINDS, PORTAL_FEATURES } from "./access";
 import * as svc from "./service";
 
 const text = (max: number) => z.string().trim().max(max).nullable().optional();
 const fields = {
-  kind: z.enum(["client", "visitor"]).optional(),
+  kind: z.enum(CLIENT_KINDS).optional(),
+  runId: id.nullable().optional(),
+  candidateId: id.nullable().optional(),
   room: z.enum(ROOM_KEYS as [string, ...string[]]).nullable().optional(),
   departmentId: id.nullable().optional(),
   industry: text(80),

@@ -40,6 +40,7 @@ export const PERMISSIONS = [
   { key: "suppliers.manage", area: "sales", label: { ar: "إدارة الموردين", en: "Manage suppliers" } },
 
   { key: "marketing.view", area: "marketing", label: { ar: "فتح التسويق", en: "Open Marketing" } },
+  { key: "clients.view", area: "marketing", label: { ar: "فتح بوابة العملاء", en: "Open the client portal" } },
   { key: "clients.manage", area: "marketing", label: { ar: "إدارة العملاء وأكواد الدعوة", en: "Manage clients and invite codes" } },
   { key: "briefs.manage", area: "marketing", label: { ar: "الرد على طلبات العملاء", en: "Handle client briefs" } },
   { key: "ideas.manage", area: "marketing", label: { ar: "إدارة الأفكار", en: "Manage ideas" } },
@@ -83,6 +84,7 @@ export const ROOM_VIEW: Record<string, PermissionKey> = {
   marketing: "marketing.view",
   agents: "agents.view",
   analytics: "analytics.view",
+  clients: "clients.view",
 };
 
 /** Default "Employee" role: open every room, add things and use agents; no managing others. */
@@ -97,6 +99,7 @@ export const EMPLOYEE_DEFAULTS: PermissionKey[] = [
   "sales.view",
   "orders.create",
   "marketing.view",
+  "clients.view",
   "ideas.manage",
   "agents.view",
   "agents.use",

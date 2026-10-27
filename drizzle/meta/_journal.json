@@ -281,6 +281,20 @@
       "when": 1793056066919,
       "tag": "0039_member_phone",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793059735574,
+      "tag": "0040_portal_kinds",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793059745158,
+      "tag": "0041_portal_kinds_rls",
+      "breakpoints": true
     }
   ]
 }

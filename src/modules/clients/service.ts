@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
-import { clients, clientUsers, departments, invoices, meetings } from "@/db/schema";
+import { candidates, clients, clientUsers, departments, invoices, jobOpenings, meetings, workflowRuns } from "@/db/schema";
 import { rowsOf, type Ctx } from "@/server/context";
 import { AppError } from "@/server/errors";
 import { found, requireMember } from "@/server/membership";
@@ -8,13 +8,30 @@ import { emitEvent } from "@/modules/events/service";
 import { ROOM_KEYS } from "@/modules/departments/rooms";
 import { assertMemberInCompany, listDepartments, listMembers } from "@/modules/hq/service";
 import { listBriefs, newInviteCode } from "@/modules/marketing/service";
-import { cleanAccess, defaultAccess, type PortalFeature } from "./access";
+import { cleanAccess, defaultAccess, type ClientKind, type PortalFeature } from "./access";
 
-export type ClientKind = "client" | "visitor";
+export type { ClientKind };
 export type ClientStatus = "active" | "onboarding" | "paused";
 
-/** Who a client belongs to: an HQ room, a company department, or nobody (a visitor who only comes for a meeting). */
-export type ClientOwner = { kind: ClientKind; room: string | null; departmentId: string | null };
+/**
+ * Who a person outside the company is and what they are linked to: a client of an HQ room or a company department,
+ * a meeting visitor (nothing), someone following one operation (runId), or a job candidate (candidateId).
+ */
+export type ClientOwner = { kind: ClientKind; room: string | null; departmentId: string | null; runId: string | null; candidateId: string | null };
+
+/** The owner fields of a kind. Fields that do not fit the kind are refused (`invalid`), never dropped silently. */
+function ownerFor(kind: ClientKind, input: Partial<ClientOwner>): ClientOwner {
+  if (kind !== "client" && (input.room || input.departmentId)) throw new AppError("invalid");
+  if (kind !== "operation" && input.runId) throw new AppError("invalid");
+  if (kind !== "candidate" && input.candidateId) throw new AppError("invalid");
+  return {
+    kind,
+    room: kind === "client" ? (input.room ?? null) : null,
+    departmentId: kind === "client" ? (input.departmentId ?? null) : null,
+    runId: kind === "operation" ? (input.runId ?? null) : null,
+    candidateId: kind === "candidate" ? (input.candidateId ?? null) : null,
+  };
+}
 
 export type PortalClient = ClientOwner & {
   id: string;
@@ -42,9 +59,22 @@ export type ClientMeeting = { id: string; clientId: string; title: string; start
 
 const clean = (s: string | null | undefined) => s?.trim() || null;
 
-/** Throws `invalid` unless the owner is consistent: a visitor belongs to nobody; a client to one room or one department of this company. */
+/**
+ * Throws `invalid` unless the owner is consistent: a client belongs to one room or one department (or neither yet);
+ * an operation follower needs an operation of this company; a candidate needs a candidate the caller can see
+ * (recruiters only, by RLS).
+ */
 async function checkOwner(ctx: Ctx, companyId: string, owner: Partial<ClientOwner>) {
-  if (owner.kind === "visitor" && (owner.room || owner.departmentId)) throw new AppError("invalid");
+  if (owner.kind === "operation") {
+    if (!owner.runId) throw new AppError("invalid");
+    const [r] = await ctx.tx.select({ companyId: workflowRuns.companyId }).from(workflowRuns).where(eq(workflowRuns.id, owner.runId));
+    if (r?.companyId !== companyId) throw new AppError("invalid");
+  }
+  if (owner.kind === "candidate") {
+    if (!owner.candidateId) throw new AppError("invalid");
+    const [c] = await ctx.tx.select({ companyId: candidates.companyId }).from(candidates).where(eq(candidates.id, owner.candidateId));
+    if (c?.companyId !== companyId) throw new AppError("invalid");
+  }
   if (owner.room && owner.departmentId) throw new AppError("invalid");
   if (owner.room && !(ROOM_KEYS as string[]).includes(owner.room)) throw new AppError("invalid");
   if (owner.departmentId) {
@@ -59,7 +89,7 @@ async function checkOwner(ctx: Ctx, companyId: string, owner: Partial<ClientOwne
 export async function getClientPortalData(ctx: Ctx, companyId: string) {
   await requireMember(ctx, companyId);
   const since = new Date(Date.now() - 12 * 3_600_000);
-  const [canManage, canMoney, rows, users, upcoming, departmentList, memberList] = await Promise.all([
+  const [canManage, canMoney, rows, users, upcoming, departmentList, memberList, runList, candidateList] = await Promise.all([
     hasPermission(ctx, companyId, "clients.manage"),
     hasPermission(ctx, companyId, "profitability.view"),
     ctx.tx.select().from(clients).where(eq(clients.companyId, companyId)),
@@ -70,6 +100,15 @@ export async function getClientPortalData(ctx: Ctx, companyId: string) {
       .where(and(eq(meetings.companyId, companyId), isNotNull(meetings.clientId), eq(meetings.status, "scheduled"), gte(meetings.startsAt, since))),
     listDepartments(ctx, companyId),
     listMembers(ctx, companyId),
+    // To link an operation follower or a candidate (candidates are visible to recruiters only)
+    ctx.tx.select({ id: workflowRuns.id, code: workflowRuns.code, subject: workflowRuns.subject }).from(workflowRuns).where(eq(workflowRuns.companyId, companyId)).orderBy(desc(workflowRuns.createdAt)).limit(200),
+    ctx.tx
+      .select({ id: candidates.id, name: candidates.name, job: jobOpenings.title })
+      .from(candidates)
+      .innerJoin(jobOpenings, eq(jobOpenings.id, candidates.jobId))
+      .where(eq(candidates.companyId, companyId))
+      .orderBy(desc(candidates.createdAt))
+      .limit(300),
   ]);
   // Invoices: RLS shows them only with profitability.view
   const invoiceRows = canMoney ? await ctx.tx.select().from(invoices).where(eq(invoices.companyId, companyId)).orderBy(desc(invoices.issuedOn)) : [];
@@ -90,6 +129,8 @@ export async function getClientPortalData(ctx: Ctx, companyId: string) {
           kind: r.kind,
           room: r.room,
           departmentId: r.departmentId,
+          runId: r.runId,
+          candidateId: r.candidateId,
           managerId: r.managerId,
           contactName: r.contactName,
           contactPhone: r.contactPhone,
@@ -108,6 +149,8 @@ export async function getClientPortalData(ctx: Ctx, companyId: string) {
       .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
     departments: departmentList,
     members: memberList.map((m) => ({ id: m.id, name: m.name, title: m.title, departmentId: m.departmentId })),
+    runs: runList,
+    candidates: candidateList,
   };
 }
 
@@ -133,8 +176,6 @@ function values(input: ClientInput) {
     ...(input.industry !== undefined && { industry: clean(input.industry) ? { ar: clean(input.industry)!, en: clean(input.industry)! } : null }),
     ...(input.status !== undefined && { status: input.status }),
     ...(input.kind !== undefined && { kind: input.kind }),
-    ...(input.room !== undefined && { room: input.room }),
-    ...(input.departmentId !== undefined && { departmentId: input.departmentId }),
     ...(input.managerId !== undefined && { managerId: input.managerId }),
     ...(input.contactName !== undefined && { contactName: clean(input.contactName) }),
     ...(input.contactPhone !== undefined && { contactPhone: clean(input.contactPhone) }),
@@ -147,7 +188,7 @@ function values(input: ClientInput) {
 /** A new client (with a portal invite code) or a visitor. */
 export async function createPortalClient(ctx: Ctx, input: { companyId: string; name: string } & ClientInput) {
   await requirePermission(ctx, input.companyId, "clients.manage");
-  const owner = { kind: input.kind ?? "client", room: input.room ?? null, departmentId: input.departmentId ?? null };
+  const owner = ownerFor(input.kind ?? "client", input);
   await checkOwner(ctx, input.companyId, owner);
   await assertMemberInCompany(ctx, input.companyId, input.managerId);
   const [row] = await ctx.tx
@@ -163,12 +204,8 @@ export async function updatePortalClient(ctx: Ctx, input: { clientId: string } &
   const [current] = await ctx.tx.select().from(clients).where(eq(clients.id, input.clientId));
   const client = found(current);
   await requirePermission(ctx, client.companyId, "clients.manage");
-  const owner =
-    input.kind === "visitor"
-      ? { kind: "visitor" as const, room: null, departmentId: null }
-      : input.room !== undefined || input.departmentId !== undefined || input.kind !== undefined
-        ? { kind: input.kind ?? client.kind, room: input.room ?? null, departmentId: input.departmentId ?? null }
-        : {};
+  const ownerChanged = [input.kind, input.room, input.departmentId, input.runId, input.candidateId].some((v) => v !== undefined);
+  const owner = ownerChanged ? ownerFor(input.kind ?? client.kind, input) : {};
   await checkOwner(ctx, client.companyId, owner);
   await assertMemberInCompany(ctx, client.companyId, input.managerId);
   const [row] = await ctx.tx
@@ -220,13 +257,17 @@ export async function bookClientMeeting(
 // ---------- The client's own portal ----------
 
 export type MyPortal = {
-  client: { id: string; name: { ar: string; en: string }; kind: "client" | "visitor" };
+  client: { id: string; name: { ar: string; en: string }; kind: ClientKind };
   access: PortalFeature[];
   briefs: Awaited<ReturnType<typeof listBriefs>>;
   invoices: Omit<ClientInvoice, "clientId">[];
   meetings: { id: string; title: string; startsAt: string; durationMinutes: number; location: string | null; status: string }[];
   /** Storage paths; the query turns them into short-lived links */
   files: { path: string; name: string }[];
+  /** «متابعة العملية»: the operation this person follows */
+  operation: { code: string; subject: { ar: string; en: string }; status: string; currentStep: number; steps: { title: { ar: string; en: string } }[]; updatedAt: string } | null;
+  /** «طلب التوظيف»: the candidate's application */
+  application: { jobTitle: string; stage: string; interviewAt: string | null; stageChangedAt: string } | null;
 };
 
 /**
@@ -243,7 +284,7 @@ export async function getMyPortal(ctx: Ctx): Promise<MyPortal | null> {
   if (!row) return null;
   const access = cleanAccess(row.access);
   const allowed = (f: PortalFeature) => access.includes(f);
-  const [briefList, invoiceRows, meetingRows] = await Promise.all([
+  const [briefList, invoiceRows, meetingRows, operationRows, applicationRows] = await Promise.all([
     allowed("briefs") ? listBriefs(ctx, { clientId: row.id }) : Promise.resolve([]),
     allowed("invoices")
       ? ctx.tx.execute(sql`select id, period::text as period, amount, issued_on::text as issued_on, due_on::text as due_on, paid_on::text as paid_on from private.portal_invoices(${row.id}::uuid)`)
@@ -251,7 +292,13 @@ export async function getMyPortal(ctx: Ctx): Promise<MyPortal | null> {
     allowed("meetings")
       ? ctx.tx.execute(sql`select id, title, starts_at, duration_minutes, location, status from private.portal_meetings(${row.id}::uuid)`)
       : Promise.resolve([]),
+    allowed("operation") ? ctx.tx.execute(sql`select code, subject, status, current_step, steps, updated_at from private.portal_operation(${row.id}::uuid)`) : Promise.resolve([]),
+    allowed("application")
+      ? ctx.tx.execute(sql`select job_title, stage, interview_at, stage_changed_at from private.portal_application(${row.id}::uuid)`)
+      : Promise.resolve([]),
   ]);
+  const [op] = rowsOf<{ code: string; subject: { ar: string; en: string }; status: string; current_step: number; steps: { title: { ar: string; en: string } }[]; updated_at: string }>(operationRows);
+  const [app] = rowsOf<{ job_title: string; stage: string; interview_at: string | Date | null; stage_changed_at: string | Date }>(applicationRows);
   return {
     client: { id: row.id, name: row.name, kind: row.kind },
     access,
@@ -273,5 +320,9 @@ export async function getMyPortal(ctx: Ctx): Promise<MyPortal | null> {
       status: m.status,
     })),
     files: allowed("files") && row.contractPath ? [{ path: row.contractPath, name: "contract" }] : [],
+    operation: op ? { code: op.code, subject: op.subject, status: op.status, currentStep: Number(op.current_step), steps: op.steps ?? [], updatedAt: new Date(op.updated_at).toISOString() } : null,
+    application: app
+      ? { jobTitle: app.job_title, stage: app.stage, interviewAt: app.interview_at ? new Date(app.interview_at).toISOString() : null, stageChangedAt: new Date(app.stage_changed_at).toISOString() }
+      : null,
   };
 }
