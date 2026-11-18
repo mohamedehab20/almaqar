@@ -14,6 +14,24 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-11-19 — Office designer («تصميم المكتب») inside the main hall
+- The standalone "My Company" app (`programming/my company`) is now part of Al Maqr, on the same host.
+- In the main hall, a switch at the top right toggles **«القاعة المباشرة»** (the live hall, as before) and **«تصميم المكتب»**.
+- The designer has the same tools as My Company:
+  - Drawing: walls, rooms, doors, windows and columns.
+  - Furniture: the library, uploading furniture, right-click to scale / mirror / copy / rotate, floors.
+  - The plan: portrait / landscape, undo / redo, export to PNG and JSON.
+  - A furniture catalog tab.
+- It follows the app's language and direction.
+- **Where the design is kept:**
+  - A company's design (and any furniture it uploads) goes to Supabase Storage under `<company_id>/office/`.
+  - Every member can see the design. Changing it needs `company.settings`.
+  - Until `SUPABASE_SECRET_KEY` is set, the design stays in the browser, uploading is off, and the designer says so.
+  - The guest demo always uses the browser.
+- The designer's code loads only when someone opens it.
+
+Files: `src/modules/office-designer/**` (`actions.ts`, `storage.ts`, `designer.css`, `data/*`, `components/*`), `src/modules/hq/components/hq-view.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-10-28 — Portal invites by WhatsApp and email
 - On each card in «بوابة العملاء» (clients.manage) there are two buttons:
   - **«ابعت الدعوة على واتساب»** opens the chat to the contact's mobile with the company name, a link and the portal code.

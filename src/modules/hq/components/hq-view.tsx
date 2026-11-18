@@ -1,7 +1,8 @@
 "use client";
 
-import { Crown, Layers, LocateFixed, MapPin, Minus, Plus, Radio } from "lucide-react";
+import { Crown, Layers, LocateFixed, MapPin, Minus, PencilRuler, Plus, Radio } from "lucide-react";
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { setMyStatus as saveMyStatus } from "../actions";
@@ -24,6 +25,16 @@ type HqViewProps = {
   floor: { widthM: number; depthM: number };
 };
 
+/** The office designer is big: it loads only when someone opens it. */
+const OfficeDesigner = dynamic(() => import("@/modules/office-designer/components/office-designer").then((m) => m.OfficeDesigner), {
+  ssr: false,
+  loading: () => <DesignerLoading />,
+});
+function DesignerLoading() {
+  const t = useTranslations("hq");
+  return <p className="p-8 text-center text-sm text-on-surface-variant">{t("designLoading")}</p>;
+}
+
 const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 1.6;
 
@@ -39,6 +50,7 @@ export function HqView({ companyId, currentUserId, members, rooms, furniture, zo
   const [cameraOn, setCameraOn] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [premiumOpen, setPremiumOpen] = useState(false);
+  const [view, setView] = useState<"hall" | "design">("hall");
 
   useEffect(() => {
     if (!notice) return;
@@ -67,8 +79,16 @@ export function HqView({ companyId, currentUserId, members, rooms, furniture, zo
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 p-3 sm:p-8">
         <section className="relative h-full overflow-hidden rounded-xl bg-surface-container-lowest bg-[radial-gradient(circle,#d5d7e2_1px,transparent_1.2px)] bg-[size:22px_22px] shadow-ambient">
+          {/* Office design: the designer fills the hall under the top strip */}
+          {view === "design" && (
+            <div className="absolute inset-x-0 bottom-0 top-16 overflow-auto p-3 sm:p-5">
+              <OfficeDesigner companyId={companyId} />
+            </div>
+          )}
+
           {/* Plan (scrollable when zoomed in) */}
           <div
+            hidden={view !== "hall"}
             className={cn(
               "absolute inset-x-0 bottom-0 top-16 grid place-items-center overflow-auto pb-6 pe-10 ps-20 pt-6",
               panel && "md:pe-[22rem]",
@@ -107,6 +127,24 @@ export function HqView({ companyId, currentUserId, members, rooms, furniture, zo
               <Radio className="size-4 text-emerald-500" aria-hidden />
               {t("live")}
             </span>
+            {/* Live hall ↔ office design */}
+            <div role="group" aria-label={t("views")} className="ms-auto flex rounded-full bg-surface-container-low p-1 ghost-border">
+              {(["hall", "design"] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={view === v}
+                  onClick={() => setView(v)}
+                  className={cn(
+                    "flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold transition",
+                    view === v ? "bg-surface-container-lowest text-primary shadow-ambient" : "text-on-surface-variant hover:text-on-surface",
+                  )}
+                >
+                  {v === "hall" ? <Radio className="size-4" aria-hidden /> : <PencilRuler className="size-4" aria-hidden />}
+                  {t(v === "hall" ? "viewHall" : "viewDesign")}
+                </button>
+              ))}
+            </div>
           </div>
 
           {notice && (
@@ -119,7 +157,7 @@ export function HqView({ companyId, currentUserId, members, rooms, furniture, zo
           )}
 
           {/* Zoom controls */}
-          <div className="absolute bottom-6 start-6 z-10 flex flex-col items-center gap-3">
+          <div hidden={view !== "hall"} className="absolute bottom-6 start-6 z-10 flex flex-col items-center gap-3">
             <MapButton label={t("zoomIn")} onClick={() => changeZoom(0.2)} disabled={zoom >= MAX_ZOOM}>
               <Plus className="size-5" aria-hidden />
             </MapButton>
@@ -136,8 +174,8 @@ export function HqView({ companyId, currentUserId, members, rooms, furniture, zo
             </button>
           </div>
 
-          {panel === "presence" && <PresencePanel members={liveMembers} />}
-          {panel === "history" && <ActivityPanel items={activity} />}
+          {view === "hall" && panel === "presence" && <PresencePanel members={liveMembers} />}
+          {view === "hall" && panel === "history" && <ActivityPanel items={activity} />}
         </section>
       </div>
 

@@ -1,0 +1,995 @@
+/*
+ * Office designer (from the "My Company" project), scoped under .mc-root so it never touches the rest of
+ * Al Maqr. Generated from programming/my company/app/globals.css; overrides for the main hall are at the end.
+ */
+.mc-root {
+  --bg: #f4f3f0;
+  --panel: #ffffff;
+  --line: #e4e2dd;
+  --text: #22252a;
+  --muted: #6d7178;
+  --accent: #2563eb;
+  --accent-soft: #e7eefc;
+  --danger: #dc2626;
+  --radius: 12px;
+  --font: "Segoe UI", "Cairo", "Tahoma", system-ui, -apple-system, sans-serif;
+}
+
+.mc-root, .mc-root * {
+  box-sizing: border-box;
+}
+
+.mc-root {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+}
+
+.mc-root button,
+.mc-root input {
+  font: inherit;
+  color: inherit;
+}
+
+.mc-root h1,
+.mc-root h2,
+.mc-root h3 {
+  margin: 0;
+}
+
+.mc-root code {
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-size: 0.9em;
+}
+
+.mc-root .muted {
+  color: var(--muted);
+  margin: 0;
+}
+.mc-root .small {
+  font-size: 13px;
+}
+.mc-root .danger {
+  color: var(--danger);
+}
+
+/* ---------- layout ---------- */
+.mc-root .lab {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.mc-root .header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 28px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.mc-root .header h1 {
+  font-size: 22px;
+  letter-spacing: 0.2px;
+}
+.mc-root .header .muted {
+  font-size: 13px;
+}
+.mc-root .tabs {
+  display: flex;
+  gap: 4px;
+  margin-inline-start: auto;
+  background: var(--bg);
+  padding: 4px;
+  border-radius: 10px;
+}
+.mc-root .tab {
+  border: 0;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mc-root .tab-on {
+  background: var(--panel);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.mc-root .content {
+  flex: 1;
+  padding: 20px 28px 28px;
+}
+
+/* ---------- controls ---------- */
+.mc-root .btn {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 8px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mc-root .btn:hover {
+  border-color: #cfccc5;
+}
+.mc-root .btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.mc-root .btn-primary:hover {
+  border-color: var(--accent);
+  filter: brightness(1.08);
+}
+.mc-root .btn-danger {
+  color: var(--danger);
+}
+.mc-root .btn-ghost {
+  background: var(--panel);
+}
+.mc-root .sq {
+  width: 32px;
+  padding: 4px 0;
+}
+.mc-root .input {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 9px;
+  padding: 8px 12px;
+  outline: none;
+}
+.mc-root .input:focus {
+  border-color: var(--accent);
+}
+.mc-root .search {
+  flex: 1;
+  min-width: 220px;
+}
+.mc-root .num {
+  width: 90px;
+}
+.mc-root .toggle,
+.mc-root .field-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.mc-root .zoom {
+  min-width: 44px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.mc-root .toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.mc-root .wrap {
+  flex-wrap: wrap;
+}
+.mc-root .chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.mc-root .chip {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.mc-root .chip-on {
+  background: var(--text);
+  border-color: var(--text);
+  color: #fff;
+}
+.mc-root .count {
+  margin-inline-start: auto;
+  font-size: 13px;
+}
+.mc-root .empty {
+  padding: 48px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ---------- top-view drawing ---------- */
+.mc-root .topview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.mc-root .topview-img {
+  position: relative;
+  display: block;
+}
+.mc-root .topview-shadow {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.32);
+  filter: blur(7px);
+  transform: translateY(4px);
+}
+
+/* ---------- catalog ---------- */
+.mc-root .catalog {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.mc-root .catalog-with-detail {
+  grid-template-columns: 1fr 360px;
+}
+.mc-root .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+.mc-root .card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 12px 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.mc-root .card:hover {
+  border-color: #cfccc5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+.mc-root .card-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.mc-root .card-art {
+  height: 140px;
+  display: grid;
+  place-items: center;
+}
+.mc-root .card-name {
+  font-weight: 600;
+}
+.mc-root .card-size {
+  font-size: 12px;
+  color: var(--muted);
+}
+.mc-root .detail {
+  position: sticky;
+  top: 92px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.mc-root .detail-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mc-root .detail-head h2 {
+  font-size: 18px;
+}
+.mc-root .detail-art {
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  background: var(--bg);
+  border-radius: 10px;
+}
+.mc-root .fields {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mc-root .field {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px;
+  font-size: 14px;
+}
+.mc-root .field dt {
+  color: var(--muted);
+}
+.mc-root .field dd {
+  margin: 0;
+}
+.mc-root .swatch-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.mc-root .swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+/* ---------- floor plan ---------- */
+.mc-root .plan {
+  display: grid;
+  grid-template-columns: 300px 1fr 240px;
+  gap: 16px;
+  align-items: start;
+}
+.mc-root .plan-side,
+.mc-root .plan-inspector {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  position: sticky;
+  top: 92px;
+}
+.mc-root .plan-side {
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+.mc-root .palette {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mc-root .palette-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: grab;
+  user-select: none;
+}
+.mc-root .palette-item:hover {
+  background: var(--bg);
+}
+.mc-root .palette-item > span {
+  display: flex;
+  flex-direction: column;
+}
+.mc-root .palette-name {
+  font-size: 14px;
+}
+.mc-root .plan-main {
+  min-width: 0;
+}
+.mc-root .canvas-wrap {
+  overflow: auto;
+  background: #eceae5;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  max-height: calc(100vh - 230px);
+  direction: ltr;
+}
+.mc-root .canvas {
+  display: block;
+  touch-action: none;
+}
+.mc-root .placed {
+  cursor: move;
+}
+.mc-root .dim {
+  font-size: 13px;
+  fill: var(--muted);
+}
+.mc-root .statusbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+.mc-root .spacer {
+  flex: 1;
+}
+.mc-root .plan-inspector h3 {
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+.mc-root .plan-inspector .topview {
+  margin: 0 auto;
+}
+.mc-root .inspector-name {
+  font-weight: 600;
+  margin: 10px 0 2px;
+}
+.mc-root .stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (max-width: 1100px) {
+  .mc-root .plan {
+    grid-template-columns: 1fr;
+  }
+  .mc-root .plan-side,
+  .mc-root .plan-inspector,
+  .mc-root .detail {
+    position: static;
+  }
+  .mc-root .catalog-with-detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- library (floor plan side) ---------- */
+.mc-root .library h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+.mc-root .lib-search {
+  width: 100%;
+  margin-bottom: 10px;
+}
+.mc-root .chips-small {
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.mc-root .chips-small .chip {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+.mc-root .tiny {
+  font-size: 11px;
+}
+.mc-root .library-grid {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.mc-root .library-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfaf8;
+  cursor: grab;
+  user-select: none;
+  text-align: center;
+}
+.mc-root .library-item:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.mc-root .library-item:active {
+  cursor: grabbing;
+}
+.mc-root .library-name {
+  font-size: 12px;
+  line-height: 1.25;
+}
+.mc-root .canvas-wrap {
+  background: #ffffff;
+}
+.mc-root .canvas-drop {
+  outline: 3px dashed var(--accent);
+  outline-offset: -3px;
+}
+
+/* ---------- Right-click menu on a placed piece ---------- */
+.mc-root .ctx-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.mc-root .ctx-menu {
+  position: fixed;
+  z-index: 41;
+  width: 230px;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mc-root .ctx-title {
+  padding: 6px 8px 8px;
+  font-weight: 600;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+}
+.mc-root .ctx-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 8px;
+  font-size: 14px;
+}
+.mc-root .ctx-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.mc-root .ctx-scale .sq {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+.mc-root .ctx-slider {
+  margin: 2px 8px 6px;
+  accent-color: var(--accent);
+}
+.mc-root .ctx-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: inherit;
+  text-align: start;
+  font-size: 14px;
+  cursor: pointer;
+}
+.mc-root .ctx-item:hover,
+.mc-root .ctx-item:focus-visible {
+  background: var(--accent-soft);
+  outline: none;
+}
+.mc-root .ctx-item.danger {
+  color: var(--danger);
+}
+.mc-root .ctx-item kbd {
+  font: 11px var(--font);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+
+/* ---------- Uploading furniture ---------- */
+.mc-root .library-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mc-root .btn-small {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.mc-root .library-item {
+  position: relative;
+}
+.mc-root .upload-badge {
+  position: absolute;
+  top: 4px;
+  inset-inline-start: 4px;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.mc-root .upload-remove {
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 2px;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--danger);
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0;
+}
+.mc-root .library-item:hover .upload-remove,
+.mc-root .upload-remove:focus-visible {
+  opacity: 1;
+}
+.mc-root .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(20, 22, 26, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.mc-root .modal {
+  width: min(640px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+.mc-root .modal h3 {
+  margin: 0 0 4px;
+}
+.mc-root .upload-pick {
+  width: 100%;
+  padding: 18px;
+  border: 2px dashed var(--line);
+  margin: 8px 0 12px;
+}
+.mc-root .upload-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mc-root .upload-row {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  gap: 12px;
+  align-items: start;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.mc-root .upload-preview {
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  background: repeating-conic-gradient(#f1f0ee 0 25%, #fff 0 50%) 0 0 / 16px 16px;
+  border-radius: 8px;
+}
+.mc-root .upload-preview img {
+  max-width: 88px;
+  max-height: 88px;
+  width: 88px;
+  height: auto;
+  object-fit: fill;
+}
+.mc-root .upload-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+.mc-root .upload-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.mc-root .upload-fields .input {
+  width: 100%;
+  color: var(--text);
+}
+.mc-root .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+.mc-root .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+@media (max-width: 520px) {
+  .mc-root .upload-row {
+    grid-template-columns: 64px 1fr auto;
+  }
+  .mc-root .upload-preview {
+    width: 64px;
+    height: 64px;
+  }
+  .mc-root .upload-preview img {
+    max-width: 58px;
+    max-height: 58px;
+  }
+}
+
+/* ---------- Plan editor: top bar ---------- */
+.mc-root .plan-topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+}
+.mc-root .top-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 64px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+.mc-root .top-btn:hover:not(:disabled),
+.mc-root .top-btn[aria-expanded="true"] {
+  background: var(--accent-soft);
+}
+.mc-root .top-btn:disabled {
+  color: #b5b8bd;
+  cursor: default;
+}
+.mc-root .top-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 4px 6px;
+  background: var(--line);
+}
+.mc-root .top-menu {
+  position: relative;
+}
+.mc-root .top-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  inset-inline-end: 0;
+  z-index: 30;
+  min-width: 150px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+  display: flex;
+  flex-direction: column;
+}
+.mc-root .top-dropdown button {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  text-align: start;
+  cursor: pointer;
+}
+.mc-root .top-dropdown button:hover {
+  background: var(--accent-soft);
+}
+
+/* ---------- Plan editor: drawing tools ---------- */
+.mc-root .tool-heading {
+  margin: 14px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.mc-root .tool-grid {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.mc-root .tool-tile {
+  width: 100%;
+  min-height: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fafaf9;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+}
+.mc-root .tool-tile:hover {
+  border-color: #c9cdd3;
+  background: #fff;
+}
+.mc-root .tool-tile.tool-on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.mc-root .tool-tile[draggable="true"] {
+  cursor: grab;
+}
+.mc-root .upload-open {
+  width: 100%;
+  margin: 10px 0 8px;
+}
+.mc-root .tool-hint {
+  margin: -4px 0 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.mc-root .canvas.drawing {
+  cursor: crosshair;
+}
+.mc-root .wall-hit,
+.mc-root .opening,
+.mc-root .column {
+  cursor: move;
+}
+.mc-root .wall-handle {
+  cursor: grab;
+}
+.mc-root .len-label {
+  fill: #1d4ed8;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* ---------- Plan editor: properties ---------- */
+.mc-root .props {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mc-root .props label:not(.toggle) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.mc-root .props .input {
+  width: 100%;
+  color: var(--text);
+}
+.mc-root .props input[type="range"] {
+  accent-color: var(--accent);
+}
+.mc-root .segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.mc-root .segmented button {
+  padding: 7px 4px;
+  border: 0;
+  border-inline-start: 1px solid var(--line);
+  background: #fff;
+  font-size: 11.5px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.mc-root .segmented button:first-child {
+  border-inline-start: 0;
+}
+.mc-root .segmented .seg-on {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.mc-root .row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.mc-root .row-2 .btn {
+  padding-inline: 6px;
+  font-size: 12.5px;
+}
+
+/* ---------- Pinned while scrolling: the Save bar at the top centre, the side panels beside the plan ---------- */
+.mc-root .plan {
+  --pin-top: 88px; /* below the sticky page header */
+  --bar-h: 66px;
+}
+.mc-root .plan-topbar {
+  position: sticky;
+  top: var(--pin-top);
+  z-index: 20;
+  justify-self: center;
+  width: fit-content;
+  max-width: 100%;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+.mc-root .plan-side,
+.mc-root .plan-inspector {
+  position: sticky;
+  top: calc(var(--pin-top) + var(--bar-h) + 12px);
+  max-height: calc(100vh - var(--pin-top) - var(--bar-h) - 24px);
+  overflow-y: auto;
+}
+@media (max-width: 1100px) {
+  .mc-root .plan-side,
+  .mc-root .plan-inspector {
+    position: static;
+    max-height: none;
+  }
+}
+
+/* ---------- Under the plan: orientation ---------- */
+.mc-root .plan-orient {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.mc-root .orient-seg {
+  min-width: 220px;
+}
+.mc-root .orient-seg button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+/* ---------- Inside Al Maqr's main hall ---------- */
+.mc-root {
+  --font: inherit;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.mc-root .plan {
+  --pin-top: 0px; /* the hall's own scroll area starts right under its top strip */
+}
+.mc-root .view-only {
+  margin: -2px 0 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fff7e6;
+  color: #8a5a00;
+  font-size: 13px;
+}
+.mc-root .lab-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 12px;
+}

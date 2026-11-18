@@ -1,0 +1,299 @@
+/**
+ * Top-view drawings (plan view, camera straight above). Every drawing uses viewBox "0 0 widthCm depthCm",
+ * so 1 unit = 1 cm, and the FRONT of the item faces DOWN (seat cushion at the bottom, backrest at the top).
+ * Three tones of the base colour: light top surfaces, a mid tone, and darker creases and edges.
+ * Shadows are NOT part of these drawings: the screens draw them as a separate, toggleable layer.
+ */
+
+type Tones = { light: string; mid: string; dark: string; line: string };
+
+function mix(hex: string, target: number, amount: number) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => Math.round(c + (target - c) * amount));
+  return `#${ch.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+}
+
+export function tones(hex: string): Tones {
+  return { light: mix(hex, 255, 0.28), mid: hex, dark: mix(hex, 0, 0.28), line: mix(hex, 0, 0.45) };
+}
+
+const svg = (w: number, d: number, body: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${d}" width="${w}" height="${d}">${body}</svg>`;
+
+const r = (x: number, y: number, w: number, h: number, rx: number, fill: string, extra = "") =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}" ${extra}/>`;
+
+/** Upholstered seating: backrest band at the top, arms on both sides, `seats` cushions at the front (bottom). */
+export function upholstered(w: number, d: number, hex: string, seats: number, opts: { arms?: boolean; back?: boolean } = {}) {
+  const t = tones(hex);
+  const arms = opts.arms ?? true;
+  const back = opts.back ?? true;
+  const backD = back ? Math.max(14, d * 0.24) : 0;
+  const armW = arms ? Math.max(10, Math.min(22, w * 0.14)) : 0;
+  const pad = 2;
+  const parts: string[] = [];
+  // Base / frame (darkest, a thin rim around everything)
+  parts.push(r(0, 0, w, d, 12, t.dark));
+  // Backrest: rounded band along the back (top)
+  if (back) parts.push(r(pad, pad, w - pad * 2, backD, Math.min(14, backD / 2), t.mid), r(pad + 4, pad + 3, w - pad * 2 - 8, backD * 0.45, 8, t.light, 'opacity="0.55"'));
+  // Arms: rounded rolls on both sides, from the back to the front
+  if (arms) {
+    for (const x of [pad, w - pad - armW]) {
+      parts.push(r(x, pad + backD * 0.35, armW, d - pad * 2 - backD * 0.35, armW / 2, t.mid));
+      parts.push(r(x + armW * 0.25, pad + backD * 0.35 + 4, armW * 0.5, d - pad * 2 - backD * 0.35 - 8, armW / 4, t.light, 'opacity="0.5"'));
+    }
+  }
+  // Seat cushions (lightest), separated by darker creases
+  const seatX = pad + armW + 1;
+  const seatY = pad + backD + 1;
+  const seatW = w - (pad + armW + 1) * 2;
+  const seatD = d - seatY - pad - 1;
+  const gap = 2.5;
+  const each = (seatW - gap * (seats - 1)) / seats;
+  for (let i = 0; i < seats; i++) {
+    const x = seatX + i * (each + gap);
+    parts.push(r(x, seatY, each, seatD, Math.min(10, each / 4), t.light));
+    // A soft front roll (the cushion's front edge, facing down)
+    parts.push(r(x + 2, seatY + seatD - Math.min(10, seatD * 0.16), each - 4, Math.min(8, seatD * 0.13), 4, t.mid, 'opacity="0.45"'));
+    // Centre tuft
+    parts.push(`<circle cx="${x + each / 2}" cy="${seatY + seatD * 0.45}" r="1.6" fill="${t.line}" opacity="0.5"/>`);
+  }
+  return svg(w, d, parts.join(""));
+}
+
+/** Office chair: five-star base under a seat, a curved backrest at the top, two thin armrests. */
+export function officeChair(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  const cx = w / 2;
+  const cy = d / 2 + 2;
+  const legs = [0, 72, 144, 216, 288]
+    .map((a) => {
+      const rad = ((a - 90) * Math.PI) / 180;
+      const x = cx + Math.cos(rad) * (w / 2 - 3);
+      const y = cy + Math.sin(rad) * (d / 2 - 3);
+      return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#3a3a3a" stroke-width="3.2" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="2.8" fill="#222"/>`;
+    })
+    .join("");
+  return svg(
+    w,
+    d,
+    legs +
+      r(w * 0.17, d * 0.3, w * 0.66, d * 0.58, 14, t.mid) +
+      r(w * 0.21, d * 0.34, w * 0.58, d * 0.48, 11, t.light) +
+      `<path d="M ${w * 0.16} ${d * 0.24} Q ${cx} ${d * 0.02} ${w * 0.84} ${d * 0.24} L ${w * 0.8} ${d * 0.32} Q ${cx} ${d * 0.14} ${w * 0.2} ${d * 0.32} Z" fill="${t.dark}"/>` +
+      r(w * 0.07, d * 0.38, w * 0.08, d * 0.34, 3, t.line) +
+      r(w * 0.85, d * 0.38, w * 0.08, d * 0.34, 3, t.line),
+  );
+}
+
+/** A plain top surface (desk, table, cabinet): light top, darker rim, a front edge line at the bottom. */
+export function slab(w: number, d: number, hex: string, opts: { rx?: number; frontEdge?: boolean; grain?: boolean } = {}) {
+  const t = tones(hex);
+  const rx = opts.rx ?? 3;
+  let body = r(0, 0, w, d, rx, t.dark) + r(1.5, 1.5, w - 3, d - 3, Math.max(0, rx - 1), t.light);
+  if (opts.grain) for (let y = 8; y < d - 4; y += 9) body += `<line x1="4" y1="${y}" x2="${w - 4}" y2="${y + 1.5}" stroke="${t.mid}" stroke-width="0.6" opacity="0.5"/>`;
+  if (opts.frontEdge ?? true) body += r(1.5, d - 4, w - 3, 2.5, 1, t.mid);
+  return svg(w, d, body);
+}
+
+export function lDesk(w: number, d: number, hex: string, returnW: number) {
+  const t = tones(hex);
+  const top = Math.min(d, 70);
+  const path = (inset: number) =>
+    `M ${inset} ${inset} H ${w - inset} V ${d - inset} H ${w - returnW + inset} V ${top - inset} H ${inset} Z`;
+  return svg(
+    w,
+    d,
+    `<path d="${path(0)}" fill="${t.dark}"/><path d="${path(1.5)}" fill="${t.light}"/>` +
+      r(1.5, top - 4, w - returnW, 2.5, 1, t.mid) +
+      r(w - returnW + 1.5, d - 4, returnW - 3, 2.5, 1, t.mid),
+  );
+}
+
+export function roundTop(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    `<ellipse cx="${w / 2}" cy="${d / 2}" rx="${w / 2}" ry="${d / 2}" fill="${t.dark}"/>` +
+      `<ellipse cx="${w / 2}" cy="${d / 2}" rx="${w / 2 - 1.5}" ry="${d / 2 - 1.5}" fill="${t.light}"/>` +
+      `<ellipse cx="${w / 2 - w * 0.12}" cy="${d / 2 - d * 0.12}" rx="${w * 0.18}" ry="${d * 0.1}" fill="#fff" opacity="0.18"/>`,
+  );
+}
+
+export function meetingTable(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    r(0, 0, w, d, d / 2, t.dark) +
+      r(1.5, 1.5, w - 3, d - 3, d / 2 - 1.5, t.light) +
+      r(w * 0.3, d * 0.42, w * 0.4, d * 0.16, 4, t.mid, 'opacity="0.55"') +
+      `<circle cx="${w / 2}" cy="${d / 2}" r="3" fill="${t.line}"/>`,
+  );
+}
+
+export function drawers(w: number, d: number, hex: string, rows: number) {
+  const t = tones(hex);
+  let body = r(0, 0, w, d, 2, t.dark) + r(1.5, 1.5, w - 3, d - 3, 1.5, t.light);
+  // Handles show at the front (bottom) edge, one per drawer column
+  for (let i = 0; i < rows; i++) body += r(w * 0.35, d - 3.5, w * 0.3, 2, 1, t.line);
+  return svg(w, d, body);
+}
+
+export function bookshelf(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  let body = r(0, 0, w, d, 1.5, t.dark) + r(1.5, 1.5, w - 3, d - 3, 1, t.light);
+  // Vertical dividers seen as darker lines on the top
+  for (let x = w / 4; x < w - 2; x += w / 4) body += `<line x1="${x}" y1="2" x2="${x}" y2="${d - 2}" stroke="${t.mid}" stroke-width="1.4"/>`;
+  return svg(w, d, body + r(1.5, d - 3.5, w - 3, 2, 1, t.mid));
+}
+
+export function laptop(w: number, d: number) {
+  return svg(
+    w,
+    d,
+    r(0, d * 0.12, w, d * 0.88, 2.5, "#b9bdc4") +
+      r(0, 0, w, d * 0.14, 1.5, "#2b2e33") +
+      r(w * 0.08, d * 0.24, w * 0.84, d * 0.42, 1.5, "#8d929b") +
+      r(w * 0.36, d * 0.72, w * 0.28, d * 0.18, 1.5, "#a3a8b0"),
+  );
+}
+
+export function monitor(w: number, d: number) {
+  return svg(
+    w,
+    d,
+    r(w * 0.36, d * 0.45, w * 0.28, d * 0.5, 3, "#3d4148") +
+      r(0, 0, w, d * 0.32, 2, "#1f2226") +
+      r(1.2, d * 0.24, w - 2.4, d * 0.06, 1, "#4a4f57"),
+  );
+}
+
+export function printer(w: number, d: number) {
+  return svg(
+    w,
+    d,
+    r(0, 0, w, d, 4, "#9aa0a8") +
+      r(2, 2, w - 4, d * 0.7, 3, "#d9dce0") +
+      r(w * 0.6, d * 0.12, w * 0.3, d * 0.16, 2, "#5b6068") +
+      r(w * 0.15, d * 0.78, w * 0.7, d * 0.18, 2, "#f4f4f2"),
+  );
+}
+
+/** Potted plant: pot rim, soil, and leaves fanning out from the centre. */
+export function plant(w: number, d: number, potHex: string, leafHex: string, leaves: number) {
+  const t = tones(leafHex);
+  const cx = w / 2;
+  const cy = d / 2;
+  const potR = Math.min(w, d) * 0.3;
+  let body = `<circle cx="${cx}" cy="${cy}" r="${potR}" fill="${potHex}"/><circle cx="${cx}" cy="${cy}" r="${potR - 2}" fill="#5a4636"/>`;
+  for (let i = 0; i < leaves; i++) {
+    const a = (360 / leaves) * i + (i % 2) * 12;
+    const len = Math.min(w, d) * (0.42 + (i % 3) * 0.04);
+    const fill = [t.dark, t.mid, t.light][i % 3];
+    body += `<ellipse cx="${cx}" cy="${cy - len / 2}" rx="${len * 0.18}" ry="${len / 2}" fill="${fill}" transform="rotate(${a} ${cx} ${cy})"/>`;
+  }
+  return svg(w, d, body);
+}
+
+export function rug(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    r(0, 0, w, d, 2, t.mid) +
+      r(6, 6, w - 12, d - 12, 1, "none", `stroke="${t.light}" stroke-width="3"`) +
+      r(16, 16, w - 32, d - 32, 1, "none", `stroke="${t.dark}" stroke-width="1.5" stroke-dasharray="6 4"`) +
+      `<ellipse cx="${w / 2}" cy="${d / 2}" rx="${w * 0.18}" ry="${d * 0.16}" fill="${t.light}" opacity="0.6"/>`,
+  );
+}
+
+export function floorLamp(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    `<circle cx="${w / 2}" cy="${d / 2}" r="${w / 2 - 1}" fill="${t.light}" stroke="${t.dark}" stroke-width="1.5"/>` +
+      `<circle cx="${w / 2}" cy="${d / 2}" r="${w * 0.18}" fill="#fff6d8"/><circle cx="${w / 2}" cy="${d / 2}" r="2" fill="${t.line}"/>`,
+  );
+}
+
+// ---------- Office-plan pieces (styled after a real estate floor-plan render) ----------
+
+/** White shell chair: rounded seat, curved back at the top, front down. */
+export function shellChair(w: number, d: number, hex = "#f2f2f0") {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    `<path d="M ${w * 0.08} ${d * 0.3} Q ${w * 0.5} ${-d * 0.02} ${w * 0.92} ${d * 0.3} L ${w * 0.86} ${d * 0.4} Q ${w * 0.5} ${d * 0.16} ${w * 0.14} ${d * 0.4} Z" fill="${t.dark}"/>` +
+      r(w * 0.12, d * 0.3, w * 0.76, d * 0.66, w * 0.3, "#c9cbce") +
+      r(w * 0.16, d * 0.33, w * 0.68, d * 0.6, w * 0.27, t.light) +
+      `<ellipse cx="${w / 2}" cy="${d * 0.62}" rx="${w * 0.2}" ry="${d * 0.14}" fill="#ffffff" opacity="0.7"/>`,
+  );
+}
+
+/** Four-person bench desk: two rows facing each other across a screen, a monitor and keyboard per seat. */
+export function benchDesk(w: number, d: number, hex = "#efede8") {
+  const t = tones(hex);
+  let body = r(0, 0, w, d, 2, "#bdbab3") + r(1.5, 1.5, w - 3, d - 3, 1.5, t.light) + r(0, d / 2 - 1.5, w, 3, 1, "#8f8b84");
+  const seats = 2;
+  const cell = w / seats;
+  for (let i = 0; i < seats; i++) {
+    const x = i * cell;
+    for (const top of [true, false]) {
+      const my = top ? d / 2 - 9 : d / 2 + 4; // monitors sit at the screen, facing the person
+      const ky = top ? d * 0.18 : d * 0.72;
+      body += r(x + cell * 0.18, my, cell * 0.64, 5, 1.5, "#2c2f34");
+      body += r(x + cell * 0.25, ky, cell * 0.5, 8, 1.5, "#4a4e55") + r(x + cell * 0.27, ky + 1.5, cell * 0.46, 5, 1, "#6c7179");
+      body += r(x + cell * 0.8, ky + 1, 5, 6, 2.5, "#4a4e55");
+    }
+  }
+  return svg(w, d, body);
+}
+
+export function toilet(w: number, d: number) {
+  return svg(
+    w,
+    d,
+    r(0, 0, w, d * 0.28, 4, "#d9dadc") + r(2, 2, w - 4, d * 0.24, 3, "#ffffff") +
+      `<ellipse cx="${w / 2}" cy="${d * 0.62}" rx="${w / 2 - 1}" ry="${d * 0.37}" fill="#d9dadc"/>` +
+      `<ellipse cx="${w / 2}" cy="${d * 0.62}" rx="${w / 2 - 4}" ry="${d * 0.32}" fill="#ffffff"/>` +
+      `<ellipse cx="${w / 2}" cy="${d * 0.66}" rx="${w * 0.22}" ry="${d * 0.18}" fill="#e8f0f3"/>`,
+  );
+}
+
+/** Washbasin on a stone vanity top (the basin sits nearer the front). */
+export function vanity(w: number, d: number, stone = "#e6dccd") {
+  const t = tones(stone);
+  return svg(
+    w,
+    d,
+    r(0, 0, w, d, 2, t.dark) + r(1.5, 1.5, w - 3, d - 3, 1.5, t.light) +
+      `<ellipse cx="${w / 2}" cy="${d * 0.56}" rx="${Math.min(w, d) * 0.34}" ry="${d * 0.3}" fill="#ffffff" stroke="#c9cbce" stroke-width="1"/>` +
+      `<circle cx="${w / 2}" cy="${d * 0.18}" r="2.2" fill="#9aa0a8"/>`,
+  );
+}
+
+/** Kitchenette counter: dark stone top with a sink on the left and a two-ring hob on the right. */
+export function kitchenCounter(w: number, d: number) {
+  let body = r(0, 0, w, d, 2, "#2d2f33") + r(1.5, 1.5, w - 3, d - 3, 1.5, "#45484e");
+  body += r(w * 0.08, d * 0.2, w * 0.28, d * 0.6, 4, "#c8ccd1") + r(w * 0.1, d * 0.25, w * 0.24, d * 0.5, 3, "#e5e8eb");
+  body += `<circle cx="${w * 0.22}" cy="${d * 0.5}" r="2" fill="#8b9097"/>`;
+  for (const [cx, cy, rr] of [[0.62, 0.35, 9], [0.62, 0.68, 7], [0.82, 0.35, 7], [0.82, 0.68, 9]] as const)
+    body += `<circle cx="${w * cx}" cy="${d * cy}" r="${rr}" fill="#1d1e20" stroke="#6b6f76" stroke-width="1.2"/>`;
+  return svg(w, d, body);
+}
+
+/** Round lounge chair with a deep cushion (egg / tub chair). */
+export function tubChair(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    `<ellipse cx="${w / 2}" cy="${d / 2}" rx="${w / 2}" ry="${d / 2}" fill="${t.dark}"/>` +
+      `<ellipse cx="${w / 2}" cy="${d / 2 + 3}" rx="${w * 0.38}" ry="${d * 0.36}" fill="${t.mid}"/>` +
+      `<ellipse cx="${w / 2}" cy="${d * 0.58}" rx="${w * 0.27}" ry="${d * 0.24}" fill="${t.light}"/>`,
+  );
+}

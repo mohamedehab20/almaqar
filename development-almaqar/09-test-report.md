@@ -2,6 +2,14 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-11-19 — Office designer in the main hall (local)
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit`, `npx eslint .`, `npm run build` | Pass. |
+| Guest demo, headless Edge (`/ar/c/demo`) | The switch shows «القاعة المباشرة» / «تصميم المكتب». The designer loads in Arabic (rtl) with 12 drawing tools and the sample office (52 pieces, 0 overlaps). Uploading is hidden in the demo. A drawn wall is saved (17 walls). Switching back shows the live hall. No console errors. |
+| Signed-in company, design on Storage | Not run: `SUPABASE_SECRET_KEY` is empty locally and not set on Vercel, so the company falls back to saving in the browser (with a notice). Run it once the key is set: save, reload in another browser, upload an image, remove it. |
+
 ## 2026-10-28 — Portal invites (production)
 
 | Check | Result |

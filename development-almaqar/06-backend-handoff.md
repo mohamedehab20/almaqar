@@ -50,6 +50,7 @@ grep -rn "TODO(backend)" src
   - A company picker when a user belongs to several companies (`listMyCompanies`). after-sign-in opens the first one today.
   - **Realtime with Clerk** needs Clerk added as a Supabase third-party auth provider.
 - **HR room:** no tables yet.
+- **Office designer:** set `SUPABASE_SECRET_KEY` (locally and on Vercel) so company designs and uploaded furniture are saved in Storage (`<company_id>/office/`). Until then they stay in the browser.
 - **Automation engine:** a worker that listens to events and runs the flows' actions. The flows are stored; `recordFlowRun` is ready for the engine to call.
 
 ## Contracts

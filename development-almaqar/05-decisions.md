@@ -4,6 +4,13 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-11-19 — The office designer lives in the main hall and keeps its design in Storage, not in new tables
+- **One host:** My Company was moved in as the module `src/modules/office-designer` rather than kept as a second app. It opens from a view switch in the main hall, because the hall is where the office lives.
+- **Storage instead of a migration:** the plan and the uploaded furniture are JSON and image files in the existing private `attachments` bucket under `<company_id>/office/` (`layout.json`, `items.json`, `furniture/<id>.<ext>`). This needs no database migration and reuses the bucket's company-folder rule.
+- **Access:** the server checks membership (view) or `company.settings` (change), then uses the secret key, the same way as the files module. Image links are signed for 12 hours.
+- **Styles:** the designer keeps its own CSS, scoped under `.mc-root`, so it never affects the rest of the app.
+- **Without the storage key:** the designer still works and saves in the browser, and says so. It moves to the server as soon as `SUPABASE_SECRET_KEY` is set.
+
 ### 2026-10-27 — One portal for everyone outside the company
 - Clients, meeting visitors, operation followers (suppliers, contractors) and job candidates all enter through the visitor login with a code made in «بوابة العملاء». It is a room of its own (`clients.view`), no longer part of HR.
 - The company creates each one by hand and links them (an operation, a candidate). Creating them automatically from Recruitment or Operations can come later.

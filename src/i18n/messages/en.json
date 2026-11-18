@@ -451,7 +451,11 @@
       "later": "Not now",
       "close": "Close"
     },
-    "statusFailed": "Could not save your status. Try again."
+    "statusFailed": "Could not save your status. Try again.",
+    "viewHall": "Live hall",
+    "viewDesign": "Office design",
+    "views": "Hall view",
+    "designLoading": "Loading the office designer…"
   },
   "ops": {
     "title": "Operations room",
