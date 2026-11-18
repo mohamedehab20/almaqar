@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/shared/avatar";
 import { Link, usePathname } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
 
 type AppTopbarProps = {
   companySlug: string;
@@ -15,14 +14,11 @@ type AppTopbarProps = {
   onMenu: () => void;
 };
 
-const tabs = ["dashboard", "office", "resources", "settings"] as const;
-
 export function AppTopbar({ companySlug, userName, signedIn = false, onMenu }: AppTopbarProps) {
   const t = useTranslations("app");
   const tPage = useTranslations();
-  // "/c/<slug>" is the main hall; "/c/<slug>/<section>" are the other pages
+  // "/c/<slug>" is the office design; "/c/<slug>/<section>" are the other pages
   const section = usePathname().split("/")[3];
-  const isHall = !section;
   const sectionTitles: Record<string, string> = { operations: "ops.navTitle", hr: "hr.navTitle", marketing: "marketing.navTitle", automation: "automation.navTitle", sales: "sales.navTitle", agents: "agents.navTitle", permissions: "permissions.title", meetings: "meetings.title", analytics: "analytics.title", clients: "clientsPortal.title" };
   const title = tPage(sectionTitles[section] ?? "hq.title");
 
@@ -37,29 +33,12 @@ export function AppTopbar({ companySlug, userName, signedIn = false, onMenu }: A
         <Menu className="size-5" aria-hidden />
       </button>
 
-      {/* Logo → the main hall (the sidebar logo is hidden on small screens) */}
+      {/* Logo → the office design (the sidebar logo is hidden on small screens) */}
       <Link href={signedIn ? `/c/${companySlug}` : "/"} aria-label={t("backHome")} title={t("backHome")} className="shrink-0 lg:hidden">
         <Image src="/brand/logo.png" alt="" width={36} height={36} className="size-9 object-contain" />
       </Link>
 
       <h1 className="truncate text-2xl font-extrabold text-primary sm:text-3xl">{title}</h1>
-
-      {/* Main-hall tabs. Only "dashboard" exists for now; the others are placeholders */}
-      <nav className={cn("ms-6 hidden items-center gap-8 text-sm", isHall && "md:flex")}>
-        {tabs.map((tab, index) => (
-          <span
-            key={tab}
-            title={index === 0 ? undefined : t("comingSoon")}
-            aria-current={index === 0 ? "page" : undefined}
-            className={cn(
-              "border-b-2 py-1",
-              index === 0 ? "border-primary font-semibold text-primary" : "border-transparent text-on-surface-variant",
-            )}
-          >
-            {t(`tabs.${tab}`)}
-          </span>
-        ))}
-      </nav>
 
       <div className="ms-auto flex items-center gap-2 sm:gap-4">
         <button

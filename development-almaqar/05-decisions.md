@@ -4,6 +4,9 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-11-19 — The office design replaces the main hall
+At the product owner's request, the company home is only the office designer. The live hall UI was removed. Its server side (presence status, hall data) stays, so a live view can come back later without backend work.
+
 ### 2026-11-19 — The office designer lives in the main hall and keeps its design in Storage, not in new tables
 - **One host:** My Company was moved in as the module `src/modules/office-designer` rather than kept as a second app. It opens from a view switch in the main hall, because the hall is where the office lives.
 - **Storage instead of a migration:** the plan and the uploaded furniture are JSON and image files in the existing private `attachments` bucket under `<company_id>/office/` (`layout.json`, `items.json`, `furniture/<id>.<ext>`). This needs no database migration and reuses the bucket's company-folder rule.

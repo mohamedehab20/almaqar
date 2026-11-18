@@ -371,23 +371,17 @@
       "analytics": "Analytics",
       "clients": "Client portal"
     },
-    "tabs": {
-      "dashboard": "Dashboard",
-      "office": "Office",
-      "resources": "Resources",
-      "settings": "Settings"
-    },
     "expandGroup": "Show {name} items",
     "collapseGroup": "Hide {name} items",
     "comingSoonItem": "{name} — coming soon",
-    "backHome": "Back to the main hall",
+    "backHome": "Back to the office design",
     "signOut": "Sign out",
     "guestBanner": "You are browsing as a guest: this is a demo company and nothing is saved.",
     "guestCta": "Create your free account",
     "guestLogin": "Sign in"
   },
   "hq": {
-    "title": "Main hall",
+    "title": "Office design",
     "floorPlan": "Headquarters floor plan",
     "participants": "{count} participants",
     "live": "Live",
@@ -451,11 +445,7 @@
       "later": "Not now",
       "close": "Close"
     },
-    "statusFailed": "Could not save your status. Try again.",
-    "viewHall": "Live hall",
-    "viewDesign": "Office design",
-    "views": "Hall view",
-    "designLoading": "Loading the office designer…"
+    "statusFailed": "Could not save your status. Try again."
   },
   "ops": {
     "title": "Operations room",
@@ -1322,7 +1312,7 @@
     "features": {
       "employees5": "Up to 5 employees",
       "employeesUnlimited": "Unlimited employees",
-      "hq": "Virtual headquarters (main hall)",
+      "hq": "Virtual headquarters (office design)",
       "hr": "Essential HR tools",
       "operationsLimited": "Operations room (up to 20 operations / month)",
       "oneWorkflow": "One workflow",

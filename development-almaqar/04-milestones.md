@@ -14,6 +14,17 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-11-19 — «القاعة الرئيسية» removed: the company home is the office design
+- `/c/<slug>` now shows only the office designer. The page and header title are «تصميم المكتب» / "Office design", and the logo's label says «الرجوع لتصميم المكتب».
+- **Removed from the UI:**
+  - The live hall: its floor plan, presence and activity panels, the status / mic / camera bar, and the «إضافة طبقة أخرى» Premium dialog.
+  - The hall / design switch.
+  - The placeholder tabs in the top bar.
+- **Kept:** the backend for presence and the hall data (`setMyStatus`, `getMainHall`, `getFloorPlan`).
+- The pricing feature line now reads «المقر الافتراضي (تصميم المكتب)».
+
+Files: `src/app/[locale]/(app)/c/[companySlug]/page.tsx`, `src/components/layout/{app-topbar,app-sidebar}.tsx`, removed `src/modules/hq/components/{hq-view,floor-plan,side-panel,control-bar,status-menu,premium-layer-dialog}.tsx`, `src/i18n/messages/{ar,en}.json`.
+
 ### 2026-11-19 — Office designer («تصميم المكتب») inside the main hall
 - The standalone "My Company" app (`programming/my company`) is now part of Al Maqr, on the same host.
 - In the main hall, a switch at the top right toggles **«القاعة المباشرة»** (the live hall, as before) and **«تصميم المكتب»**.

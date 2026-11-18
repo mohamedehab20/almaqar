@@ -2,6 +2,13 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-11-19 — Company home is the office design (local)
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit`, `npx eslint .`, `npm run build` | Pass. |
+| Guest demo, headless Edge (`/ar/c/demo`, `/en/c/demo`) | Tab and header title «تصميم المكتب» / "Office design". The designer shows with 12 tools. No «القاعة الرئيسية» / "Main hall" text and no hall switch on the page. The logo label reads «الرجوع لتصميم المكتب». No console errors. |
+
 ## 2026-11-19 — Office designer in the main hall (local)
 
 | Check | Result |
