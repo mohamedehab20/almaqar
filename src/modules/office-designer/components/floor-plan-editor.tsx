@@ -29,7 +29,8 @@ import {
   wallLength,
   type Pt,
 } from "./plan/geometry";
-import { itemSrc, TopViewIcon } from "./top-view-icon";
+import { itemPicture, useItemPictures } from "@/modules/office-designer/data/raster";
+import { TopViewIcon } from "./top-view-icon";
 import { UploadDialog } from "./upload-dialog";
 
 const MARGIN = 50; // cm of free space drawn around the plan
@@ -324,6 +325,9 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
   const columns = layout.columns ?? [];
   const reach = 14 / zoom; // snapping distance: 14 screen px
   const placedItems = useMemo(() => layout.placed.map((p) => ({ p, item: itemById(p.itemId)! })).filter((x) => x.item), [layout.placed]);
+  // Pieces in the plan are turned and flipped, so they use bitmaps of the drawings (see data/raster.ts)
+  const placedKinds = useMemo(() => [...new Map(placedItems.map(({ item }) => [item.id, item])).values()], [placedItems]);
+  useItemPictures(placedKinds);
 
   // Red: an item whose footprint overlaps another item, or whose clearance zone covers another item
   const conflicts = useMemo(() => {
@@ -752,7 +756,7 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
     }
     for (const { p, item } of placedItems) {
       const f = footprint(p, item);
-      const img = await loadImage(itemSrc(item)).catch(() => null);
+      const img = await loadImage(itemPicture(item)).catch(() => null);
       ctx.save();
       ctx.translate(f.x + f.w / 2, f.y + f.h / 2);
       ctx.rotate((p.rotation * Math.PI) / 180);
@@ -1135,7 +1139,7 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
                         }}
                       >
                         <g transform={`translate(${f.x + f.w / 2} ${f.y + f.h / 2}) rotate(${p.rotation})${p.mirror ? " scale(-1 1)" : ""}`}>
-                          <image href={itemSrc(item)} x={-w / 2} y={-d / 2} width={w} height={d} preserveAspectRatio="none" />
+                          <image href={itemPicture(item)} x={-w / 2} y={-d / 2} width={w} height={d} preserveAspectRatio="none" />
                         </g>
                         {showClearance && item.clearanceCm > 0 && (
                           <rect

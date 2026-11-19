@@ -113,6 +113,19 @@ export const ITEMS: FurnitureItem[] = [
     { id: "SEAT-SHL-001", nameEn: "White shell chair", nameAr: "كرسي أبيض", category: "seating", subcategory: "visitor chair", widthCm: 50, depthCm: 52, heightCm: 82, clearanceCm: 30, material: "Polypropylene", colorHex: "#f2f2f0", tags: ["chair", "white", "visitor", "كرسي", "أبيض"] },
     (b) => draw.shellChair(b.widthCm, b.depthCm, b.colorHex),
   ),
+  // Photographed pieces (top view, background removed). The drawing is only a fallback if the image cannot load.
+  item(
+    { id: "SEAT-TUB-002", nameEn: "Beige tub chair", nameAr: "كرسي مدور بيج", category: "seating", subcategory: "lounge chair", widthCm: 68, depthCm: 68, heightCm: 78, clearanceCm: 40, material: "Wool fabric, oak legs", colorHex: "#a8977f", tags: ["tub", "lounge", "fabric", "photo", "كرسي", "بيج"], imageUrl: "/furniture/tub-chair-beige.webp" },
+    (b) => draw.tubChair(b.widthCm, b.depthCm, b.colorHex),
+  ),
+  item(
+    { id: "SEAT-LNG-002", nameEn: "Rust lounge chair", nameAr: "كرسي استرخاء طوبي", category: "seating", subcategory: "lounge chair", widthCm: 76, depthCm: 71, heightCm: 76, clearanceCm: 40, material: "Velvet", colorHex: "#a5532a", tags: ["lounge", "velvet", "armchair", "photo", "استرخاء", "قطيفة"], imageUrl: "/furniture/lounge-chair-rust.webp" },
+    (b) => draw.upholstered(b.widthCm, b.depthCm, b.colorHex, 1),
+  ),
+  item(
+    { id: "SEAT-ARM-003", nameEn: "Petal velvet armchair", nameAr: "فوتيه قطيفة بتلات", category: "seating", subcategory: "armchair", widthCm: 96, depthCm: 89, heightCm: 80, clearanceCm: 45, material: "Velvet", colorHex: "#c4473a", tags: ["armchair", "velvet", "lounge", "photo", "فوتيه", "قطيفة"], imageUrl: "/furniture/petal-armchair-red.webp" },
+    (b) => draw.upholstered(b.widthCm, b.depthCm, b.colorHex, 1),
+  ),
   item(
     { id: "SEAT-TUB-001", nameEn: "Lounge tub chair", nameAr: "كرسي استرخاء مدور", category: "seating", subcategory: "lounge chair", widthCm: 80, depthCm: 80, heightCm: 75, clearanceCm: 40, material: "Leather", colorHex: "#8b5a2b", tags: ["lounge", "tub", "balcony", "استرخاء", "بلكونة"] },
     (b) => draw.tubChair(b.widthCm, b.depthCm, b.colorHex),

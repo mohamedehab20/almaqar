@@ -2,6 +2,14 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-11-19 — Furniture finish and photographed chairs (local)
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit`, `npx eslint .`, `npm run build` | Pass. |
+| Catalog, headless Edge | 31 cards, including 3 photos with no broken images. Drawn pieces show light, rounded edges and texture. |
+| Found and fixed | Pieces turned 180° (office chair, laptop, chairs on the lower side of the desks) and mirrored pieces rendered **black**, a Chrome issue with SVG lighting under a negative scale. After baking bitmaps: all 52 plan pieces use bitmaps, none are black, and mirroring the armchair from the right-click menu looks right. No console errors. |
+
 ## 2026-11-19 — Designer top bar in two groups (local)
 
 | Check | Result |

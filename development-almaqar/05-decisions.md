@@ -4,6 +4,12 @@ Short records of choices made on purpose. Newest first. When you reverse one, ad
 
 Format: **Decision** — why — alternatives considered.
 
+### 2026-11-19 — Furniture finish: SVG lighting baked into bitmaps for the plan
+- The look of a photo comes from SVG filters in each drawing: diffuse and specular light on a height map from the outline and tones, plus a noise texture. There are no image files to maintain, and colors and sizes stay data.
+- Chrome renders these filters black when the image is drawn with a negative scale (a 180° turn or a mirror). So the plan uses a bitmap of each drawing, painted once in the browser (`data/raster.ts`).
+- Upright icons (catalog, library) keep the live SVG.
+- Photographed pieces (`imageUrl`) are used as they are.
+
 ### 2026-11-19 — The office design replaces the main hall
 At the product owner's request, the company home is only the office designer. The live hall UI was removed. Its server side (presence status, hall data) stays, so a live view can come back later without backend work.
 

@@ -14,6 +14,14 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-11-19 — Furniture that looks like top-view photos
+- **Three photographed chairs** were added to the catalog: a beige tub chair, a rust lounge chair and a red petal velvet armchair. They come from the product owner's photos, with the white background removed (`public/furniture/*.webp`).
+- **Every drawn piece now has a material finish:** light from the top left, soft rounded edges and a texture.
+  - Finishes: fabric for seating, wood for tables and storage, hard for tech / ceramic / stone, leaf for plants, and pile for rugs.
+- On the plan, each drawing is painted once into a bitmap with its lighting baked in. Chrome turns SVG lighting black under a 180° turn or a mirror.
+
+Files: `src/modules/office-designer/data/{draw,items,raster}.ts`, `src/modules/office-designer/components/floor-plan-editor.tsx`, `public/furniture/{tub-chair-beige,lounge-chair-rust,petal-armchair-red}.webp`.
+
 ### 2026-11-19 — Main hall: the designer's top bar in two groups, pinned
 - The bar at the top of the designer stays pinned while the page scrolls. It is split into two separate groups:
   - **Actions:** حفظ، تراجع، إعادة، مسح، فتح، تصدير.
