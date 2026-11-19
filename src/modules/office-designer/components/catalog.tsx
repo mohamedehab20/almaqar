@@ -8,8 +8,11 @@ import type { Lang, Strings } from "./i18n";
 import { ItemCard } from "./item-card";
 import { ItemDetail } from "./item-detail";
 
-/** Grid of items with search (Arabic name, English name, tags), category chips and a detail panel. */
-export function Catalog({ lang, t, shadow, setShadow }: { lang: Lang; t: Strings; shadow: boolean; setShadow: (v: boolean) => void }) {
+/**
+ * Grid of items with search (Arabic name, English name, tags), category chips and a detail panel.
+ * `onUpload` (when the viewer may add furniture) shows the "Upload furniture" button.
+ */
+export function Catalog({ lang, t, shadow, setShadow, onUpload }: { lang: Lang; t: Strings; shadow: boolean; setShadow: (v: boolean) => void; onUpload?: () => void }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category | "all">("all");
   const [openId, setOpenId] = useState<string | null>(null);
@@ -33,6 +36,11 @@ export function Catalog({ lang, t, shadow, setShadow }: { lang: Lang; t: Strings
             <input type="checkbox" checked={shadow} onChange={(e) => setShadow(e.target.checked)} />
             {t.shadows}
           </label>
+          {onUpload && (
+            <button type="button" className="btn btn-primary" onClick={onUpload}>
+              + {t.upload}
+            </button>
+          )}
         </div>
         <div className="chips" role="group">
           {(["all", ...CATEGORIES] as const).map((c) => (

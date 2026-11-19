@@ -843,6 +843,16 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
   const sel = placedItems.find(({ p }) => p.uid === selected) ?? null;
   const menuOf = menu ? placedItems.find(({ p }) => p.uid === menu.uid) ?? null : null;
   const name = (item: FurnitureItem) => (lang === "ar" ? item.nameAr : item.nameEn);
+  /** How many of each piece, and of each category, are in the plan. */
+  const placedCount = useMemo(() => {
+    const byItem = new Map<string, number>();
+    const byCategory = new Map<string, number>();
+    for (const { item } of placedItems) {
+      byItem.set(item.id, (byItem.get(item.id) ?? 0) + 1);
+      byCategory.set(item.category, (byCategory.get(item.category) ?? 0) + 1);
+    }
+    return { byItem, byCategory };
+  }, [placedItems]);
   const library = useMemo(() => {
     const q = query.trim().toLowerCase();
     // Uploaded pieces first, so a fresh upload is right there
@@ -933,7 +943,7 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
 
       {panel === "catalog" ? (
         <div className="plan-catalog">
-          <Catalog lang={lang} t={t} shadow={shadow} setShadow={setShadow} />
+          <Catalog lang={lang} t={t} shadow={shadow} setShadow={setShadow} onUpload={access.uploads && access.canEdit ? () => setUploading(true) : undefined} />
         </div>
       ) : (
         <>
@@ -961,6 +971,10 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
                   {(["all", ...CATEGORIES] as const).map((c) => (
                     <button key={c} type="button" className={`chip${category === c ? " chip-on" : ""}`} aria-pressed={category === c} onClick={() => setCategory(c)}>
                       {c === "all" ? t.all : t.categories[c]}
+                      {/* how many of this category are in the plan */}
+                      {(c === "all" ? placedItems.length : placedCount.byCategory.get(c) ?? 0) > 0 && (
+                        <span className="chip-count">{c === "all" ? placedItems.length : placedCount.byCategory.get(c)}</span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -983,6 +997,11 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
                       <span className="muted tiny" dir="ltr">
                         {item.widthCm}×{item.depthCm}
                       </span>
+                      {placedCount.byItem.has(item.id) && (
+                        <span className="placed-count" title={`${placedCount.byItem.get(item.id)} ${t.inPlan}`} dir="ltr">
+                          ×{placedCount.byItem.get(item.id)}
+                        </span>
+                      )}
                       {item.id.startsWith("USR-") && (
                         <>
                           <span className="upload-badge">{t.uploaded}</span>
@@ -1378,7 +1397,6 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
             {message && <p className="danger small">{message}</p>}
           </div>
 
-          {uploading && <UploadDialog t={t} onClose={() => setUploading(false)} onAdded={() => (setCategory("all"), setQuery(""))} />}
 
           {/* ---------- Right: properties of what is selected ---------- */}
           <aside className="plan-inspector">
@@ -1537,6 +1555,8 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
           </aside>
         </>
       )}
+
+      {uploading && <UploadDialog t={t} onClose={() => setUploading(false)} onAdded={() => (setCategory("all"), setQuery(""))} />}
     </div>
   );
 }

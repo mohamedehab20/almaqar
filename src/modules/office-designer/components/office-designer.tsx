@@ -28,14 +28,14 @@ function writeBrowser(companyId: string | null, layout: unknown): "ok" | "failed
 
 /**
  * The company's design on the server (Supabase Storage). In the public demo, or while the server has no storage
- * key, the design stays in this browser and uploading furniture is off.
+ * key, the design and the uploaded furniture stay in this browser.
  */
 function makeStore(companyId: string | null, onBrowserOnly: () => void): DesignStore {
   if (!companyId)
     return {
       load: async () => {
-        setCompanyItems(null, []);
-        return { layout: readBrowser(null), canEdit: true, uploads: false };
+        setCompanyItems(null, [], "browser");
+        return { layout: readBrowser(null), canEdit: true, uploads: true };
       },
       save: async (layout) => writeBrowser(null, layout),
     };
@@ -44,10 +44,10 @@ function makeStore(companyId: string | null, onBrowserOnly: () => void): DesignS
     load: async () => {
       const res = await getOfficeDesign({ companyId });
       if (!res.ok) throw new Error(res.error);
-      setCompanyItems(companyId, res.data.items);
       onServer = res.data.stored;
+      setCompanyItems(companyId, res.data.items, onServer ? "server" : "browser");
       if (!onServer) onBrowserOnly();
-      return { layout: onServer ? res.data.layout : readBrowser(companyId), canEdit: res.data.canEdit, uploads: onServer };
+      return { layout: onServer ? res.data.layout : readBrowser(companyId), canEdit: res.data.canEdit, uploads: true };
     },
     save: async (layout) => {
       if (!onServer) return writeBrowser(companyId, layout);

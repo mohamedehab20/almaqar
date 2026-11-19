@@ -2,6 +2,15 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-11-19 — Pinned plan row, counts, upload from the catalog (local, 1366×768)
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit`, `npx eslint .`, `npm run build` | Pass. |
+| Pinning (mouse wheel, page scrolled 401 px) | The top bar stays at 152 px, and the size / zoom row sticks right under it (236 → 228 px). The same top-bar check also passed at 1500×900, 1280×720, 1024×768, 820×1180 and 390×844, and on production. |
+| Counts | Chips: الكل 52, جلوس 23, مكاتب 5, … Items: «كرسي أبيض ×18», «كرسي مكتب ×2», «فوتيه قطيفة ×2», … |
+| Upload from the catalog (guest demo) | The button opens the dialog. A PNG uploaded as 180×90 cm: 31 → 32 cards, and still 32 after a reload. Test data removed. No console errors. |
+
 ## 2026-11-19 — Furniture finish and photographed chairs (local)
 
 | Check | Result |

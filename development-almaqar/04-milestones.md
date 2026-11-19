@@ -14,6 +14,16 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-11-19 — Main hall: pinned plan row, piece counts, upload from the catalog
+- **Pinned:** the row right above the plan (sample office, empty room, width, length, zoom) now stays under the pinned top bar while scrolling, like the top bar.
+- **Counts in «فرش الأثاث»:**
+  - Each piece in the library shows how many of it are in the plan (for example «كرسي أبيض ×18»).
+  - Each category chip shows its total («جلوس 23», «الكل 52»).
+- **Upload from the catalog:** «الكتالوج» has a «رفع أثاث» button too, with the same dialog as the library.
+- **Uploading works before the storage key is set:** in the guest demo, or while the server has no `SUPABASE_SECRET_KEY`, uploaded pieces and their shrunk images are kept in the browser (`al-maqr-office-items-<company>`). The notice says so. With the key they go to Storage as before.
+
+Files: `src/modules/office-designer/components/{floor-plan-editor,catalog,office-designer,i18n}.ts(x)`, `src/modules/office-designer/data/custom.ts`, `src/modules/office-designer/designer.css`.
+
 ### 2026-11-19 — Furniture that looks like top-view photos
 - **Three photographed chairs** were added to the catalog: a beige tub chair, a rust lounge chair and a red petal velvet armchair. They come from the product owner's photos, with the white background removed (`public/furniture/*.webp`).
 - **Every drawn piece now has a material finish:** light from the top left, soft rounded edges and a texture.
