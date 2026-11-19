@@ -2,6 +2,14 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-11-19 — 2D drawing tools (local)
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit`, `npx eslint .`, `npm run build` | Pass. |
+| Drawing by mouse on an empty plan, headless Edge | Six shapes made: half circle (r 150, sweep −180), circle (r 60), line, rectangle, dimension (480 cm) and text («غرفة»). Selecting the half circle, setting 270° and flipping: sweep 270. Dragging the rectangle moved it by (50, 50). Turning the plan moved the arc's centre to (917, 250) and its start angle to 270°; undo put it back at (250, 200). No console errors. |
+| Found and fixed | The half circle bulged to the left of the drag, not the right as the hint says. Its sweep now starts at −180. |
+
 ## 2026-11-19 — Pinned plan row, counts, upload from the catalog (local, 1366×768)
 
 | Check | Result |

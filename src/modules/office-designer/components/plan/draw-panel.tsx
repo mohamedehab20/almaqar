@@ -1,10 +1,10 @@
 "use client";
 
-import type { OpeningKind } from "@/modules/office-designer/data/types";
+import type { OpeningKind, ShapeKind } from "@/modules/office-designer/data/types";
 import type { Strings } from "../i18n";
 import { DOOR_KINDS, openingShapes, WINDOW_KINDS } from "./geometry";
 
-export type Tool = "select" | "wall" | "glass" | "room" | "column" | "roundColumn" | OpeningKind;
+export type Tool = "select" | "wall" | "glass" | "room" | "column" | "roundColumn" | OpeningKind | ShapeKind;
 
 /** Tools that can also be dragged from the panel straight onto the plan. */
 export const DROPPABLE: Tool[] = [...DOOR_KINDS, ...WINDOW_KINDS, "column", "roundColumn"];
@@ -27,6 +27,23 @@ function ToolIcon({ tool }: { tool: Tool }) {
   else if (tool === "room") body = <rect x="10" y="10" width="40" height="40" fill="none" stroke={ink} strokeWidth="5" />;
   else if (tool === "column") body = <rect x="19" y="19" width="22" height="22" fill={ink} />;
   else if (tool === "roundColumn") body = <circle cx="30" cy="30" r="12" fill={ink} />;
+  else if (tool === "arc") body = <path d="M10 22 A20 20 0 0 0 50 22" fill="none" stroke={ink} strokeWidth="5" />;
+  else if (tool === "circle") body = <circle cx="30" cy="30" r="19" fill="none" stroke={ink} strokeWidth="5" />;
+  else if (tool === "line") body = <path d="M10 48 L50 12" stroke={ink} strokeWidth="2.5" strokeLinecap="round" />;
+  else if (tool === "rect") body = <rect x="9" y="16" width="42" height="28" fill="none" stroke={ink} strokeWidth="2.5" />;
+  else if (tool === "text")
+    body = (
+      <text x="30" y="42" textAnchor="middle" fontSize="34" fontWeight="700" fill={ink}>
+        T
+      </text>
+    );
+  else if (tool === "dim")
+    body = (
+      <g stroke="#2563eb" strokeWidth="2.5">
+        <path d="M8 34 H52 M8 26 V42 M52 26 V42" />
+        <path d="M8 34 L15 30 M8 34 L15 38 M52 34 L45 30 M52 34 L45 38" />
+      </g>
+    );
   else {
     const door = DOOR_KINDS.includes(tool);
     const y = door ? 14 : 32;
@@ -66,6 +83,7 @@ export function DrawPanel({ t, tool, setTool }: { t: Strings; tool: Tool; setToo
     window: t.windows,
     bay: t.bayWindow,
     french: t.frenchWindow,
+    ...t.shapeKinds,
   };
   const tile = (k: Tool) => (
     <li key={k}>
@@ -95,6 +113,8 @@ export function DrawPanel({ t, tool, setTool }: { t: Strings; tool: Tool; setToo
       <ul className="tool-grid">{[...DOOR_KINDS, ...WINDOW_KINDS].map(tile)}</ul>
       <h4 className="tool-heading">{t.structural}</h4>
       <ul className="tool-grid">{(["glass", "column", "roundColumn"] as Tool[]).map(tile)}</ul>
+      <h4 className="tool-heading">{t.draw2d}</h4>
+      <ul className="tool-grid">{(["arc", "circle", "line", "rect", "text", "dim"] as Tool[]).map(tile)}</ul>
     </>
   );
 }

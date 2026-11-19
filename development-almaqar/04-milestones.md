@@ -14,6 +14,19 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-11-19 — 2D drawing tools, including the half circle
+- «رسم المسقط» has a new section, **«رسم 2D»**. All six tools are drawn by dragging, except text, which is placed with a click:
+  - **نص دايرة (half circle):** drag along its diameter. It bulges to the right of the drag. Properties: radius, angle (10°–360°, so any arc up to a full circle), flip side, turn 45°.
+  - **دايرة (circle):** drag from the centre. Properties: radius.
+  - **خط (line):** Shift keeps it straight. Properties: length.
+  - **مستطيل (rectangle):** Properties: width and length.
+  - **نص (text):** click to place it, for example a room name. Properties: the text and its size.
+  - **قياس (dimension):** a line with end ticks and its length in cm.
+- Common properties: thickness, colour (6 swatches), dashed, fill (circle and rectangle), delete.
+- Shapes can be selected and dragged. They follow undo / redo, turning the plan, PNG export and JSON. They are saved in the layout as `shapes`.
+
+Files: `src/modules/office-designer/components/plan/{shapes.tsx,draw-panel.tsx,rotate.ts}`, `src/modules/office-designer/components/{floor-plan-editor.tsx,i18n.ts}`, `src/modules/office-designer/data/types.ts`, `src/modules/office-designer/designer.css`.
+
 ### 2026-11-19 — Main hall: pinned plan row, piece counts, upload from the catalog
 - **Pinned:** the row right above the plan (sample office, empty room, width, length, zoom) now stays under the pinned top bar while scrolling, like the top bar.
 - **Counts in «فرش الأثاث»:**

@@ -51,6 +51,33 @@ export type Layout = {
   /** Doors and windows drawn into walls with the drawing tools */
   openings?: Opening[];
   columns?: Column[];
+  /** Free 2D drawing: arcs (half circles), circles, lines, rectangles, text and dimensions */
+  shapes?: Shape2D[];
+};
+
+export type ShapeKind = "arc" | "circle" | "line" | "rect" | "text" | "dim";
+
+/**
+ * A free 2D drawing on the plan (cm). line / rect / dim: from (x1, y1) to (x2, y2). circle: centre (x1, y1) and r.
+ * arc: centre (x1, y1), r, start angle a0 and sweep (degrees, clockwise on screen; 180 = a half circle).
+ * text: at (x1, y1). width = line thickness (cm).
+ */
+export type Shape2D = {
+  id: string;
+  kind: ShapeKind;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  r?: number;
+  a0?: number;
+  sweep?: number;
+  width: number;
+  color: string;
+  dashed?: boolean;
+  fill?: boolean;
+  text?: string;
+  size?: number;
 };
 
 export type OpeningKind = "single" | "double" | "sliding" | "window" | "bay" | "french";

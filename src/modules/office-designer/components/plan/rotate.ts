@@ -1,4 +1,5 @@
 import type { Door, Layout, Placed } from "@/modules/office-designer/data/types";
+import { turnShape } from "./shapes";
 
 /**
  * Turns the whole plan a quarter turn: clockwise (`cw`) or counter-clockwise. Width and length swap, and every
@@ -25,6 +26,7 @@ export function rotateLayout(l: Layout, cw: boolean): Layout {
     floors: l.floors?.map((f) => ({ ...f, ...box(f.x, f.y, f.w, f.h) })),
     openings: l.openings?.map((o) => ({ ...o, ...pt(o.x, o.y), angle: turn(o.angle) })),
     columns: l.columns?.map((c) => ({ ...c, ...pt(c.x, c.y) })),
+    shapes: l.shapes?.map((x) => turnShape(x, pt, cw)),
     // Furniture is turned by `rotatePlaced`, which needs each piece's size from the catalog
     placed: l.placed,
   };

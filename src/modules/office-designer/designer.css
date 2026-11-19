@@ -1073,3 +1073,30 @@
 .mc-root .plan-main > .tool-hint {
   margin-top: 6px;
 }
+
+/* ---------- 2D drawing: shapes and their properties ---------- */
+.mc-root .shape-hit {
+  cursor: move;
+}
+.mc-root .shape-label {
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.mc-root .swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mc-root .swatch {
+  width: 26px;
+  height: 26px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--line);
+  cursor: pointer;
+}
+.mc-root .swatch-on {
+  box-shadow: 0 0 0 2px var(--accent);
+}

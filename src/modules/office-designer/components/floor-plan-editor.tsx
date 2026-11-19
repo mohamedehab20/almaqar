@@ -4,11 +4,12 @@ import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } fro
 import { addCustomItems, isCustomItem, removeCustomItem, useCustomItems, withInlineImages } from "@/modules/office-designer/data/custom";
 import { ITEMS, itemById } from "@/modules/office-designer/data/items";
 import { emptyRoom, sampleOffice } from "@/modules/office-designer/data/presets";
-import { CATEGORIES, type Category, type Column, type Door, type FloorZone, type FurnitureItem, type Layout, type Opening, type OpeningKind, type Placed, type Wall } from "@/modules/office-designer/data/types";
+import { CATEGORIES, type Category, type Column, type Door, type FloorZone, type FurnitureItem, type Layout, type Opening, type OpeningKind, type Placed, type Shape2D, type ShapeKind, type Wall } from "@/modules/office-designer/data/types";
 import type { Lang, Strings } from "./i18n";
 import { Catalog } from "./catalog";
 import { DrawPanel, DROPPABLE, type Tool } from "./plan/draw-panel";
 import { rotateLayout, rotatePlaced } from "./plan/rotate";
+import { SHAPE_KINDS, ShapeInspector, ShapePreview, ShapeView, drawShape, makeShape, moveShape } from "./plan/shapes";
 import {
   COLUMN_SIZE,
   DOOR_KINDS,
@@ -99,6 +100,7 @@ function parseLayout(v: unknown): Layout | null {
     floors: list<FloorZone>(o.floors, (f) => [f.x, f.y, f.w, f.h].every(isNum) && ["tile", "wet", "wood", "deck"].includes(f.kind as string)),
     openings: list<Opening>(o.openings, (e) => typeof e.id === "string" && [e.x, e.y, e.angle, e.width, e.thickness].every(isNum) && OPENING_KINDS.includes(e.kind as OpeningKind)),
     columns: list<Column>(o.columns, (c) => typeof c.id === "string" && [c.x, c.y, c.size].every(isNum)),
+    shapes: list<Shape2D>(o.shapes, (e) => typeof e.id === "string" && SHAPE_KINDS.includes(e.kind as ShapeKind) && [e.x1, e.y1, e.x2, e.y2, e.width].every(isNum) && typeof e.color === "string"),
   };
 }
 
@@ -124,7 +126,7 @@ const FLOOR_FILL: Record<FloorZone["kind"], string> = { tile: "url(#floor-tile)"
 const FLOOR_COLOR: Record<FloorZone["kind"], string> = { tile: "#efeeec", wet: "#f4f4f2", wood: "#e2cfb2", deck: "#e8e5df" };
 
 /** What is selected besides furniture: a wall (by index), a door / window, or a column. */
-type Pick = { kind: "wall"; index: number } | { kind: "opening"; id: string } | { kind: "column"; id: string } | { kind: "floor"; index: number } | null;
+type Pick = { kind: "wall"; index: number } | { kind: "opening"; id: string } | { kind: "column"; id: string } | { kind: "floor"; index: number } | { kind: "shape"; id: string } | null;
 const FLOOR_KINDS: FloorZone["kind"][] = ["tile", "wood", "wet", "deck"];
 
 /** A drag in progress on the plan. */
@@ -133,9 +135,11 @@ type Gesture =
   | { type: "wall"; index: number; start: Pt; walls: Wall[]; links: { index: number; end: 1 | 2; of: 1 | 2 }[]; on: Attached; moved: boolean }
   | { type: "end"; index: number; end: 1 | 2; walls: Wall[]; links: { index: number; end: 1 | 2 }[]; on: Attached; moved: boolean }
   | { type: "opening"; id: string; moved: boolean }
-  | { type: "column"; id: string; dx: number; dy: number; moved: boolean };
+  | { type: "column"; id: string; dx: number; dy: number; moved: boolean }
+  | { type: "shape"; id: string; start: Pt; from: Shape2D; moved: boolean };
 
 const isOpeningTool = (t: Tool): t is OpeningKind => OPENING_KINDS.includes(t as OpeningKind);
+const isShapeTool = (t: Tool): t is ShapeKind => SHAPE_KINDS.includes(t as ShapeKind);
 const snapGrid = (p: Pt): Pt => ({ x: Math.round(p.x / GRID) * GRID, y: Math.round(p.y / GRID) * GRID });
 
 /** Which wall each door / window sits on, and where along it (so it can follow the wall when the wall moves). */
@@ -495,12 +499,14 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
       return { ...setWalls(l, rest), floors, openings: l.openings?.filter((o) => !gone.has(o.id)) };
     });
   const editOpening = (id: string, change: (o: Opening) => Opening) => commit((l) => ({ ...l, openings: (l.openings ?? []).map((o) => (o.id === id ? change(o) : o)) }));
+  const editShape = (id: string, change: (x: Shape2D) => Shape2D) => commit((l) => ({ ...l, shapes: (l.shapes ?? []).map((x) => (x.id === id ? change(x) : x)) }));
   const editColumn = (id: string, change: (c: Column) => Column) => commit((l) => ({ ...l, columns: (l.columns ?? []).map((c) => (c.id === id ? change(c) : c)) }));
   const deletePick = () => {
     if (!pick) return;
     if (pick.kind === "wall") deleteWall(pick.index);
     else if (pick.kind === "floor") commit((l) => ({ ...l, floors: floorsOf(l).filter((_, i) => i !== pick.index) }));
     else if (pick.kind === "opening") commit((l) => ({ ...l, openings: (l.openings ?? []).filter((o) => o.id !== pick.id) }));
+    else if (pick.kind === "shape") commit((l) => ({ ...l, shapes: (l.shapes ?? []).filter((x) => x.id !== pick.id) }));
     else commit((l) => ({ ...l, columns: (l.columns ?? []).filter((c) => c.id !== pick.id) }));
     setPick(null);
   };
@@ -525,8 +531,16 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
       else setDraft(p);
       return;
     }
-    if (tool === "room") {
+    if (tool === "text") {
+      const shape = makeShape("text", inPlan(snapGrid(at)), at, uid(), t.textDefault)!;
+      commit((l) => ({ ...l, shapes: [...(l.shapes ?? []), shape] }));
+      setPick({ kind: "shape", id: shape.id });
+      return;
+    }
+    if (tool === "room" || isShapeTool(tool)) {
+      // drag tools: the room and the 2D shapes start where the pointer goes down (snapped to wall ends and the grid)
       setRoomStart(inPlan(snapPoint(at, walls, { reach })));
+      setCursor(null);
       (e.currentTarget as Element).setPointerCapture(e.pointerId);
       return;
     }
@@ -557,6 +571,10 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
           return out;
         });
         setLayout((l) => ({ ...setWalls(l, moved), openings: refit(l.openings, moved, g.on) }));
+      } else if (g.type === "shape") {
+        const dx = Math.round((at.x - g.start.x) / GRID) * GRID;
+        const dy = Math.round((at.y - g.start.y) / GRID) * GRID;
+        setLayout((l) => ({ ...l, shapes: (l.shapes ?? []).map((x) => (x.id === g.id ? moveShape(g.from, dx, dy) : x)) }));
       } else if (g.type === "end") {
         const self = g.walls[g.index];
         const other = g.end === 1 ? { x: self.x2, y: self.y2 } : { x: self.x1, y: self.y1 };
@@ -573,6 +591,11 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
     if (tool === "select") return;
     if (tool === "wall" || tool === "glass") setCursor(inPlan(snapPoint(at, walls, { from: draft, straight: e.shiftKey, reach })));
     else if (tool === "room") setCursor(inPlan(roomStart ? snapGrid(at) : snapPoint(at, walls, { reach })));
+    else if (isShapeTool(tool)) {
+      // lines, dimensions and half circles keep straight like walls; circles and rectangles follow the grid
+      const straightish = tool === "line" || tool === "dim" || tool === "arc";
+      setCursor(inPlan(roomStart && !straightish ? snapGrid(at) : snapPoint(at, walls, { from: straightish ? roomStart : null, straight: e.shiftKey, reach })));
+    }
     else setCursor(at);
   };
 
@@ -596,6 +619,24 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
       }
       setRoomStart(null);
     }
+    if (isShapeTool(tool) && tool !== "text" && roomStart) {
+      const shape = cursor && makeShape(tool, roomStart, cursor, uid(), t.textDefault);
+      if (shape) {
+        commit((l) => ({ ...l, shapes: [...(l.shapes ?? []), shape] }));
+        setPick({ kind: "shape", id: shape.id });
+      }
+      setRoomStart(null);
+    }
+  };
+
+  const onShapeDown = (e: React.PointerEvent, x: Shape2D) => {
+    e.stopPropagation();
+    if (e.button !== 0) return;
+    setSelected(null);
+    setMenu(null);
+    setPick({ kind: "shape", id: x.id });
+    gesture.current = { type: "shape", id: x.id, start: toCm(e.clientX, e.clientY), from: x, moved: false };
+    svgRef.current?.setPointerCapture(e.pointerId);
   };
 
   const onItemDown = (e: React.PointerEvent, p: Placed) => {
@@ -687,7 +728,7 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
     changeTool("select");
   };
   const clearAll = () => {
-    commit((l) => ({ roomWidthCm: l.roomWidthCm, roomLengthCm: l.roomLengthCm, placed: [], walls: [], doors: [], floors: [], openings: [], columns: [] }));
+    commit((l) => ({ roomWidthCm: l.roomWidthCm, roomLengthCm: l.roomLengthCm, placed: [], walls: [], doors: [], floors: [], openings: [], columns: [], shapes: [] }));
     deselect();
     endChain();
   };
@@ -795,6 +836,7 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
     }
     openings.forEach((o) => drawOpening(ctx, o));
     columns.forEach((c) => drawColumn(ctx, c));
+    shapes.forEach((x) => drawShape(ctx, x));
     canvas.toBlob((blob) => blob && download("my-company-plan.png", blob), "image/png");
   };
 
@@ -872,7 +914,21 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
   const pickedColumn = pick?.kind === "column" ? columns.find((c) => c.id === pick.id) ?? null : null;
   const selecting = tool === "select";
   const ghostSpot = isOpeningTool(tool) && cursor ? onWall(cursor, walls, OPENING_WIDTH[tool], 40) : null;
-  const hint = selecting ? t.hintSelect : tool === "wall" || tool === "glass" ? t.hintWall : tool === "room" ? t.hintRoom : isOpeningTool(tool) ? t.hintOpening : t.hintColumn;
+  const hint = selecting
+    ? t.hintSelect
+    : tool === "wall" || tool === "glass"
+      ? t.hintWall
+      : tool === "room"
+        ? t.hintRoom
+        : isOpeningTool(tool)
+          ? t.hintOpening
+          : tool === "text"
+            ? t.hintText
+            : isShapeTool(tool)
+              ? t.hintShape
+              : t.hintColumn;
+  const shapes = layout.shapes ?? [];
+  const pickedShape = pick?.kind === "shape" ? shapes.find((x) => x.id === pick.id) ?? null : null;
   const handle = 7 / zoom;
 
   return (
@@ -1210,6 +1266,11 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
                   return c.round ? <circle key={c.id} cx={c.x} cy={c.y} r={c.size / 2} {...common} /> : <rect key={c.id} x={c.x - c.size / 2} y={c.y - c.size / 2} width={c.size} height={c.size} {...common} />;
                 })}
 
+                {/* 2D drawing: half circles, circles, lines, rectangles, text, dimensions */}
+                {shapes.map((x) => (
+                  <ShapeView key={x.id} s={x} selected={pickedShape?.id === x.id} zoom={zoom} onDown={selecting ? (e) => onShapeDown(e, x) : undefined} />
+                ))}
+
                 {pick?.kind === "floor" && floors[pick.index] && (
                   <rect
                     x={floors[pick.index].x}
@@ -1287,6 +1348,8 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
                     )}
                   </g>
                 )}
+
+                {isShapeTool(tool) && roomStart && cursor && <ShapePreview kind={tool} a={roomStart} b={cursor} zoom={zoom} />}
 
                 <text x={W / 2} y={-18} textAnchor="middle" className="dim">
                   {(W / 100).toFixed(2)} m
@@ -1525,6 +1588,13 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
                   </button>
                 </div>
               </>
+            ) : pickedShape ? (
+              <ShapeInspector
+                s={pickedShape}
+                t={t}
+                change={(next) => editShape(pickedShape.id, next)}
+                remove={deletePick}
+              />
             ) : sel ? (
               <>
                 <h3>{t.selected}</h3>
