@@ -14,6 +14,14 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-11-19 — Main hall: the designer's top bar in two groups, pinned
+- The bar at the top of the designer stays pinned while the page scrolls. It is split into two separate groups:
+  - **Actions:** حفظ، تراجع، إعادة، مسح، فتح، تصدير.
+  - **What to show:** «رسم المسقط» (drawing tools), «فرش الأثاث» (furniture library and uploads), «الكتالوج».
+- These replace the tabs above the designer and the switch button in the side panel. Switching keeps the plan and its undo history.
+
+Files: `src/modules/office-designer/components/{floor-plan-editor,office-designer}.tsx`, `src/modules/office-designer/designer.css`.
+
 ### 2026-11-19 — The company home is called «القاعة الرئيسية» again
 - The page still shows only the office designer.
 - Its title, the logo label and the pricing feature line say «القاعة الرئيسية» / "Main hall" again, instead of «تصميم المكتب».

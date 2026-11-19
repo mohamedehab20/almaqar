@@ -5,7 +5,6 @@ import { useLocale } from "next-intl";
 import { useMemo, useState } from "react";
 import { getOfficeDesign, saveOfficeLayout } from "../actions";
 import { setCompanyItems } from "../data/custom";
-import { Catalog } from "./catalog";
 import { FloorPlan, type DesignStore } from "./floor-plan-editor";
 import { STRINGS, type Lang } from "./i18n";
 
@@ -65,7 +64,6 @@ function makeStore(companyId: string | null, onBrowserOnly: () => void): DesignS
 export function OfficeDesigner({ companyId }: { companyId: string | null }) {
   const lang: Lang = useLocale() === "en" ? "en" : "ar";
   const t = STRINGS[lang];
-  const [tab, setTab] = useState<"plan" | "catalog">("plan");
   const [shadow, setShadow] = useState(true);
   const [browserOnly, setBrowserOnly] = useState(false);
   const store = useMemo(() => makeStore(companyId, () => setBrowserOnly(true)), [companyId]);
@@ -73,18 +71,7 @@ export function OfficeDesigner({ companyId }: { companyId: string | null }) {
   return (
     <div className="mc-root">
       {browserOnly && <p className="view-only">{t.browserOnly}</p>}
-      <nav className="tabs lab-tabs" role="tablist">
-        {(["plan", "catalog"] as const).map((k) => (
-          <button key={k} type="button" role="tab" aria-selected={tab === k} className={`tab${tab === k ? " tab-on" : ""}`} onClick={() => setTab(k)}>
-            {k === "catalog" ? t.catalog : t.floorPlan}
-          </button>
-        ))}
-      </nav>
-      {/* Both stay mounted, so switching tabs keeps the plan and its undo history */}
-      <div hidden={tab !== "plan"}>
-        <FloorPlan lang={lang} t={t} shadow={shadow} setShadow={setShadow} store={store} />
-      </div>
-      {tab === "catalog" && <Catalog lang={lang} t={t} shadow={shadow} setShadow={setShadow} />}
+      <FloorPlan lang={lang} t={t} shadow={shadow} setShadow={setShadow} store={store} />
     </div>
   );
 }

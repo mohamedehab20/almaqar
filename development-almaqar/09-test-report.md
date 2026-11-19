@@ -2,6 +2,13 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-11-19 — Designer top bar in two groups (local)
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit`, `npx eslint .`, `npm run build` | Pass. |
+| Guest demo, headless Edge | Two groups: «حفظ، تراجع، إعادة، مسح، فتح، تصدير» and «رسم المسقط، فرش الأثاث، الكتالوج». The old tabs and the side-panel switch are gone. Furniture shows 28 library items, the catalog 28 cards, and back to drawing keeps the 52 pieces. After scrolling, the bar stays at the same place. No console errors. |
+
 ## 2026-11-19 — Company home is the office design (local)
 
 | Check | Result |

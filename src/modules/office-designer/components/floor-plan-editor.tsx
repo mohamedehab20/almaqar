@@ -6,6 +6,7 @@ import { ITEMS, itemById } from "@/modules/office-designer/data/items";
 import { emptyRoom, sampleOffice } from "@/modules/office-designer/data/presets";
 import { CATEGORIES, type Category, type Column, type Door, type FloorZone, type FurnitureItem, type Layout, type Opening, type OpeningKind, type Placed, type Wall } from "@/modules/office-designer/data/types";
 import type { Lang, Strings } from "./i18n";
+import { Catalog } from "./catalog";
 import { DrawPanel, DROPPABLE, type Tool } from "./plan/draw-panel";
 import { rotateLayout, rotatePlaced } from "./plan/rotate";
 import {
@@ -193,7 +194,13 @@ const ICON: Record<string, string> = {
   clear: "M14 4l6 6-9 9H6l-3-3z M9 9l6 6 M11 19h9",
   open: "M3 7h6l2 2h10v10H3z",
   export: "M12 3v12 M7 8l5-5 5 5 M4 15v5h16v-5",
+  draw: "M4 20h4L19 9l-4-4L4 16z M13 7l4 4 M3 3h6 M3 3v6",
+  furniture: "M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3 M2 13a2 2 0 0 1 4 0v2h12v-2a2 2 0 0 1 4 0v5H2z M5 18v2 M19 18v2",
+  catalog: "M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z",
 };
+
+/** What fills the editor under the top bar: the drawing tools, the furniture library, or the catalog. */
+type Mode = "draw" | "furniture" | "catalog";
 const TopIcon = ({ name }: { name: string }) => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
     <path d={ICON[name]} />
@@ -201,7 +208,8 @@ const TopIcon = ({ name }: { name: string }) => (
 );
 
 /**
- * The office plan editor at true scale (1 unit = 1 cm). Top bar: save, undo / redo, clear, open, export.
+ * The office plan editor at true scale (1 unit = 1 cm). The top bar, pinned, has two groups: save, undo / redo,
+ * clear, open, export; and what to show (drawing tools, furniture, catalog).
  * Left: "Draw Floor Plan" (walls, rooms, doors, windows, columns) or "Furniture Plan" (the furniture library).
  * Right: the properties of whatever is selected. Furniture: drag, R rotates, M mirrors, right-click for more.
  */
@@ -218,7 +226,7 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
   const [hoverDrop, setHoverDrop] = useState(false);
   const [menu, setMenu] = useState<{ uid: string; x: number; y: number } | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [panel, setPanel] = useState<"draw" | "furniture">("draw");
+  const [panel, setPanel] = useState<Mode>("draw");
   const [tool, setTool] = useState<Tool>("select");
   const [draft, setDraft] = useState<Pt | null>(null); // where the wall being drawn starts
   const [chainStart, setChainStart] = useState<Pt | null>(null);
@@ -856,652 +864,675 @@ export function FloorPlan({ lang, t, shadow, setShadow, store }: { lang: Lang; t
   return (
     <div className="plan">
       {/* ---------- Top bar ---------- */}
-      <div className="plan-topbar" role="toolbar">
-        <button type="button" className="top-btn" onClick={save}>
-          <TopIcon name="save" />
-          {savedFlash ? t.saved : t.save}
-        </button>
-        <span className="top-sep" />
-        <button type="button" className="top-btn" onClick={undo} disabled={!past.length}>
-          <TopIcon name="undo" />
-          {t.undo}
-        </button>
-        <button type="button" className="top-btn" onClick={redo} disabled={!future.length}>
-          <TopIcon name="redo" />
-          {t.redo}
-        </button>
-        <button type="button" className="top-btn" onClick={clearAll}>
-          <TopIcon name="clear" />
-          {t.clearAll}
-        </button>
-        <span className="top-sep" />
-        <button type="button" className="top-btn" onClick={() => fileRef.current?.click()}>
-          <TopIcon name="open" />
-          {t.open}
-        </button>
-        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => (importJson(e.target.files?.[0]), (e.target.value = ""))} />
-        <div className="top-menu">
-          <button type="button" className="top-btn" aria-expanded={exportOpen} onClick={() => setExportOpen((o) => !o)}>
-            <TopIcon name="export" />
-            {t.exportMenu} ▾
+      <div className="plan-topbar">
+        <div className="top-group" role="toolbar" aria-label={t.save}>
+          <button type="button" className="top-btn" onClick={save}>
+            <TopIcon name="save" />
+            {savedFlash ? t.saved : t.save}
           </button>
-          {exportOpen && (
-            <div className="top-dropdown" role="menu">
-              <button type="button" role="menuitem" onClick={() => (exportPng(), setExportOpen(false))}>
-                {t.exportPng}
-              </button>
-              <button type="button" role="menuitem" onClick={() => (exportJson(), setExportOpen(false))}>
-                {t.exportJson}
-              </button>
-            </div>
-          )}
+          <span className="top-sep" />
+          <button type="button" className="top-btn" onClick={undo} disabled={!past.length}>
+            <TopIcon name="undo" />
+            {t.undo}
+          </button>
+          <button type="button" className="top-btn" onClick={redo} disabled={!future.length}>
+            <TopIcon name="redo" />
+            {t.redo}
+          </button>
+          <button type="button" className="top-btn" onClick={clearAll}>
+            <TopIcon name="clear" />
+            {t.clearAll}
+          </button>
+          <span className="top-sep" />
+          <button type="button" className="top-btn" onClick={() => fileRef.current?.click()}>
+            <TopIcon name="open" />
+            {t.open}
+          </button>
+          <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => (importJson(e.target.files?.[0]), (e.target.value = ""))} />
+          <div className="top-menu">
+            <button type="button" className="top-btn" aria-expanded={exportOpen} onClick={() => setExportOpen((o) => !o)}>
+              <TopIcon name="export" />
+              {t.exportMenu} ▾
+            </button>
+            {exportOpen && (
+              <div className="top-dropdown" role="menu">
+                <button type="button" role="menuitem" onClick={() => (exportPng(), setExportOpen(false))}>
+                  {t.exportPng}
+                </button>
+                <button type="button" role="menuitem" onClick={() => (exportJson(), setExportOpen(false))}>
+                  {t.exportJson}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="top-group" role="tablist" aria-label={t.floorPlan}>
+          {(["draw", "furniture", "catalog"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              role="tab"
+              aria-selected={panel === m}
+              className={`top-btn${panel === m ? " top-on" : ""}`}
+              onClick={() => {
+                setPanel(m);
+                if (m !== "draw") changeTool("select");
+              }}
+            >
+              <TopIcon name={m} />
+              {m === "draw" ? t.drawPlan : m === "furniture" ? t.furniturePlan : t.catalog}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* ---------- Left: drawing tools or the furniture library ---------- */}
-      <aside className="plan-side library">
-        {panel === "draw" ? (
-          <>
-            <div className="library-head">
-              <h3>{t.drawPlan}</h3>
-              <button type="button" className="btn btn-ghost btn-small" onClick={() => (setPanel("furniture"), changeTool("select"))}>
-                {t.furniturePlan} ›
-              </button>
-            </div>
-            <DrawPanel t={t} tool={tool} setTool={changeTool} />
-          </>
-        ) : (
-          <>
-            <div className="library-head">
-              <h3>{t.furniturePlan}</h3>
-              <button type="button" className="btn btn-ghost btn-small" onClick={() => setPanel("draw")}>
-                {t.drawPlan} ›
-              </button>
-            </div>
-            {access.uploads && access.canEdit && (
-              <button type="button" className="btn btn-primary btn-small upload-open" onClick={() => setUploading(true)}>
-                + {t.upload}
-              </button>
-            )}
-            <input className="input lib-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.search} aria-label={t.search} />
-            <div className="chips chips-small" role="group">
-              {(["all", ...CATEGORIES] as const).map((c) => (
-                <button key={c} type="button" className={`chip${category === c ? " chip-on" : ""}`} aria-pressed={category === c} onClick={() => setCategory(c)}>
-                  {c === "all" ? t.all : t.categories[c]}
-                </button>
-              ))}
-            </div>
-            <p className="muted small">{t.dragHint}</p>
-            <ul className="library-grid">
-              {library.map((item) => (
-                <li
-                  key={item.id}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData("text/plain", item.id);
-                    e.dataTransfer.effectAllowed = "copy";
-                  }}
-                  onClick={() => add(item, W / 2, L / 2)}
-                  className="library-item"
-                  title={name(item)}
-                >
-                  <TopViewIcon item={item} size={64} shadow={false} />
-                  <span className="library-name">{name(item)}</span>
-                  <span className="muted tiny" dir="ltr">
-                    {item.widthCm}×{item.depthCm}
-                  </span>
-                  {item.id.startsWith("USR-") && (
-                    <>
-                      <span className="upload-badge">{t.uploaded}</span>
-                      <button type="button" className="upload-remove" title={t.removeUpload} aria-label={t.removeUpload} onClick={(e) => (e.stopPropagation(), dropUpload(item.id))}>
-                        ×
-                      </button>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </aside>
-
-      {/* ---------- The plan ---------- */}
-      <div className="plan-main">
-        <div className="toolbar wrap">
-          <button type="button" className="btn btn-ghost" onClick={() => loadPreset(sampleOffice())}>
-            {t.sample}
-          </button>
-          <button type="button" className="btn btn-ghost" onClick={() => loadPreset(emptyRoom(600, 400))}>
-            {t.empty}
-          </button>
-          <label className="field-inline">
-            {t.width}
-            <input className="input num" type="number" min={100} max={5000} step={10} value={W} onChange={(e) => setSize(Number(e.target.value), L)} />
-          </label>
-          <label className="field-inline">
-            {t.length}
-            <input className="input num" type="number" min={100} max={5000} step={10} value={L} onChange={(e) => setSize(W, Number(e.target.value))} />
-          </label>
-          <span className="field-inline">
-            <button type="button" className="btn btn-ghost sq" onClick={() => setZoom((z) => Math.max(0.3, +(z - 0.1).toFixed(2)))} aria-label="−">
-              −
-            </button>
-            <span dir="ltr" className="zoom">
-              {Math.round(zoom * 100)}%
-            </span>
-            <button type="button" className="btn btn-ghost sq" onClick={() => setZoom((z) => Math.min(3, +(z + 0.1).toFixed(2)))} aria-label="+">
-              +
-            </button>
-          </span>
-          <label className="toggle">
-            <input type="checkbox" checked={showClearance} onChange={(e) => setShowClearance(e.target.checked)} />
-            {t.clearance}
-          </label>
-          <label className="toggle">
-            <input type="checkbox" checked={shadow} onChange={(e) => setShadow(e.target.checked)} />
-            {t.shadows}
-          </label>
+      {panel === "catalog" ? (
+        <div className="plan-catalog">
+          <Catalog lang={lang} t={t} shadow={shadow} setShadow={setShadow} />
         </div>
-        <p className="tool-hint">{hint}</p>
-        {loaded && !access.canEdit && <p className="view-only">{t.viewOnly}</p>}
-
-        <div
-          className={`canvas-wrap${hoverDrop ? " canvas-drop" : ""}`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "copy";
-            if (!hoverDrop) setHoverDrop(true);
-          }}
-          onDragLeave={() => setHoverDrop(false)}
-          onDrop={onDrop}
-        >
-          <svg
-            ref={svgRef}
-            className={`canvas${selecting ? "" : " drawing"}`}
-            width={(W + MARGIN * 2) * zoom}
-            height={(L + MARGIN * 2) * zoom}
-            viewBox={`${-MARGIN} ${-MARGIN} ${W + MARGIN * 2} ${L + MARGIN * 2}`}
-            onPointerDown={onCanvasDown}
-            onPointerMove={onCanvasMove}
-            onPointerUp={onCanvasUp}
-            onPointerLeave={() => !gesture.current && setCursor(null)}
-            onDoubleClick={endChain}
-            onContextMenu={(e) => (e.preventDefault(), draft && endChain())}
-          >
-            <defs>
-              <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-                <rect width="50" height="50" fill="#fbfbfa" />
-                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e6e4e0" strokeWidth="0.8" />
-              </pattern>
-              <pattern id="floor-tile" width="60" height="60" patternUnits="userSpaceOnUse">
-                <rect width="60" height="60" fill="#efeeec" />
-                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#dcdad6" strokeWidth="0.8" />
-              </pattern>
-              <pattern id="floor-wet" width="30" height="30" patternUnits="userSpaceOnUse">
-                <rect width="30" height="30" fill="#f5f5f3" />
-                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#dedcd8" strokeWidth="0.7" />
-              </pattern>
-              <pattern id="floor-wood" width="120" height="18" patternUnits="userSpaceOnUse">
-                <rect width="120" height="18" fill="#e2cfb2" />
-                <path d="M 0 18 H 120 M 70 0 V 18" stroke="#cdb795" strokeWidth="0.8" />
-              </pattern>
-              <pattern id="floor-deck" width="200" height="14" patternUnits="userSpaceOnUse">
-                <rect width="200" height="14" fill="#e9e6e0" />
-                <path d="M 0 14 H 200" stroke="#d6d2ca" strokeWidth="1" />
-              </pattern>
-              <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="5" />
-              </filter>
-            </defs>
-
-            {/* Drawing area grid, then floor finishes */}
-            <rect x={0} y={0} width={W} height={L} fill="url(#grid)" stroke="#d9d6d0" strokeDasharray="6 6" strokeWidth={1} />
-            {floors.map((f, i) => (
-              <rect
-                key={i}
-                x={f.x}
-                y={f.y}
-                width={f.w}
-                height={f.h}
-                fill={FLOOR_FILL[f.kind]}
-                pointerEvents={selecting ? undefined : "none"}
-                onPointerDown={(e) => {
-                  if (e.button !== 0) return;
-                  e.stopPropagation();
-                  setSelected(null);
-                  setMenu(null);
-                  setPick({ kind: "floor", index: i });
-                }}
-              />
-            ))}
-
-            {/* Shadows: their own layer under every item */}
-            {shadow &&
-              placedItems
-                .filter(({ item }) => item.subcategory !== "rug")
-                .map(({ p, item }) => {
-                  const f = footprint(p, item);
-                  return <rect key={`s-${p.uid}`} x={f.x + 1.5} y={f.y + 4} width={f.w} height={f.h} rx={Math.min(f.w, f.h) * 0.18} fill="#000" opacity={0.16} filter="url(#soft-shadow)" pointerEvents="none" />;
-                })}
-
-            {/* Rugs first, then furniture, then things on surfaces */}
-            {[...placedItems]
-              .sort((a, b) => Number(b.item.subcategory === "rug") - Number(a.item.subcategory === "rug") || Number(a.item.category === "tech") - Number(b.item.category === "tech"))
-              .map(({ p, item }) => {
-                const f = footprint(p, item);
-                const bad = conflicts.has(p.uid);
-                const { w, d } = sized(p, item);
-                return (
-                  <g
-                    key={p.uid}
-                    className="placed"
-                    pointerEvents={selecting ? undefined : "none"}
-                    onPointerDown={(e) => onItemDown(e, p)}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setSelected(p.uid);
-                      setPick(null);
-                      setMenu({ uid: p.uid, x: e.clientX, y: e.clientY });
-                    }}
-                  >
-                    <g transform={`translate(${f.x + f.w / 2} ${f.y + f.h / 2}) rotate(${p.rotation})${p.mirror ? " scale(-1 1)" : ""}`}>
-                      <image href={itemSrc(item)} x={-w / 2} y={-d / 2} width={w} height={d} preserveAspectRatio="none" />
-                    </g>
-                    {showClearance && item.clearanceCm > 0 && (
-                      <rect
-                        x={f.x - item.clearanceCm}
-                        y={f.y - item.clearanceCm}
-                        width={f.w + item.clearanceCm * 2}
-                        height={f.h + item.clearanceCm * 2}
-                        fill={bad ? "rgba(220,38,38,0.05)" : "none"}
-                        stroke={bad ? "#dc2626" : "#9aa3ad"}
-                        strokeWidth={1}
-                        strokeDasharray="6 5"
-                        pointerEvents="none"
-                      />
-                    )}
-                    {bad && <rect x={f.x} y={f.y} width={f.w} height={f.h} fill="rgba(220,38,38,0.16)" stroke="#dc2626" strokeWidth={1.5} pointerEvents="none" />}
-                    {p.uid === selected && <rect x={f.x - 3} y={f.y - 3} width={f.w + 6} height={f.h + 6} fill="none" stroke="#2563eb" strokeWidth={2} pointerEvents="none" />}
-                  </g>
-                );
-              })}
-
-            {/* Walls on top of the furniture; in Select they can be clicked and dragged */}
-            {walls.map((w, i) => (
-              <g key={`w${i}`}>
-                <line x1={w.x1} y1={w.y1} x2={w.x2} y2={w.y2} stroke={w.glass ? "#9fb7c8" : "#1b1b1b"} strokeWidth={w.thickness} strokeLinecap="square" pointerEvents="none" />
-                {selecting && (
-                  <line x1={w.x1} y1={w.y1} x2={w.x2} y2={w.y2} stroke="transparent" strokeWidth={Math.max(w.thickness, 8 / zoom)} className="wall-hit" onPointerDown={(e) => onWallDown(e, i)} />
+      ) : (
+        <>
+          {/* ---------- Left: drawing tools or the furniture library ---------- */}
+          <aside className="plan-side library">
+            {panel === "draw" ? (
+              <>
+                <div className="library-head">
+                  <h3>{t.drawPlan}</h3>
+                </div>
+                <DrawPanel t={t} tool={tool} setTool={changeTool} />
+              </>
+            ) : (
+              <>
+                <div className="library-head">
+                  <h3>{t.furniturePlan}</h3>
+                </div>
+                {access.uploads && access.canEdit && (
+                  <button type="button" className="btn btn-primary btn-small upload-open" onClick={() => setUploading(true)}>
+                    + {t.upload}
+                  </button>
                 )}
-              </g>
-            ))}
-            {(layout.doors ?? []).map((d, i) => (
-              <g key={`d${i}`} transform={`translate(${d.x} ${d.y}) rotate(${d.rotation})`} pointerEvents="none">
-                <line x1={0} y1={0} x2={0} y2={d.width} stroke="#4b4b4b" strokeWidth={1.6} />
-                <path d={`M ${d.width} 0 A ${d.width} ${d.width} 0 0 1 0 ${d.width}`} fill="none" stroke="#8a8a8a" strokeWidth={1} strokeDasharray="4 3" />
-              </g>
-            ))}
-
-            {/* Doors and windows cut into their walls */}
-            {openings.map((o) => (
-              <g key={o.id} transform={openingTransform(o)} className="opening" pointerEvents={selecting ? undefined : "none"} onPointerDown={(e) => onOpeningDown(e, o)}>
-                <OpeningSymbol o={o} />
-                {pick?.kind === "opening" && pick.id === o.id && (
-                  <rect x={-o.width / 2 - 3} y={-o.thickness / 2 - 3} width={o.width + 6} height={o.thickness + 6} fill="none" stroke="#2563eb" strokeWidth={2} />
-                )}
-              </g>
-            ))}
-            {columns.map((c) => {
-              const on = pick?.kind === "column" && pick.id === c.id;
-              const common = { fill: "#2a2a2a", stroke: on ? "#2563eb" : "none", strokeWidth: 3, className: "column", pointerEvents: selecting ? undefined : "none", onPointerDown: (e: React.PointerEvent) => onColumnDown(e, c) } as const;
-              return c.round ? <circle key={c.id} cx={c.x} cy={c.y} r={c.size / 2} {...common} /> : <rect key={c.id} x={c.x - c.size / 2} y={c.y - c.size / 2} width={c.size} height={c.size} {...common} />;
-            })}
-
-            {pick?.kind === "floor" && floors[pick.index] && (
-              <rect
-                x={floors[pick.index].x}
-                y={floors[pick.index].y}
-                width={floors[pick.index].w}
-                height={floors[pick.index].h}
-                fill="rgba(37,99,235,0.08)"
-                stroke="#2563eb"
-                strokeWidth={2 / zoom}
-                strokeDasharray={`${8 / zoom} ${5 / zoom}`}
-                pointerEvents="none"
-              />
+                <input className="input lib-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.search} aria-label={t.search} />
+                <div className="chips chips-small" role="group">
+                  {(["all", ...CATEGORIES] as const).map((c) => (
+                    <button key={c} type="button" className={`chip${category === c ? " chip-on" : ""}`} aria-pressed={category === c} onClick={() => setCategory(c)}>
+                      {c === "all" ? t.all : t.categories[c]}
+                    </button>
+                  ))}
+                </div>
+                <p className="muted small">{t.dragHint}</p>
+                <ul className="library-grid">
+                  {library.map((item) => (
+                    <li
+                      key={item.id}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", item.id);
+                        e.dataTransfer.effectAllowed = "copy";
+                      }}
+                      onClick={() => add(item, W / 2, L / 2)}
+                      className="library-item"
+                      title={name(item)}
+                    >
+                      <TopViewIcon item={item} size={64} shadow={false} />
+                      <span className="library-name">{name(item)}</span>
+                      <span className="muted tiny" dir="ltr">
+                        {item.widthCm}×{item.depthCm}
+                      </span>
+                      {item.id.startsWith("USR-") && (
+                        <>
+                          <span className="upload-badge">{t.uploaded}</span>
+                          <button type="button" className="upload-remove" title={t.removeUpload} aria-label={t.removeUpload} onClick={(e) => (e.stopPropagation(), dropUpload(item.id))}>
+                            ×
+                          </button>
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
+          </aside>
 
-            {/* The selected wall: its length and handles on both ends */}
-            {pickedWall && pick?.kind === "wall" && (
-              <g>
-                <line x1={pickedWall.x1} y1={pickedWall.y1} x2={pickedWall.x2} y2={pickedWall.y2} stroke="#2563eb" strokeOpacity={0.35} strokeWidth={pickedWall.thickness + 6} pointerEvents="none" />
-                <LengthLabel a={{ x: pickedWall.x1, y: pickedWall.y1 }} b={{ x: pickedWall.x2, y: pickedWall.y2 }} zoom={zoom} side={-1} />
-                {([1, 2] as const).map((end) => (
-                  <circle
-                    key={end}
-                    cx={end === 1 ? pickedWall.x1 : pickedWall.x2}
-                    cy={end === 1 ? pickedWall.y1 : pickedWall.y2}
-                    r={handle}
-                    fill="#fff"
-                    stroke="#2563eb"
-                    strokeWidth={2 / zoom}
-                    className="wall-handle"
-                    onPointerDown={(e) => onEndDown(e, pick.index, end)}
+          {/* ---------- The plan ---------- */}
+          <div className="plan-main">
+            <div className="toolbar wrap">
+              <button type="button" className="btn btn-ghost" onClick={() => loadPreset(sampleOffice())}>
+                {t.sample}
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={() => loadPreset(emptyRoom(600, 400))}>
+                {t.empty}
+              </button>
+              <label className="field-inline">
+                {t.width}
+                <input className="input num" type="number" min={100} max={5000} step={10} value={W} onChange={(e) => setSize(Number(e.target.value), L)} />
+              </label>
+              <label className="field-inline">
+                {t.length}
+                <input className="input num" type="number" min={100} max={5000} step={10} value={L} onChange={(e) => setSize(W, Number(e.target.value))} />
+              </label>
+              <span className="field-inline">
+                <button type="button" className="btn btn-ghost sq" onClick={() => setZoom((z) => Math.max(0.3, +(z - 0.1).toFixed(2)))} aria-label="−">
+                  −
+                </button>
+                <span dir="ltr" className="zoom">
+                  {Math.round(zoom * 100)}%
+                </span>
+                <button type="button" className="btn btn-ghost sq" onClick={() => setZoom((z) => Math.min(3, +(z + 0.1).toFixed(2)))} aria-label="+">
+                  +
+                </button>
+              </span>
+              <label className="toggle">
+                <input type="checkbox" checked={showClearance} onChange={(e) => setShowClearance(e.target.checked)} />
+                {t.clearance}
+              </label>
+              <label className="toggle">
+                <input type="checkbox" checked={shadow} onChange={(e) => setShadow(e.target.checked)} />
+                {t.shadows}
+              </label>
+            </div>
+            <p className="tool-hint">{hint}</p>
+            {loaded && !access.canEdit && <p className="view-only">{t.viewOnly}</p>}
+
+            <div
+              className={`canvas-wrap${hoverDrop ? " canvas-drop" : ""}`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "copy";
+                if (!hoverDrop) setHoverDrop(true);
+              }}
+              onDragLeave={() => setHoverDrop(false)}
+              onDrop={onDrop}
+            >
+              <svg
+                ref={svgRef}
+                className={`canvas${selecting ? "" : " drawing"}`}
+                width={(W + MARGIN * 2) * zoom}
+                height={(L + MARGIN * 2) * zoom}
+                viewBox={`${-MARGIN} ${-MARGIN} ${W + MARGIN * 2} ${L + MARGIN * 2}`}
+                onPointerDown={onCanvasDown}
+                onPointerMove={onCanvasMove}
+                onPointerUp={onCanvasUp}
+                onPointerLeave={() => !gesture.current && setCursor(null)}
+                onDoubleClick={endChain}
+                onContextMenu={(e) => (e.preventDefault(), draft && endChain())}
+              >
+                <defs>
+                  <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                    <rect width="50" height="50" fill="#fbfbfa" />
+                    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e6e4e0" strokeWidth="0.8" />
+                  </pattern>
+                  <pattern id="floor-tile" width="60" height="60" patternUnits="userSpaceOnUse">
+                    <rect width="60" height="60" fill="#efeeec" />
+                    <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#dcdad6" strokeWidth="0.8" />
+                  </pattern>
+                  <pattern id="floor-wet" width="30" height="30" patternUnits="userSpaceOnUse">
+                    <rect width="30" height="30" fill="#f5f5f3" />
+                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#dedcd8" strokeWidth="0.7" />
+                  </pattern>
+                  <pattern id="floor-wood" width="120" height="18" patternUnits="userSpaceOnUse">
+                    <rect width="120" height="18" fill="#e2cfb2" />
+                    <path d="M 0 18 H 120 M 70 0 V 18" stroke="#cdb795" strokeWidth="0.8" />
+                  </pattern>
+                  <pattern id="floor-deck" width="200" height="14" patternUnits="userSpaceOnUse">
+                    <rect width="200" height="14" fill="#e9e6e0" />
+                    <path d="M 0 14 H 200" stroke="#d6d2ca" strokeWidth="1" />
+                  </pattern>
+                  <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="5" />
+                  </filter>
+                </defs>
+
+                {/* Drawing area grid, then floor finishes */}
+                <rect x={0} y={0} width={W} height={L} fill="url(#grid)" stroke="#d9d6d0" strokeDasharray="6 6" strokeWidth={1} />
+                {floors.map((f, i) => (
+                  <rect
+                    key={i}
+                    x={f.x}
+                    y={f.y}
+                    width={f.w}
+                    height={f.h}
+                    fill={FLOOR_FILL[f.kind]}
+                    pointerEvents={selecting ? undefined : "none"}
+                    onPointerDown={(e) => {
+                      if (e.button !== 0) return;
+                      e.stopPropagation();
+                      setSelected(null);
+                      setMenu(null);
+                      setPick({ kind: "floor", index: i });
+                    }}
                   />
                 ))}
-              </g>
-            )}
 
-            {/* Previews while drawing */}
-            {(tool === "wall" || tool === "glass") && cursor && (
-              <g pointerEvents="none">
-                {draft && (
-                  <>
-                    <line x1={draft.x} y1={draft.y} x2={cursor.x} y2={cursor.y} stroke={tool === "glass" ? "#9fb7c8" : "#1b1b1b"} strokeOpacity={0.55} strokeWidth={tool === "glass" ? 6 : WALL_THICKNESS} strokeLinecap="square" />
-                    <LengthLabel a={draft} b={cursor} zoom={zoom} side={-1} />
-                  </>
+                {/* Shadows: their own layer under every item */}
+                {shadow &&
+                  placedItems
+                    .filter(({ item }) => item.subcategory !== "rug")
+                    .map(({ p, item }) => {
+                      const f = footprint(p, item);
+                      return <rect key={`s-${p.uid}`} x={f.x + 1.5} y={f.y + 4} width={f.w} height={f.h} rx={Math.min(f.w, f.h) * 0.18} fill="#000" opacity={0.16} filter="url(#soft-shadow)" pointerEvents="none" />;
+                    })}
+
+                {/* Rugs first, then furniture, then things on surfaces */}
+                {[...placedItems]
+                  .sort((a, b) => Number(b.item.subcategory === "rug") - Number(a.item.subcategory === "rug") || Number(a.item.category === "tech") - Number(b.item.category === "tech"))
+                  .map(({ p, item }) => {
+                    const f = footprint(p, item);
+                    const bad = conflicts.has(p.uid);
+                    const { w, d } = sized(p, item);
+                    return (
+                      <g
+                        key={p.uid}
+                        className="placed"
+                        pointerEvents={selecting ? undefined : "none"}
+                        onPointerDown={(e) => onItemDown(e, p)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelected(p.uid);
+                          setPick(null);
+                          setMenu({ uid: p.uid, x: e.clientX, y: e.clientY });
+                        }}
+                      >
+                        <g transform={`translate(${f.x + f.w / 2} ${f.y + f.h / 2}) rotate(${p.rotation})${p.mirror ? " scale(-1 1)" : ""}`}>
+                          <image href={itemSrc(item)} x={-w / 2} y={-d / 2} width={w} height={d} preserveAspectRatio="none" />
+                        </g>
+                        {showClearance && item.clearanceCm > 0 && (
+                          <rect
+                            x={f.x - item.clearanceCm}
+                            y={f.y - item.clearanceCm}
+                            width={f.w + item.clearanceCm * 2}
+                            height={f.h + item.clearanceCm * 2}
+                            fill={bad ? "rgba(220,38,38,0.05)" : "none"}
+                            stroke={bad ? "#dc2626" : "#9aa3ad"}
+                            strokeWidth={1}
+                            strokeDasharray="6 5"
+                            pointerEvents="none"
+                          />
+                        )}
+                        {bad && <rect x={f.x} y={f.y} width={f.w} height={f.h} fill="rgba(220,38,38,0.16)" stroke="#dc2626" strokeWidth={1.5} pointerEvents="none" />}
+                        {p.uid === selected && <rect x={f.x - 3} y={f.y - 3} width={f.w + 6} height={f.h + 6} fill="none" stroke="#2563eb" strokeWidth={2} pointerEvents="none" />}
+                      </g>
+                    );
+                  })}
+
+                {/* Walls on top of the furniture; in Select they can be clicked and dragged */}
+                {walls.map((w, i) => (
+                  <g key={`w${i}`}>
+                    <line x1={w.x1} y1={w.y1} x2={w.x2} y2={w.y2} stroke={w.glass ? "#9fb7c8" : "#1b1b1b"} strokeWidth={w.thickness} strokeLinecap="square" pointerEvents="none" />
+                    {selecting && (
+                      <line x1={w.x1} y1={w.y1} x2={w.x2} y2={w.y2} stroke="transparent" strokeWidth={Math.max(w.thickness, 8 / zoom)} className="wall-hit" onPointerDown={(e) => onWallDown(e, i)} />
+                    )}
+                  </g>
+                ))}
+                {(layout.doors ?? []).map((d, i) => (
+                  <g key={`d${i}`} transform={`translate(${d.x} ${d.y}) rotate(${d.rotation})`} pointerEvents="none">
+                    <line x1={0} y1={0} x2={0} y2={d.width} stroke="#4b4b4b" strokeWidth={1.6} />
+                    <path d={`M ${d.width} 0 A ${d.width} ${d.width} 0 0 1 0 ${d.width}`} fill="none" stroke="#8a8a8a" strokeWidth={1} strokeDasharray="4 3" />
+                  </g>
+                ))}
+
+                {/* Doors and windows cut into their walls */}
+                {openings.map((o) => (
+                  <g key={o.id} transform={openingTransform(o)} className="opening" pointerEvents={selecting ? undefined : "none"} onPointerDown={(e) => onOpeningDown(e, o)}>
+                    <OpeningSymbol o={o} />
+                    {pick?.kind === "opening" && pick.id === o.id && (
+                      <rect x={-o.width / 2 - 3} y={-o.thickness / 2 - 3} width={o.width + 6} height={o.thickness + 6} fill="none" stroke="#2563eb" strokeWidth={2} />
+                    )}
+                  </g>
+                ))}
+                {columns.map((c) => {
+                  const on = pick?.kind === "column" && pick.id === c.id;
+                  const common = { fill: "#2a2a2a", stroke: on ? "#2563eb" : "none", strokeWidth: 3, className: "column", pointerEvents: selecting ? undefined : "none", onPointerDown: (e: React.PointerEvent) => onColumnDown(e, c) } as const;
+                  return c.round ? <circle key={c.id} cx={c.x} cy={c.y} r={c.size / 2} {...common} /> : <rect key={c.id} x={c.x - c.size / 2} y={c.y - c.size / 2} width={c.size} height={c.size} {...common} />;
+                })}
+
+                {pick?.kind === "floor" && floors[pick.index] && (
+                  <rect
+                    x={floors[pick.index].x}
+                    y={floors[pick.index].y}
+                    width={floors[pick.index].w}
+                    height={floors[pick.index].h}
+                    fill="rgba(37,99,235,0.08)"
+                    stroke="#2563eb"
+                    strokeWidth={2 / zoom}
+                    strokeDasharray={`${8 / zoom} ${5 / zoom}`}
+                    pointerEvents="none"
+                  />
                 )}
-                <circle cx={cursor.x} cy={cursor.y} r={handle * 0.7} fill="#2563eb" />
-              </g>
-            )}
-            {tool === "room" && roomStart && cursor && (
-              <g pointerEvents="none">
-                <rect
-                  x={Math.min(roomStart.x, cursor.x)}
-                  y={Math.min(roomStart.y, cursor.y)}
-                  width={Math.abs(cursor.x - roomStart.x)}
-                  height={Math.abs(cursor.y - roomStart.y)}
-                  fill="rgba(226,207,178,0.5)"
-                  stroke="#1b1b1b"
-                  strokeOpacity={0.6}
-                  strokeWidth={WALL_THICKNESS}
-                />
-                <LengthLabel a={{ x: Math.min(roomStart.x, cursor.x), y: Math.min(roomStart.y, cursor.y) }} b={{ x: Math.max(roomStart.x, cursor.x), y: Math.min(roomStart.y, cursor.y) }} zoom={zoom} side={-1} />
-                <LengthLabel a={{ x: Math.min(roomStart.x, cursor.x), y: Math.max(roomStart.y, cursor.y) }} b={{ x: Math.min(roomStart.x, cursor.x), y: Math.min(roomStart.y, cursor.y) }} zoom={zoom} side={-1} />
-              </g>
-            )}
-            {isOpeningTool(tool) && ghostSpot && (
-              <g transform={openingTransform({ id: "ghost", kind: tool, width: OPENING_WIDTH[tool], ...ghostSpot })} opacity={0.6} pointerEvents="none">
-                <OpeningSymbol o={{ id: "ghost", kind: tool, width: OPENING_WIDTH[tool], ...ghostSpot }} />
-              </g>
-            )}
-            {(tool === "column" || tool === "roundColumn") && cursor && (
-              <g opacity={0.5} pointerEvents="none">
-                {tool === "roundColumn" ? (
-                  <circle cx={snapGrid(cursor).x} cy={snapGrid(cursor).y} r={COLUMN_SIZE / 2} fill="#2a2a2a" />
-                ) : (
-                  <rect x={snapGrid(cursor).x - COLUMN_SIZE / 2} y={snapGrid(cursor).y - COLUMN_SIZE / 2} width={COLUMN_SIZE} height={COLUMN_SIZE} fill="#2a2a2a" />
+
+                {/* The selected wall: its length and handles on both ends */}
+                {pickedWall && pick?.kind === "wall" && (
+                  <g>
+                    <line x1={pickedWall.x1} y1={pickedWall.y1} x2={pickedWall.x2} y2={pickedWall.y2} stroke="#2563eb" strokeOpacity={0.35} strokeWidth={pickedWall.thickness + 6} pointerEvents="none" />
+                    <LengthLabel a={{ x: pickedWall.x1, y: pickedWall.y1 }} b={{ x: pickedWall.x2, y: pickedWall.y2 }} zoom={zoom} side={-1} />
+                    {([1, 2] as const).map((end) => (
+                      <circle
+                        key={end}
+                        cx={end === 1 ? pickedWall.x1 : pickedWall.x2}
+                        cy={end === 1 ? pickedWall.y1 : pickedWall.y2}
+                        r={handle}
+                        fill="#fff"
+                        stroke="#2563eb"
+                        strokeWidth={2 / zoom}
+                        className="wall-handle"
+                        onPointerDown={(e) => onEndDown(e, pick.index, end)}
+                      />
+                    ))}
+                  </g>
                 )}
-              </g>
+
+                {/* Previews while drawing */}
+                {(tool === "wall" || tool === "glass") && cursor && (
+                  <g pointerEvents="none">
+                    {draft && (
+                      <>
+                        <line x1={draft.x} y1={draft.y} x2={cursor.x} y2={cursor.y} stroke={tool === "glass" ? "#9fb7c8" : "#1b1b1b"} strokeOpacity={0.55} strokeWidth={tool === "glass" ? 6 : WALL_THICKNESS} strokeLinecap="square" />
+                        <LengthLabel a={draft} b={cursor} zoom={zoom} side={-1} />
+                      </>
+                    )}
+                    <circle cx={cursor.x} cy={cursor.y} r={handle * 0.7} fill="#2563eb" />
+                  </g>
+                )}
+                {tool === "room" && roomStart && cursor && (
+                  <g pointerEvents="none">
+                    <rect
+                      x={Math.min(roomStart.x, cursor.x)}
+                      y={Math.min(roomStart.y, cursor.y)}
+                      width={Math.abs(cursor.x - roomStart.x)}
+                      height={Math.abs(cursor.y - roomStart.y)}
+                      fill="rgba(226,207,178,0.5)"
+                      stroke="#1b1b1b"
+                      strokeOpacity={0.6}
+                      strokeWidth={WALL_THICKNESS}
+                    />
+                    <LengthLabel a={{ x: Math.min(roomStart.x, cursor.x), y: Math.min(roomStart.y, cursor.y) }} b={{ x: Math.max(roomStart.x, cursor.x), y: Math.min(roomStart.y, cursor.y) }} zoom={zoom} side={-1} />
+                    <LengthLabel a={{ x: Math.min(roomStart.x, cursor.x), y: Math.max(roomStart.y, cursor.y) }} b={{ x: Math.min(roomStart.x, cursor.x), y: Math.min(roomStart.y, cursor.y) }} zoom={zoom} side={-1} />
+                  </g>
+                )}
+                {isOpeningTool(tool) && ghostSpot && (
+                  <g transform={openingTransform({ id: "ghost", kind: tool, width: OPENING_WIDTH[tool], ...ghostSpot })} opacity={0.6} pointerEvents="none">
+                    <OpeningSymbol o={{ id: "ghost", kind: tool, width: OPENING_WIDTH[tool], ...ghostSpot }} />
+                  </g>
+                )}
+                {(tool === "column" || tool === "roundColumn") && cursor && (
+                  <g opacity={0.5} pointerEvents="none">
+                    {tool === "roundColumn" ? (
+                      <circle cx={snapGrid(cursor).x} cy={snapGrid(cursor).y} r={COLUMN_SIZE / 2} fill="#2a2a2a" />
+                    ) : (
+                      <rect x={snapGrid(cursor).x - COLUMN_SIZE / 2} y={snapGrid(cursor).y - COLUMN_SIZE / 2} width={COLUMN_SIZE} height={COLUMN_SIZE} fill="#2a2a2a" />
+                    )}
+                  </g>
+                )}
+
+                <text x={W / 2} y={-18} textAnchor="middle" className="dim">
+                  {(W / 100).toFixed(2)} m
+                </text>
+                <text x={-20} y={L / 2} textAnchor="middle" className="dim" transform={`rotate(-90 ${-20} ${L / 2})`}>
+                  {(L / 100).toFixed(2)} m
+                </text>
+              </svg>
+            </div>
+
+            {/* ---------- Under the plan: portrait or landscape, and quarter turns ---------- */}
+            <div className="plan-orient">
+              <span className="muted small">{t.orientation}</span>
+              <div className="segmented orient-seg" role="group" aria-label={t.orientation}>
+                <button type="button" className={portrait ? "seg-on" : ""} aria-pressed={portrait} onClick={() => !portrait && turnPlan(true)}>
+                  <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
+                    <rect x="5" y="2" width="10" height="16" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+                  </svg>
+                  {t.portrait}
+                </button>
+                <button type="button" className={!portrait ? "seg-on" : ""} aria-pressed={!portrait} onClick={() => portrait && turnPlan(true)}>
+                  <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
+                    <rect x="2" y="5" width="16" height="10" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+                  </svg>
+                  {t.landscape}
+                </button>
+              </div>
+              <button type="button" className="btn btn-ghost btn-small" onClick={() => turnPlan(false)} title={t.turnLeft}>
+                ⟲ {t.turnLeft}
+              </button>
+              <button type="button" className="btn btn-ghost btn-small" onClick={() => turnPlan(true)} title={t.turnRight}>
+                ⟳ {t.turnRight}
+              </button>
+              <span className="muted small" dir="ltr">
+                {(W / 100).toFixed(2)} × {(L / 100).toFixed(2)} m
+              </span>
+            </div>
+
+            {/* ---------- Right-click menu on a piece ---------- */}
+            {menu && menuOf && (
+              <>
+                <div className="ctx-backdrop" onPointerDown={() => setMenu(null)} onContextMenu={(e) => (e.preventDefault(), setMenu(null))} />
+                <div
+                  className="ctx-menu"
+                  role="menu"
+                  style={{ left: Math.min(menu.x, window.innerWidth - 240), top: Math.min(menu.y, window.innerHeight - 230) }}
+                  onContextMenu={(e) => e.preventDefault()}
+                >
+                  <div className="ctx-title">{name(menuOf.item)}</div>
+                  <div className="ctx-row">
+                    <span>{t.scale}</span>
+                    <span className="ctx-scale" dir="ltr">
+                      <button type="button" className="btn btn-ghost sq" aria-label="−" onClick={() => setScale(menu.uid, (menuOf.p.scale ?? 1) - 0.1)} disabled={(menuOf.p.scale ?? 1) <= SCALE_MIN}>
+                        −
+                      </button>
+                      <span className="zoom">{Math.round((menuOf.p.scale ?? 1) * 100)}%</span>
+                      <button type="button" className="btn btn-ghost sq" aria-label="+" onClick={() => setScale(menu.uid, (menuOf.p.scale ?? 1) + 0.1)} disabled={(menuOf.p.scale ?? 1) >= SCALE_MAX}>
+                        +
+                      </button>
+                    </span>
+                  </div>
+                  <input
+                    className="ctx-slider"
+                    dir="ltr"
+                    type="range"
+                    min={SCALE_MIN * 100}
+                    max={SCALE_MAX * 100}
+                    step={5}
+                    value={Math.round((menuOf.p.scale ?? 1) * 100)}
+                    onChange={(e) => setScale(menu.uid, Number(e.target.value) / 100)}
+                    aria-label={t.scale}
+                  />
+                  {(menuOf.p.scale ?? 1) !== 1 && (
+                    <button type="button" role="menuitem" className="ctx-item muted" onClick={() => setScale(menu.uid, 1)}>
+                      {t.resetSize}
+                    </button>
+                  )}
+                  <button type="button" role="menuitem" className="ctx-item" onClick={() => mirror(menu.uid)}>
+                    {t.mirror} <kbd>M</kbd>
+                  </button>
+                  <button type="button" role="menuitem" className="ctx-item" onClick={() => (duplicate(menu.uid), setMenu(null))}>
+                    {t.copy}
+                  </button>
+                  <button type="button" role="menuitem" className="ctx-item" onClick={() => rotate(menu.uid)}>
+                    {t.rotateMenu} <kbd>R</kbd>
+                  </button>
+                  <button type="button" role="menuitem" className="ctx-item danger" onClick={() => (remove(menu.uid), setMenu(null))}>
+                    {t.remove}
+                  </button>
+                </div>
+              </>
             )}
 
-            <text x={W / 2} y={-18} textAnchor="middle" className="dim">
-              {(W / 100).toFixed(2)} m
-            </text>
-            <text x={-20} y={L / 2} textAnchor="middle" className="dim" transform={`rotate(-90 ${-20} ${L / 2})`}>
-              {(L / 100).toFixed(2)} m
-            </text>
-          </svg>
-        </div>
-
-        {/* ---------- Under the plan: portrait or landscape, and quarter turns ---------- */}
-        <div className="plan-orient">
-          <span className="muted small">{t.orientation}</span>
-          <div className="segmented orient-seg" role="group" aria-label={t.orientation}>
-            <button type="button" className={portrait ? "seg-on" : ""} aria-pressed={portrait} onClick={() => !portrait && turnPlan(true)}>
-              <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
-                <rect x="5" y="2" width="10" height="16" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-              </svg>
-              {t.portrait}
-            </button>
-            <button type="button" className={!portrait ? "seg-on" : ""} aria-pressed={!portrait} onClick={() => portrait && turnPlan(true)}>
-              <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
-                <rect x="2" y="5" width="16" height="10" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-              </svg>
-              {t.landscape}
-            </button>
+            <div className="statusbar">
+              <span>
+                {t.count}: <b>{layout.placed.length}</b>
+              </span>
+              <span>
+                {t.area}:{" "}
+                <b dir="ltr">
+                  {usedM2.toFixed(2)} / {((W * L) / 10000).toFixed(2)} m²
+                </b>
+              </span>
+              <span className={conflicts.size ? "danger" : ""}>
+                {t.overlaps}: <b>{conflicts.size}</b>
+              </span>
+            </div>
+            {message && <p className="danger small">{message}</p>}
           </div>
-          <button type="button" className="btn btn-ghost btn-small" onClick={() => turnPlan(false)} title={t.turnLeft}>
-            ⟲ {t.turnLeft}
-          </button>
-          <button type="button" className="btn btn-ghost btn-small" onClick={() => turnPlan(true)} title={t.turnRight}>
-            ⟳ {t.turnRight}
-          </button>
-          <span className="muted small" dir="ltr">
-            {(W / 100).toFixed(2)} × {(L / 100).toFixed(2)} m
-          </span>
-        </div>
 
-        {/* ---------- Right-click menu on a piece ---------- */}
-        {menu && menuOf && (
-          <>
-            <div className="ctx-backdrop" onPointerDown={() => setMenu(null)} onContextMenu={(e) => (e.preventDefault(), setMenu(null))} />
-            <div
-              className="ctx-menu"
-              role="menu"
-              style={{ left: Math.min(menu.x, window.innerWidth - 240), top: Math.min(menu.y, window.innerHeight - 230) }}
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              <div className="ctx-title">{name(menuOf.item)}</div>
-              <div className="ctx-row">
-                <span>{t.scale}</span>
-                <span className="ctx-scale" dir="ltr">
-                  <button type="button" className="btn btn-ghost sq" aria-label="−" onClick={() => setScale(menu.uid, (menuOf.p.scale ?? 1) - 0.1)} disabled={(menuOf.p.scale ?? 1) <= SCALE_MIN}>
-                    −
-                  </button>
-                  <span className="zoom">{Math.round((menuOf.p.scale ?? 1) * 100)}%</span>
-                  <button type="button" className="btn btn-ghost sq" aria-label="+" onClick={() => setScale(menu.uid, (menuOf.p.scale ?? 1) + 0.1)} disabled={(menuOf.p.scale ?? 1) >= SCALE_MAX}>
-                    +
-                  </button>
-                </span>
-              </div>
-              <input
-                className="ctx-slider"
-                dir="ltr"
-                type="range"
-                min={SCALE_MIN * 100}
-                max={SCALE_MAX * 100}
-                step={5}
-                value={Math.round((menuOf.p.scale ?? 1) * 100)}
-                onChange={(e) => setScale(menu.uid, Number(e.target.value) / 100)}
-                aria-label={t.scale}
-              />
-              {(menuOf.p.scale ?? 1) !== 1 && (
-                <button type="button" role="menuitem" className="ctx-item muted" onClick={() => setScale(menu.uid, 1)}>
-                  {t.resetSize}
-                </button>
-              )}
-              <button type="button" role="menuitem" className="ctx-item" onClick={() => mirror(menu.uid)}>
-                {t.mirror} <kbd>M</kbd>
-              </button>
-              <button type="button" role="menuitem" className="ctx-item" onClick={() => (duplicate(menu.uid), setMenu(null))}>
-                {t.copy}
-              </button>
-              <button type="button" role="menuitem" className="ctx-item" onClick={() => rotate(menu.uid)}>
-                {t.rotateMenu} <kbd>R</kbd>
-              </button>
-              <button type="button" role="menuitem" className="ctx-item danger" onClick={() => (remove(menu.uid), setMenu(null))}>
-                {t.remove}
-              </button>
-            </div>
-          </>
-        )}
+          {uploading && <UploadDialog t={t} onClose={() => setUploading(false)} onAdded={() => (setCategory("all"), setQuery(""))} />}
 
-        <div className="statusbar">
-          <span>
-            {t.count}: <b>{layout.placed.length}</b>
-          </span>
-          <span>
-            {t.area}:{" "}
-            <b dir="ltr">
-              {usedM2.toFixed(2)} / {((W * L) / 10000).toFixed(2)} m²
-            </b>
-          </span>
-          <span className={conflicts.size ? "danger" : ""}>
-            {t.overlaps}: <b>{conflicts.size}</b>
-          </span>
-        </div>
-        {message && <p className="danger small">{message}</p>}
-      </div>
-
-      {uploading && <UploadDialog t={t} onClose={() => setUploading(false)} onAdded={() => (setCategory("all"), setQuery(""))} />}
-
-      {/* ---------- Right: properties of what is selected ---------- */}
-      <aside className="plan-inspector">
-        {pickedWall && pick?.kind === "wall" ? (
-          <>
-            <h3>{t.wallProps}</h3>
-            <div className="props">
-              <label>
-                {t.lengthCm}
-                <input className="input" type="number" min={10} max={5000} value={Math.round(wallLength(pickedWall))} onChange={(e) => setWallLength(pick.index, Number(e.target.value))} />
-              </label>
-              <label>
-                {t.thicknessCm}
-                <input
-                  className="input"
-                  type="number"
-                  min={2}
-                  max={60}
-                  value={pickedWall.thickness}
-                  onChange={(e) => {
-                    const th = clamp(Number(e.target.value) || 2, 2, 60);
-                    editWall(pick.index, (w) => ({ ...w, thickness: th }));
-                  }}
-                />
-              </label>
-              <label className="toggle">
-                <input type="checkbox" checked={!!pickedWall.glass} onChange={(e) => editWall(pick.index, (w) => ({ ...w, glass: e.target.checked || undefined }))} />
-                {t.glass}
-              </label>
-              <button type="button" className="btn btn-danger" onClick={deletePick}>
-                {t.remove}
-              </button>
-            </div>
-          </>
-        ) : pickedOpening ? (
-          <>
-            <h3>{DOOR_KINDS.includes(pickedOpening.kind) ? t.door : t.window}</h3>
-            <div className="props">
-              <div className="segmented" role="group">
-                {(DOOR_KINDS.includes(pickedOpening.kind) ? DOOR_KINDS : WINDOW_KINDS).map((k) => (
-                  <button key={k} type="button" className={pickedOpening.kind === k ? "seg-on" : ""} aria-pressed={pickedOpening.kind === k} onClick={() => editOpening(pickedOpening.id, (o) => ({ ...o, kind: k }))}>
-                    {{ single: t.singleDoor, double: t.doubleDoor, sliding: t.slidingDoor, window: t.windows, bay: t.bayWindow, french: t.frenchWindow }[k]}
+          {/* ---------- Right: properties of what is selected ---------- */}
+          <aside className="plan-inspector">
+            {pickedWall && pick?.kind === "wall" ? (
+              <>
+                <h3>{t.wallProps}</h3>
+                <div className="props">
+                  <label>
+                    {t.lengthCm}
+                    <input className="input" type="number" min={10} max={5000} value={Math.round(wallLength(pickedWall))} onChange={(e) => setWallLength(pick.index, Number(e.target.value))} />
+                  </label>
+                  <label>
+                    {t.thicknessCm}
+                    <input
+                      className="input"
+                      type="number"
+                      min={2}
+                      max={60}
+                      value={pickedWall.thickness}
+                      onChange={(e) => {
+                        const th = clamp(Number(e.target.value) || 2, 2, 60);
+                        editWall(pick.index, (w) => ({ ...w, thickness: th }));
+                      }}
+                    />
+                  </label>
+                  <label className="toggle">
+                    <input type="checkbox" checked={!!pickedWall.glass} onChange={(e) => editWall(pick.index, (w) => ({ ...w, glass: e.target.checked || undefined }))} />
+                    {t.glass}
+                  </label>
+                  <button type="button" className="btn btn-danger" onClick={deletePick}>
+                    {t.remove}
                   </button>
-                ))}
-              </div>
-              <label>
-                {t.width}
-                <input
-                  className="input"
-                  type="number"
-                  min={40}
-                  max={400}
-                  value={pickedOpening.width}
-                  onChange={(e) => editOpening(pickedOpening.id, (o) => ({ ...o, width: clamp(Number(e.target.value) || 40, 40, 400) }))}
-                />
-              </label>
-              <input
-                type="range"
-                dir="ltr"
-                min={40}
-                max={400}
-                step={5}
-                value={pickedOpening.width}
-                onChange={(e) => editOpening(pickedOpening.id, (o) => ({ ...o, width: Number(e.target.value) }))}
-                aria-label={t.width}
-              />
-              <div className="row-2">
-                <button type="button" className="btn btn-ghost" onClick={() => editOpening(pickedOpening.id, (o) => ({ ...o, flip: !o.flip }))}>
-                  ⇅ {t.flipSide}
-                </button>
-                <button type="button" className="btn btn-ghost" onClick={() => editOpening(pickedOpening.id, (o) => ({ ...o, hinge: !o.hinge }))}>
-                  ⇆ {t.flipHinge}
-                </button>
-              </div>
-              <button type="button" className="btn btn-danger" onClick={deletePick}>
-                {t.remove}
-              </button>
-            </div>
-          </>
-        ) : pick?.kind === "floor" && floors[pick.index] ? (
-          <>
-            <h3>{t.floorProps}</h3>
-            <div className="props">
-              <p className="muted small" dir="ltr">
-                {(floors[pick.index].w / 100).toFixed(2)} × {(floors[pick.index].h / 100).toFixed(2)} m
-              </p>
-              <div className="segmented" role="group">
-                {FLOOR_KINDS.map((k) => (
-                  <button
-                    key={k}
-                    type="button"
-                    className={floors[pick.index].kind === k ? "seg-on" : ""}
-                    aria-pressed={floors[pick.index].kind === k}
-                    onClick={() => commit((l) => ({ ...l, floors: floorsOf(l).map((f, i) => (i === pick.index ? { ...f, kind: k } : f)) }))}
-                  >
-                    {t.floorKinds[k]}
+                </div>
+              </>
+            ) : pickedOpening ? (
+              <>
+                <h3>{DOOR_KINDS.includes(pickedOpening.kind) ? t.door : t.window}</h3>
+                <div className="props">
+                  <div className="segmented" role="group">
+                    {(DOOR_KINDS.includes(pickedOpening.kind) ? DOOR_KINDS : WINDOW_KINDS).map((k) => (
+                      <button key={k} type="button" className={pickedOpening.kind === k ? "seg-on" : ""} aria-pressed={pickedOpening.kind === k} onClick={() => editOpening(pickedOpening.id, (o) => ({ ...o, kind: k }))}>
+                        {{ single: t.singleDoor, double: t.doubleDoor, sliding: t.slidingDoor, window: t.windows, bay: t.bayWindow, french: t.frenchWindow }[k]}
+                      </button>
+                    ))}
+                  </div>
+                  <label>
+                    {t.width}
+                    <input
+                      className="input"
+                      type="number"
+                      min={40}
+                      max={400}
+                      value={pickedOpening.width}
+                      onChange={(e) => editOpening(pickedOpening.id, (o) => ({ ...o, width: clamp(Number(e.target.value) || 40, 40, 400) }))}
+                    />
+                  </label>
+                  <input
+                    type="range"
+                    dir="ltr"
+                    min={40}
+                    max={400}
+                    step={5}
+                    value={pickedOpening.width}
+                    onChange={(e) => editOpening(pickedOpening.id, (o) => ({ ...o, width: Number(e.target.value) }))}
+                    aria-label={t.width}
+                  />
+                  <div className="row-2">
+                    <button type="button" className="btn btn-ghost" onClick={() => editOpening(pickedOpening.id, (o) => ({ ...o, flip: !o.flip }))}>
+                      ⇅ {t.flipSide}
+                    </button>
+                    <button type="button" className="btn btn-ghost" onClick={() => editOpening(pickedOpening.id, (o) => ({ ...o, hinge: !o.hinge }))}>
+                      ⇆ {t.flipHinge}
+                    </button>
+                  </div>
+                  <button type="button" className="btn btn-danger" onClick={deletePick}>
+                    {t.remove}
                   </button>
-                ))}
-              </div>
-              <button type="button" className="btn btn-danger" onClick={deletePick}>
-                {t.remove}
-              </button>
-            </div>
-          </>
-        ) : pickedColumn ? (
-          <>
-            <h3>{t.columnProps}</h3>
-            <div className="props">
-              <label>
-                {t.sizeCm}
-                <input
-                  className="input"
-                  type="number"
-                  min={10}
-                  max={150}
-                  value={pickedColumn.size}
-                  onChange={(e) => editColumn(pickedColumn.id, (c) => ({ ...c, size: clamp(Number(e.target.value) || 10, 10, 150) }))}
-                />
-              </label>
-              <label className="toggle">
-                <input type="checkbox" checked={!!pickedColumn.round} onChange={(e) => editColumn(pickedColumn.id, (c) => ({ ...c, round: e.target.checked || undefined }))} />
-                {t.round}
-              </label>
-              <button type="button" className="btn btn-danger" onClick={deletePick}>
-                {t.remove}
-              </button>
-            </div>
-          </>
-        ) : sel ? (
-          <>
-            <h3>{t.selected}</h3>
-            <TopViewIcon item={sel.item} size={110} shadow={shadow} />
-            <p className="inspector-name">{name(sel.item)}</p>
-            <p className="muted small" dir="ltr">
-              {sized(sel.p, sel.item).w} × {sized(sel.p, sel.item).d} cm · {sel.p.rotation}°{(sel.p.scale ?? 1) !== 1 && ` · ${Math.round((sel.p.scale ?? 1) * 100)}%`}
-              {sel.p.mirror && " · ⇋"}
-            </p>
-            <div className="stack">
-              <button type="button" className="btn btn-primary" onClick={() => rotate(sel.p.uid)}>
-                {t.rotate}
-              </button>
-              <button type="button" className="btn btn-ghost" onClick={() => duplicate(sel.p.uid)}>
-                {t.duplicate}
-              </button>
-              <button type="button" className="btn btn-danger" onClick={() => remove(sel.p.uid)}>
-                {t.remove}
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <h3>{t.properties}</h3>
-            <p className="muted small">{t.nothingSelected}</p>
-          </>
-        )}
-      </aside>
+                </div>
+              </>
+            ) : pick?.kind === "floor" && floors[pick.index] ? (
+              <>
+                <h3>{t.floorProps}</h3>
+                <div className="props">
+                  <p className="muted small" dir="ltr">
+                    {(floors[pick.index].w / 100).toFixed(2)} × {(floors[pick.index].h / 100).toFixed(2)} m
+                  </p>
+                  <div className="segmented" role="group">
+                    {FLOOR_KINDS.map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        className={floors[pick.index].kind === k ? "seg-on" : ""}
+                        aria-pressed={floors[pick.index].kind === k}
+                        onClick={() => commit((l) => ({ ...l, floors: floorsOf(l).map((f, i) => (i === pick.index ? { ...f, kind: k } : f)) }))}
+                      >
+                        {t.floorKinds[k]}
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button" className="btn btn-danger" onClick={deletePick}>
+                    {t.remove}
+                  </button>
+                </div>
+              </>
+            ) : pickedColumn ? (
+              <>
+                <h3>{t.columnProps}</h3>
+                <div className="props">
+                  <label>
+                    {t.sizeCm}
+                    <input
+                      className="input"
+                      type="number"
+                      min={10}
+                      max={150}
+                      value={pickedColumn.size}
+                      onChange={(e) => editColumn(pickedColumn.id, (c) => ({ ...c, size: clamp(Number(e.target.value) || 10, 10, 150) }))}
+                    />
+                  </label>
+                  <label className="toggle">
+                    <input type="checkbox" checked={!!pickedColumn.round} onChange={(e) => editColumn(pickedColumn.id, (c) => ({ ...c, round: e.target.checked || undefined }))} />
+                    {t.round}
+                  </label>
+                  <button type="button" className="btn btn-danger" onClick={deletePick}>
+                    {t.remove}
+                  </button>
+                </div>
+              </>
+            ) : sel ? (
+              <>
+                <h3>{t.selected}</h3>
+                <TopViewIcon item={sel.item} size={110} shadow={shadow} />
+                <p className="inspector-name">{name(sel.item)}</p>
+                <p className="muted small" dir="ltr">
+                  {sized(sel.p, sel.item).w} × {sized(sel.p, sel.item).d} cm · {sel.p.rotation}°{(sel.p.scale ?? 1) !== 1 && ` · ${Math.round((sel.p.scale ?? 1) * 100)}%`}
+                  {sel.p.mirror && " · ⇋"}
+                </p>
+                <div className="stack">
+                  <button type="button" className="btn btn-primary" onClick={() => rotate(sel.p.uid)}>
+                    {t.rotate}
+                  </button>
+                  <button type="button" className="btn btn-ghost" onClick={() => duplicate(sel.p.uid)}>
+                    {t.duplicate}
+                  </button>
+                  <button type="button" className="btn btn-danger" onClick={() => remove(sel.p.uid)}>
+                    {t.remove}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3>{t.properties}</h3>
+                <p className="muted small">{t.nothingSelected}</p>
+              </>
+            )}
+          </aside>
+        </>
+      )}
     </div>
   );
 }

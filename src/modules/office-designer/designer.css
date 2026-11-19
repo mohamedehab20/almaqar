@@ -993,3 +993,35 @@
   gap: 6px;
   margin: 0 0 12px;
 }
+
+/* ---------- Top bar: two separate groups, pinned while the page scrolls ---------- */
+.mc-root .plan-topbar {
+  gap: 24px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  width: auto;
+  justify-self: stretch;
+  justify-content: center;
+}
+.mc-root .top-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+.mc-root .top-btn.top-on {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.mc-root .plan-catalog {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
