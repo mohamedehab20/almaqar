@@ -14,6 +14,20 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-11-19 — 40 more pieces in «فرش الأثاث» (71 in all)
+- **Seating:** L-shaped sectional, 4-seat sofa, mustard and navy armchairs, executive and grey task chairs, black and oak shell chairs, bar stool, bean bag, upholstered bench, grey pouf.
+- **Desks:** 6-person bench desk, standing desk, compact desk, dark L-shaped desk.
+- **Tables:** meeting tables for 8 and 12, round table for 4, café table, pantry table, square coffee table.
+- **Storage:** filing cabinet, staff lockers, tall white bookcase, wardrobe.
+- **Tech:** large display, whiteboard, water cooler.
+- **Bath:** shower, bathtub, double vanity.
+- **Kitchen:** fridge, kitchen island.
+- **Plants:** medium plant, indoor tree, planter box.
+- **Decor:** round rug, runner rug, arc lamp.
+- New drawings for the shapes that needed one: `sectional`, `stool`, `beanBag`, `shower`, `bathtub`, `fridge`, `whiteboard`, `tv`, `waterCooler`, `roundRug`, `planterBox`. `vanity` can now draw several basins.
+
+Files: `src/modules/office-designer/data/{draw,items}.ts`, `src/modules/office-designer/components/top-view-icon.tsx`.
+
 ### 2026-11-19 — 2D drawing tools, including the half circle
 - «رسم المسقط» has a new section, **«رسم 2D»**. All six tools are drawn by dragging, except text, which is placed with a click:
   - **نص دايرة (half circle):** drag along its diameter. It bulges to the right of the drag. Properties: radius, angle (10°–360°, so any arc up to a full circle), flip side, turn 45°.

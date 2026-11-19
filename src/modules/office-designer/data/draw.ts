@@ -307,16 +307,16 @@ export function toilet(w: number, d: number) {
   );
 }
 
-/** Washbasin on a stone vanity top (the basin sits nearer the front). */
-export function vanity(w: number, d: number, stone = "#e6dccd") {
+/** Washbasin(s) on a stone vanity top (the basins sit nearer the front). */
+export function vanity(w: number, d: number, stone = "#e6dccd", basins = 1) {
   const t = tones(stone);
-  return svg(
-    w,
-    d,
-    r(0, 0, w, d, 2, t.dark) + r(1.5, 1.5, w - 3, d - 3, 1.5, t.light) +
-      `<ellipse cx="${w / 2}" cy="${d * 0.56}" rx="${Math.min(w, d) * 0.34}" ry="${d * 0.3}" fill="#ffffff" stroke="#c9cbce" stroke-width="1"/>` +
-      `<circle cx="${w / 2}" cy="${d * 0.18}" r="2.2" fill="#9aa0a8"/>`, "hard",
-  );
+  let body = r(0, 0, w, d, 2, t.dark) + r(1.5, 1.5, w - 3, d - 3, 1.5, t.light);
+  for (let i = 0; i < basins; i++) {
+    const cx = (w / basins) * (i + 0.5);
+    body += `<ellipse cx="${cx}" cy="${d * 0.56}" rx="${Math.min(w / basins, d) * 0.34}" ry="${d * 0.3}" fill="#ffffff" stroke="#b9bcc0" stroke-width="1.2"/>`;
+    body += `<circle cx="${cx}" cy="${d * 0.18}" r="2.2" fill="#9aa0a8"/>`;
+  }
+  return svg(w, d, body, "hard");
 }
 
 /** Kitchenette counter: dark stone top with a sink on the left and a two-ring hob on the right. */
@@ -339,4 +339,136 @@ export function tubChair(w: number, d: number, hex: string) {
       `<ellipse cx="${w / 2}" cy="${d / 2 + 3}" rx="${w * 0.38}" ry="${d * 0.36}" fill="${t.mid}"/>` +
       `<ellipse cx="${w / 2}" cy="${d * 0.58}" rx="${w * 0.27}" ry="${d * 0.24}" fill="${t.light}"/>`, "fabric",
   );
+}
+
+// ---------- More pieces for the library ----------
+
+/** L-shaped sectional sofa: a long run along the back and a chaise on the right, cushions facing in. */
+export function sectional(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  const back = Math.max(16, d * 0.18);
+  const arm = 14;
+  const chaise = Math.min(w * 0.38, 95);
+  const seat = d * 0.45;
+  let body = `<path d="M 0 0 H ${w} V ${d} H ${w - chaise} V ${seat + back} H 0 Z" fill="${t.dark}"/>`;
+  body += r(2, 2, w - 4, back, 8, t.mid) + r(w - back - 2, 2, back, d - 4, 8, t.mid);
+  body += r(2, back, arm, seat, 7, t.mid);
+  const runW = w - chaise - arm - 6;
+  const n = Math.max(2, Math.round(runW / 70));
+  const each = (runW - (n - 1) * 2.5) / n;
+  for (let i = 0; i < n; i++) body += r(arm + 4 + i * (each + 2.5), back + 2, each, seat - 4, 8, t.light);
+  body += r(w - chaise + 2, back + 2, chaise - back - 6, d - back - 6, 8, t.light);
+  return svg(w, d, body, "fabric");
+}
+
+/** Bar or counter stool: a round seat on a ring footrest. */
+export function stool(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    `<circle cx="${w / 2}" cy="${d / 2}" r="${w / 2 - 1}" fill="none" stroke="#3a3d42" stroke-width="2.5"/>` +
+      `<circle cx="${w / 2}" cy="${d / 2}" r="${w * 0.36}" fill="${t.dark}"/><circle cx="${w / 2}" cy="${d / 2}" r="${w * 0.31}" fill="${t.light}"/>`,
+    "fabric",
+  );
+}
+
+/** Bean bag: a soft, slightly uneven blob with a dent where you sit. */
+export function beanBag(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    `<path d="M ${w * 0.5} 1 C ${w * 0.9} 0 ${w} ${d * 0.3} ${w - 1} ${d * 0.55} C ${w} ${d * 0.85} ${w * 0.75} ${d - 1} ${w * 0.48} ${d - 1} C ${w * 0.2} ${d} 0 ${d * 0.8} 1 ${d * 0.5} C 0 ${d * 0.2} ${w * 0.2} 2 ${w * 0.5} 1 Z" fill="${t.mid}"/>` +
+      `<ellipse cx="${w * 0.5}" cy="${d * 0.58}" rx="${w * 0.26}" ry="${d * 0.22}" fill="${t.dark}" opacity="0.5"/>` +
+      `<ellipse cx="${w * 0.44}" cy="${d * 0.3}" rx="${w * 0.2}" ry="${d * 0.12}" fill="${t.light}" opacity="0.7"/>`,
+    "fabric",
+  );
+}
+
+/** Shower tray with a drain and a glass screen along the front. */
+export function shower(w: number, d: number) {
+  return svg(
+    w,
+    d,
+    r(0, 0, w, d, 3, "#cfd3d6") + r(2, 2, w - 4, d - 4, 2, "#f1f4f6") +
+      `<circle cx="${w / 2}" cy="${d / 2}" r="3.5" fill="#9aa0a8"/><circle cx="${w * 0.8}" cy="${d * 0.18}" r="5" fill="#c9ced3"/>` +
+      r(0, d - 3, w, 3, 1, "#9fb7c8"),
+    "hard",
+  );
+}
+
+/** Bathtub: a rounded basin in a frame, the tap end at the top. */
+export function bathtub(w: number, d: number) {
+  return svg(
+    w,
+    d,
+    r(0, 0, w, d, 6, "#bfc4c9") + r(4, 4, w - 8, d - 8, Math.min(w, d) * 0.3, "#f7f8f9") +
+      r(9, 9, w - 18, d - 18, Math.min(w, d) * 0.28, "#cfe4ee") +
+      `<circle cx="${w / 2}" cy="${d * 0.14}" r="3" fill="#9aa0a8"/>`,
+    "hard",
+  );
+}
+
+/** Fridge seen from above: a white box with the door gap at the front. */
+export function fridge(w: number, d: number, hex = "#eef0f2") {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    r(0, 0, w, d, 2, "#a9aeb4") + r(1.5, 1.5, w - 3, d - 6, 1.5, t.light) + r(w * 0.1, d * 0.12, w * 0.8, d * 0.12, 1.5, t.mid) + r(2, d - 4, w - 4, 2.5, 1, "#7f858c") + r(w * 0.7, d - 9, 4, 6, 1.5, "#7f858c"),
+    "hard",
+  );
+}
+
+/** Whiteboard or screen on a stand: a thin bar with its feet. */
+export function whiteboard(w: number, d: number) {
+  return svg(
+    w,
+    d,
+    r(w * 0.05, d * 0.15, 4, d * 0.7, 2, "#7a7f86") + r(w * 0.95 - 4, d * 0.15, 4, d * 0.7, 2, "#7a7f86") +
+      r(0, d * 0.38, w, d * 0.24, 1.5, "#c9ccd1") + r(1, d * 0.42, w - 2, d * 0.16, 1, "#ffffff"),
+    "hard",
+  );
+}
+
+/** Wall TV / large display: a thin dark panel on a slim stand. */
+export function tv(w: number, d: number) {
+  return svg(w, d, r(w * 0.3, d * 0.55, w * 0.4, d * 0.4, 2, "#55595f") + r(0, 0, w, d * 0.45, 1.5, "#1d1f22") + r(2, d * 0.08, w - 4, d * 0.18, 1, "#33363b"), "hard");
+}
+
+/** Water cooler: a round bottle on a square base. */
+export function waterCooler(w: number, d: number) {
+  return svg(
+    w,
+    d,
+    r(0, 0, w, d, 4, "#e4e6e9") + `<circle cx="${w / 2}" cy="${d / 2}" r="${Math.min(w, d) * 0.36}" fill="#bfe0f2"/>` +
+      `<circle cx="${w / 2}" cy="${d / 2}" r="${Math.min(w, d) * 0.12}" fill="#5aa9d6"/>`,
+    "hard",
+  );
+}
+
+/** Round rug with a border and a soft centre. */
+export function roundRug(w: number, d: number, hex: string) {
+  const t = tones(hex);
+  return svg(
+    w,
+    d,
+    `<ellipse cx="${w / 2}" cy="${d / 2}" rx="${w / 2}" ry="${d / 2}" fill="${t.mid}"/>` +
+      `<ellipse cx="${w / 2}" cy="${d / 2}" rx="${w / 2 - 8}" ry="${d / 2 - 8}" fill="none" stroke="${t.light}" stroke-width="3"/>` +
+      `<ellipse cx="${w / 2}" cy="${d / 2}" rx="${w * 0.22}" ry="${d * 0.22}" fill="${t.light}" opacity="0.6"/>`,
+    "rug",
+  );
+}
+
+/** Long planter box with a row of plants. */
+export function planterBox(w: number, d: number, leafHex: string) {
+  const t = tones(leafHex);
+  let body = r(0, 0, w, d, 3, "#8a7a68") + r(2, 2, w - 4, d - 4, 2, "#5b4a3a");
+  const n = Math.max(2, Math.round(w / 30));
+  for (let i = 0; i < n; i++) {
+    const cx = (w / n) * (i + 0.5);
+    body += `<circle cx="${cx}" cy="${d / 2}" r="${d * 0.48}" fill="${i % 2 ? t.mid : t.dark}"/><circle cx="${cx - 3}" cy="${d / 2 - 3}" r="${d * 0.22}" fill="${t.light}"/>`;
+  }
+  return svg(w, d, body, "leaf");
 }

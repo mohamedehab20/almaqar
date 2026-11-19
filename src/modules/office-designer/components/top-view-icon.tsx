@@ -14,7 +14,7 @@ export function TopViewIcon({ item, size, shadow }: { item: FurnitureItem; size:
   const scale = Math.min(size / item.widthCm, size / item.depthCm);
   const w = item.widthCm * scale;
   const h = item.depthCm * scale;
-  const round = item.category === "plants" || item.subcategory === "lighting" || item.id.startsWith("TBL-COF") || item.id.startsWith("TBL-SIDE");
+  const round = item.category === "plants" || item.subcategory === "lighting" || item.id.startsWith("TBL-COF") || item.id.startsWith("TBL-SIDE") || item.id.startsWith("TBL-RND") || item.id.startsWith("SEAT-STL") || item.id.startsWith("SEAT-BEAN") || item.id === "DEC-RUG-002";
   return (
     <div className="topview" style={{ width: size, height: size }}>
       {shadow && <div className="topview-shadow" style={{ width: w, height: h, borderRadius: round ? "50%" : Math.min(w, h) * 0.12 }} aria-hidden />}

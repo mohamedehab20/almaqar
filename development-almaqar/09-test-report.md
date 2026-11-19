@@ -2,6 +2,13 @@
 
 A complete check of the frontend, the backend and the live Supabase database. Newest run first. Re-run it after any change that touches more than one layer, and add a new section here.
 
+## 2026-11-19 — 40 more furniture pieces (local)
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit`, `npx eslint .`, `npm run build` | Pass. |
+| Library and catalog, headless Edge | 71 pieces in «فرش الأثاث» and 71 cards in «الكتالوج», no broken images, no console errors. Looked at every new drawing. The double vanity got its second basin, and the bathtub and fridge got more contrast. |
+
 ## 2026-11-19 — 2D drawing tools (local)
 
 | Check | Result |
