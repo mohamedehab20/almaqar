@@ -14,6 +14,13 @@ Files: main files touched.
 
 ## Phase 1 — Frontend on mock data (in progress)
 
+### 2026-11-19 — The company home is called «القاعة الرئيسية» again
+- The page still shows only the office designer.
+- Its title, the logo label and the pricing feature line say «القاعة الرئيسية» / "Main hall" again, instead of «تصميم المكتب».
+- The designer's "view only" notice uses the same name.
+
+Files: `src/i18n/messages/{ar,en}.json`, `src/modules/office-designer/components/i18n.ts`.
+
 ### 2026-11-19 — «القاعة الرئيسية» removed: the company home is the office design
 - `/c/<slug>` now shows only the office designer. The page and header title are «تصميم المكتب» / "Office design", and the logo's label says «الرجوع لتصميم المكتب».
 - **Removed from the UI:**

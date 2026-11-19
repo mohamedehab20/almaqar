@@ -374,14 +374,14 @@
     "expandGroup": "Show {name} items",
     "collapseGroup": "Hide {name} items",
     "comingSoonItem": "{name} — coming soon",
-    "backHome": "Back to the office design",
+    "backHome": "Back to the main hall",
     "signOut": "Sign out",
     "guestBanner": "You are browsing as a guest: this is a demo company and nothing is saved.",
     "guestCta": "Create your free account",
     "guestLogin": "Sign in"
   },
   "hq": {
-    "title": "Office design",
+    "title": "Main hall",
     "floorPlan": "Headquarters floor plan",
     "participants": "{count} participants",
     "live": "Live",
@@ -1312,7 +1312,7 @@
     "features": {
       "employees5": "Up to 5 employees",
       "employeesUnlimited": "Unlimited employees",
-      "hq": "Virtual headquarters (office design)",
+      "hq": "Virtual headquarters (main hall)",
       "hr": "Essential HR tools",
       "operationsLimited": "Operations room (up to 20 operations / month)",
       "oneWorkflow": "One workflow",
